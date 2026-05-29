@@ -315,6 +315,86 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .lmore{width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--hint);font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;transition:background .15s}
 .lmore:active{background:var(--card)}
 .divider{height:1px;background:var(--border)}
+
+/* ═══ PROFILE V2 ═══ */
+#p-profile{padding:0!important}
+.pr-hero{background:var(--bg2);padding:18px 16px 14px;border-bottom:0.5px solid var(--border)}
+.pr-avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.pr-avatar{width:56px;height:56px;border-radius:16px;background:rgba(124,90,247,.15);border:1.5px solid rgba(124,90,247,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:28px}
+.pr-user-info{flex:1;min-width:0}
+.pr-uname{font-size:18px;font-weight:500}
+.pr-usub{font-size:12px;color:var(--hint);margin-top:2px}
+.pr-ubadge{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.pr-ubadge-free{background:rgba(107,110,128,.12);color:var(--hint);border:0.5px solid var(--border)}
+.pr-ubadge-vip{background:rgba(255,215,64,.1);color:var(--gold);border:0.5px solid rgba(255,215,64,.3)}
+.pr-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pr-stat-box{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:8px 6px;text-align:center}
+.pr-stat-n{font-size:16px;font-weight:500}
+.pr-stat-l{font-size:9px;color:var(--hint);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+.pr-nav-tabs{display:flex;background:var(--bg2);border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:10}
+.pr-ntab{flex:1;padding:11px 4px;text-align:center;font-size:11px;color:var(--hint);cursor:pointer;border-bottom:2px solid transparent;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+.pr-ntab i{font-size:18px}
+.pr-ntab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.pr-tab-page{display:none;padding:14px 16px calc(var(--nav) + var(--safe) + 20px)}
+.pr-tab-page.active{display:block}
+.pr-vip-card{background:var(--card);border:0.5px solid rgba(255,215,64,.3);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.pr-vip-card.active{border-color:rgba(29,233,164,.4)}
+.pr-vip-header{padding:12px 14px;background:rgba(255,215,64,.06);border-bottom:0.5px solid rgba(255,215,64,.15);display:flex;align-items:center;justify-content:space-between}
+.pr-vip-card.active .pr-vip-header{background:rgba(29,233,164,.06);border-bottom-color:rgba(29,233,164,.15)}
+.pr-vip-title{font-size:15px;font-weight:500;display:flex;align-items:center;gap:6px}
+.pr-vip-price{font-size:12px;color:var(--gold)}
+.pr-vip-feats{padding:10px 14px;display:flex;flex-direction:column;gap:7px}
+.pr-vip-feat{display:flex;align-items:center;gap:8px;font-size:12px}
+.pr-vip-feat i{font-size:14px;color:var(--gold);width:16px;flex-shrink:0}
+.pr-vip-footer{padding:10px 14px;border-top:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pr-buy-btn{width:100%;padding:12px;background:var(--gold);border-radius:10px;border:none;font-size:14px;font-weight:600;color:#412402;cursor:pointer;margin-top:4px;transition:opacity .15s;display:block}
+.pr-buy-btn:active{opacity:.8}
+.pr-buy-btn:disabled{opacity:.5;cursor:not-allowed}
+.pr-buy-btn.renew{background:var(--green);color:#04342c}
+.pr-stars-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.pr-stars-title{font-size:13px;font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.pr-stars-sub{font-size:11px;color:var(--hint);margin-bottom:12px}
+.pr-stars-opts{display:flex;gap:6px;margin-bottom:10px}
+.pr-star-opt{flex:1;background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s}
+.pr-star-opt.on{border-color:var(--gold);background:rgba(255,215,64,.08)}
+.pr-star-opt i{font-size:14px;color:var(--gold)}
+.pr-star-opt .num{font-size:12px;font-weight:500;margin-top:2px}
+.pr-support-btn{width:100%;padding:10px;background:rgba(124,90,247,.12);border:0.5px solid rgba(124,90,247,.35);border-radius:10px;color:var(--accent);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.pr-support-btn:active{opacity:.7}
+.pr-support-btn:disabled{opacity:.5;cursor:not-allowed}
+.pr-prog-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:6px;overflow:hidden}
+.pr-prog-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .4s}
+.pr-ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pr-ach{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;position:relative}
+.pr-ach.done{border-color:rgba(255,215,64,.35)}
+.pr-ach .pr-ach-icon{font-size:26px;opacity:.25;margin-bottom:4px;line-height:1}
+.pr-ach.done .pr-ach-icon{opacity:1}
+.pr-ach .pr-ach-name{font-size:10px;color:var(--hint);line-height:1.3}
+.pr-ach.done .pr-ach-name{color:var(--text)}
+.pr-ach-check{position:absolute;top:6px;right:6px;width:14px;height:14px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:9px;color:#04342c}
+.pr-notif-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.pr-notif-row{display:flex;align-items:center;gap:12px;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:11px 13px}
+.pr-notif-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pr-notif-text{flex:1}
+.pr-notif-title{font-size:13px;font-weight:500}
+.pr-notif-sub{font-size:10px;color:var(--hint);margin-top:1px}
+#prtab-settings .curr-grid{grid-template-columns:repeat(4,1fr)!important;padding:0!important;margin-bottom:14px}
+.pr-app-links{background:var(--card);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.pr-app-link-row{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;cursor:pointer;transition:background .12s}
+.pr-app-link-row+.pr-app-link-row{border-top:0.5px solid var(--border)}
+.pr-app-link-row:active{background:rgba(255,255,255,.04)}
+.pr-ref-card{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.pr-ref-url{font-size:11px;color:var(--blue);background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;margin:8px 0;word-break:break-all}
+.pr-copy-btn{width:100%;padding:10px;background:rgba(79,195,247,.1);border:0.5px solid rgba(79,195,247,.3);border-radius:9px;color:var(--blue);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.pr-copy-btn:active{opacity:.7}
+.pr-ref-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.pr-ref-stat{background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center}
+.pr-ref-stat-n{font-size:16px;font-weight:500;color:var(--accent)}
+.pr-ref-stat-l{font-size:10px;color:var(--hint)}
+.pr-steps{display:flex;flex-direction:column;gap:8px}
+.pr-step{display:flex;align-items:center;gap:10px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px}
+.pr-step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:500}
+.pr-step-text{font-size:12px}
 /* ══ FREE V2 ══ */
 #p-free{padding:0 0 calc(var(--nav) + var(--safe) + 8px) !important}
 .f2-topbar{background:var(--bg2);padding:14px 16px 12px;border-bottom:0.5px solid var(--border);flex-shrink:0}
@@ -910,122 +990,148 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <div id="pr-load" class="em"><div class="spin"></div></div>
   <div id="pr-content" style="display:none">
 
-    <div class="p-hero">
-      <div style="display:flex;align-items:center;gap:14px">
-        <div class="ava" id="pr-ava">🎮</div>
-        <div>
-          <div class="hn" id="pr-name">Геймер</div>
-          <div class="hid" id="pr-uid"></div>
-          <div id="pr-vip-badge"></div>
+    <!-- ══ PROFILE HERO ══ -->
+    <div class="pr-hero">
+      <div class="pr-avatar-row">
+        <div class="pr-avatar" id="pr-ava">🎮</div>
+        <div class="pr-user-info">
+          <div class="pr-uname" id="pr-name">Геймер</div>
+          <div class="pr-usub" id="pr-uid">Без аккаунта · откройте в Telegram</div>
+          <div id="pr-vip-badge"><div class="pr-ubadge pr-ubadge-free"><i class="ti ti-lock" style="font-size:10px"></i> Базовый</div></div>
         </div>
       </div>
-    </div>
-
-    <div class="stats">
-      <div class="sc"><div class="sc-val" id="ps-wish">—</div><div class="sc-lbl">Список</div></div>
-      <div class="sc"><div class="sc-val" id="ps-ref">—</div><div class="sc-lbl">Рефералы</div></div>
-      <div class="sc"><div class="sc-val" id="ps-days">—</div><div class="sc-lbl">Дней</div></div>
-    </div>
-
-    <!-- ═══ VIP BLOCK ═══ -->
-    <div class="slabel">VIP Подписка</div>
-    <div class="vip-block" id="vip-block">
-      <div class="vb-title" id="vb-title">⭐ VIP — Подписка на 30 дней</div>
-      <div class="vb-sub" id="vb-sub">100 звёзд Telegram · Авто-продление опционально</div>
-      <div class="vb-perks">
-        <div class="vb-perk"><span>🎁</span><span>Радар элитной халявы — AAA и топ инди прямо в ЛС</span></div>
-        <div class="vb-perk"><span>♾️</span><span>Безлимитный шорт-лист до 100 игр</span></div>
-        <div class="vb-perk"><span>🚫</span><span>Ad-Free — полное отключение рекламы</span></div>
-        <div class="vb-perk"><span>📉</span><span>Приоритетные уведомления о снижении цены</span></div>
+      <div class="pr-stats-grid">
+        <div class="pr-stat-box"><div class="pr-stat-n" id="ps-wish" style="color:var(--accent)">—</div><div class="pr-stat-l">Список</div></div>
+        <div class="pr-stat-box"><div class="pr-stat-n" id="ps-ach" style="color:var(--green)">—</div><div class="pr-stat-l">Ачивки</div></div>
+        <div class="pr-stat-box"><div class="pr-stat-n" id="ps-ref" style="color:var(--gold)">—</div><div class="pr-stat-l">Рефералы</div></div>
+        <div class="pr-stat-box"><div class="pr-stat-n" id="ps-days" style="color:var(--blue)">—</div><div class="pr-stat-l">VIP дней</div></div>
       </div>
-      <!-- Auto-renew toggle -->
-      <div class="vip-ar">
-        <div class="vip-ar-info">
-          <strong>⚙️ Автопродление</strong>
-          <span id="ar-status-txt">Выключено</span>
+    </div>
+
+    <!-- ══ SUB-TABS ══ -->
+    <div class="pr-nav-tabs">
+      <div class="pr-ntab active" data-ptab="vip"><i class="ti ti-star"></i><span>VIP</span></div>
+      <div class="pr-ntab" data-ptab="ach"><i class="ti ti-trophy"></i><span>Ачивки</span></div>
+      <div class="pr-ntab" data-ptab="settings"><i class="ti ti-adjustments"></i><span>Настройки</span></div>
+      <div class="pr-ntab" data-ptab="ref"><i class="ti ti-users"></i><span>Рефералы</span></div>
+    </div>
+
+    <!-- ══ VIP TAB ══ -->
+    <div class="pr-tab-page active" id="prtab-vip">
+      <div class="pr-vip-card" id="vip-block">
+        <div class="pr-vip-header">
+          <div class="pr-vip-title"><i class="ti ti-star" style="font-size:16px;color:var(--gold)"></i><span id="vb-title">VIP · 30 дней</span></div>
+          <div class="pr-vip-price" id="vb-sub">100 звёзд Telegram</div>
         </div>
-        <button class="tog" id="tog-ar" onclick="toggleAutoRenew()"></button>
-      </div>
-      <button class="vip-buy-btn" id="vip-buy-btn" onclick="buyVip()">
-        ⭐ Оформить подписку · 100 звёзд
-      </button>
-    </div>
-
-    <!-- ═══ SUPPORT PROJECT ═══ -->
-    <div class="slabel">Поддержать проект</div>
-    <div class="donate-block">
-      <div class="donate-title">❤️ Помочь развитию</div>
-      <div class="donate-sub">Твои звёзды помогают поддерживать серверы и делать бот лучше. Спасибо!</div>
-      <div class="donate-amounts">
-        <div class="da" onclick="selectDonate(this,25)"><span class="da-star">⭐</span><span>25</span></div>
-        <div class="da" onclick="selectDonate(this,50)"><span class="da-star">⭐</span><span>50</span></div>
-        <div class="da on" onclick="selectDonate(this,100)"><span class="da-star">⭐</span><span>100</span></div>
-        <div class="da" onclick="selectDonate(this,250)"><span class="da-star">⭐</span><span>250</span></div>
-        <div class="da" onclick="selectDonate(this,500)"><span class="da-star">⭐</span><span>500</span></div>
-      </div>
-      <button class="donate-btn" id="donate-btn" onclick="sendDonate()">⭐ Поддержать 100 звёздами</button>
-    </div>
-
-    <!-- Achievements -->
-    <div class="slabel">Достижения</div>
-    <div class="ach-grid" id="ach-grid"></div>
-
-    <!-- Referral -->
-    <div class="ref-card" id="ref-card">
-      <div class="rl">Реферальная ссылка</div>
-      <div class="rv" id="ref-link">Загружаем…</div>
-      <button class="ref-copy" onclick="copyRef()">📋 Скопировать</button>
-    </div>
-
-    <!-- Notifications -->
-    <div class="slabel">Уведомления в боте</div>
-    <div class="card" style="margin-bottom:4px">
-      <div class="srow">
-        <div class="srow-l">
-          <div class="srow-ico" style="background:rgba(255,100,100,.1)">📰</div>
-          <div><div class="st">Игровые новости</div><div class="ss">Рассылка в Telegram</div></div>
+        <div class="pr-vip-feats">
+          <div class="pr-vip-feat"><i class="ti ti-gift"></i><span>Радар элитной халявы — ААА и топ инди в ЛС</span></div>
+          <div class="pr-vip-feat"><i class="ti ti-infinity"></i><span>Безлимитный шорт-лист до 100 игр</span></div>
+          <div class="pr-vip-feat"><i class="ti ti-eye-off"></i><span>Ad-Free — полное отключение рекламы</span></div>
+          <div class="pr-vip-feat"><i class="ti ti-bell-ringing"></i><span>Приоритетные уведомления о снижении цены</span></div>
+          <div class="pr-vip-feat"><i class="ti ti-chart-line"></i><span>Графики истории цен по всем магазинам</span></div>
         </div>
-        <button class="tog" id="tog-news" onclick="togSetting('news')"></button>
-      </div>
-      <div class="divider"></div>
-      <div class="srow">
-        <div class="srow-l">
-          <div class="srow-ico" style="background:rgba(255,215,64,.1)">🎁</div>
-          <div><div class="st">Халява</div><div class="ss">Бесплатные игры в личку</div></div>
+        <div class="pr-vip-footer">
+          <div>
+            <div style="font-size:12px;font-weight:500">Автопродление</div>
+            <div style="font-size:10px;color:var(--hint)" id="ar-status-txt">Выключено</div>
+          </div>
+          <button class="tog" id="tog-ar" onclick="toggleAutoRenew()"></button>
         </div>
-        <button class="tog" id="tog-free" onclick="togSetting('free')"></button>
       </div>
-      <div class="divider"></div>
-      <div class="srow">
-        <div class="srow-l">
-          <div class="srow-ico" style="background:rgba(0,230,118,.1)">📉</div>
-          <div><div class="st">Снижение цены</div><div class="ss">По играм из шорт-листа</div></div>
+      <button class="pr-buy-btn" id="vip-buy-btn" onclick="buyVip()">⭐ Оформить за 100 звёзд</button>
+
+      <div class="pr-stars-card" style="margin-top:12px">
+        <div class="pr-stars-title"><i class="ti ti-heart" style="font-size:14px;color:var(--a2)"></i> Помочь развитию</div>
+        <div class="pr-stars-sub">Твои звёзды помогают поддерживать серверы. Спасибо!</div>
+        <div class="pr-stars-opts">
+          <div class="pr-star-opt" onclick="selectDonate(this,25)"><i class="ti ti-star"></i><div class="num">25</div></div>
+          <div class="pr-star-opt" onclick="selectDonate(this,50)"><i class="ti ti-star"></i><div class="num">50</div></div>
+          <div class="pr-star-opt on" onclick="selectDonate(this,100)"><i class="ti ti-star"></i><div class="num">100</div></div>
+          <div class="pr-star-opt" onclick="selectDonate(this,250)"><i class="ti ti-star"></i><div class="num">250</div></div>
+          <div class="pr-star-opt" onclick="selectDonate(this,500)"><i class="ti ti-star"></i><div class="num">500</div></div>
         </div>
-        <button class="tog on" id="tog-price" onclick="togSetting('price')"></button>
+        <button class="pr-support-btn" id="donate-btn" onclick="sendDonate()">⭐ Поддержать 100 звёздами</button>
       </div>
     </div>
 
-    <!-- Currency -->
-    <div class="slabel">Валюта</div>
-    <div class="card" style="margin-bottom:4px">
+    <!-- ══ ACHIEVEMENTS TAB ══ -->
+    <div class="pr-tab-page" id="prtab-ach">
+      <div class="slabel">Прогресс</div>
+      <div class="pr-prog-bar"><div class="pr-prog-fill" id="ach-prog-fill" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--hint);margin-bottom:14px">
+        <span id="ach-prog-label">0 из 9 получено</span>
+        <span id="ach-prog-pct" style="color:var(--accent)">0%</span>
+      </div>
+      <div class="slabel">Все достижения</div>
+      <div class="pr-ach-grid" id="ach-grid"></div>
+    </div>
+
+    <!-- ══ SETTINGS TAB ══ -->
+    <div class="pr-tab-page" id="prtab-settings">
+      <div class="slabel">Уведомления</div>
+      <div class="pr-notif-list">
+        <div class="pr-notif-row">
+          <div class="pr-notif-icon" style="background:rgba(79,195,247,.1)"><i class="ti ti-news" style="font-size:16px;color:var(--blue)"></i></div>
+          <div class="pr-notif-text"><div class="pr-notif-title">Игровые новости</div><div class="pr-notif-sub">Рассылка в Telegram</div></div>
+          <button class="tog" id="tog-news" onclick="togSetting('news')"></button>
+        </div>
+        <div class="pr-notif-row">
+          <div class="pr-notif-icon" style="background:rgba(29,233,164,.1)"><i class="ti ti-gift" style="font-size:16px;color:var(--green)"></i></div>
+          <div class="pr-notif-text"><div class="pr-notif-title">Халява</div><div class="pr-notif-sub">Бесплатные игры в личку</div></div>
+          <button class="tog" id="tog-free" onclick="togSetting('free')"></button>
+        </div>
+        <div class="pr-notif-row">
+          <div class="pr-notif-icon" style="background:rgba(240,90,126,.1)"><i class="ti ti-trending-down" style="font-size:16px;color:var(--a2)"></i></div>
+          <div class="pr-notif-text"><div class="pr-notif-title">Снижение цены</div><div class="pr-notif-sub">По играм из шорт-листа</div></div>
+          <button class="tog on" id="tog-price" onclick="togSetting('price')"></button>
+        </div>
+        <div class="pr-notif-row">
+          <div class="pr-notif-icon" style="background:rgba(255,215,64,.1)"><i class="ti ti-flame" style="font-size:16px;color:var(--gold)"></i></div>
+          <div class="pr-notif-text"><div class="pr-notif-title">Горячие скидки</div><div class="pr-notif-sub">Скидки больше 80%</div></div>
+          <button class="tog on" id="tog-hot"></button>
+        </div>
+      </div>
+
+      <div class="slabel">Валюта</div>
       <div class="curr-grid" id="curr-grid"></div>
+
+      <div class="slabel">О приложении</div>
+      <div class="pr-app-links">
+        <div class="pr-app-link-row" onclick="doCommunity()">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px"><i class="ti ti-brand-telegram" style="font-size:15px;color:var(--blue)"></i> Канал GameBroker</div>
+          <i class="ti ti-chevron-right" style="font-size:14px;color:var(--hint)"></i>
+        </div>
+        <div class="pr-app-link-row">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px"><i class="ti ti-device-gamepad-2" style="font-size:15px;color:var(--accent)"></i> Game Broker · v2.0</div>
+          <span style="font-size:11px;color:var(--hint)">35+ магазинов</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Community / Info -->
-    <div class="slabel">О приложении</div>
-    <div class="card" style="margin-bottom:20px">
-      <div class="srow" onclick="doCommunity()" style="cursor:pointer">
-        <div class="srow-l">
-          <div class="srow-ico" style="background:rgba(79,195,247,.1)">💬</div>
-          <div><div class="st">Сообщество</div><div class="ss">@GameBroker_Official</div></div>
+    <!-- ══ REFERRALS TAB ══ -->
+    <div class="pr-tab-page" id="prtab-ref">
+      <div class="pr-ref-card">
+        <div class="slabel" style="margin-bottom:6px">Реферальная ссылка</div>
+        <div class="pr-ref-url" id="ref-link">Загружаем…</div>
+        <button class="pr-copy-btn" onclick="copyRef()"><i class="ti ti-copy" style="font-size:14px"></i> Скопировать ссылку</button>
+        <div class="pr-ref-stats">
+          <div class="pr-ref-stat"><div class="pr-ref-stat-n" id="ref-invited">0</div><div class="pr-ref-stat-l">Приглашено</div></div>
+          <div class="pr-ref-stat"><div class="pr-ref-stat-n" id="ref-vip-earned" style="color:var(--gold)">0</div><div class="pr-ref-stat-l">VIP дней заработано</div></div>
         </div>
-        <span style="font-size:18px;color:var(--hint)">›</span>
       </div>
-      <div class="divider"></div>
-      <div class="srow">
-        <div class="srow-l">
-          <div class="srow-ico" style="background:rgba(124,111,255,.1)">🎮</div>
-          <div><div class="st">Game Broker</div><div class="ss">v2.0 · 35+ магазинов</div></div>
+      <div class="slabel">Как это работает</div>
+      <div class="pr-steps">
+        <div class="pr-step">
+          <div class="pr-step-num" style="background:rgba(124,90,247,.15);color:var(--accent)">1</div>
+          <div class="pr-step-text">Поделись ссылкой с друзьями</div>
+        </div>
+        <div class="pr-step">
+          <div class="pr-step-num" style="background:rgba(29,233,164,.12);color:var(--green)">2</div>
+          <div class="pr-step-text">Друг запускает бота по твоей ссылке</div>
+        </div>
+        <div class="pr-step">
+          <div class="pr-step-num" style="background:rgba(255,215,64,.12);color:var(--gold)">3</div>
+          <div class="pr-step-text">Ты получаешь <span style="color:var(--gold);font-weight:500">+7 дней VIP</span> за каждого!</div>
         </div>
       </div>
     </div>
@@ -1040,7 +1146,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <button class="nb"     id="nb-deals"   onclick="tab('deals')"><span class="ni"><i class="ti ti-flame"></i></span>Скидки</button>
   <button class="nb"     id="nb-free"    onclick="tab('free')"><span class="ni"><i class="ti ti-gift"></i></span>Халява</button>
   <button class="nb"     id="nb-wish"    onclick="tab('wish')"><span class="ni"><i class="ti ti-bookmark"></i></span>Список</button>
-  <button class="nb"     id="nb-profile" onclick="tab('profile')"><span class="ni"><i class="ti ti-user-circle"></i></span>Я</button>
+  <button class="nb"     id="nb-profile" onclick="tab('profile')"><span class="ni"><i class="ti ti-user-circle"></i></span>Профиль</button>
 </nav>
 <div id="gb-watermark">@GameBroker_bot</div>
 </div>
@@ -1966,8 +2072,8 @@ async function loadProfile() {
   document.getElementById('ref-link').textContent=refUrl;
 
   if (!userId) {
-    document.getElementById('pr-uid').textContent='Без аккаунта (откройте в Telegram)';
-    document.getElementById('pr-vip-badge').innerHTML='<div class="free-pill">🔓 Базовый</div>';
+    document.getElementById('pr-uid').textContent='Без аккаунта · откройте в Telegram';
+    document.getElementById('pr-vip-badge').innerHTML='<div class="pr-ubadge pr-ubadge-free"><i class="ti ti-lock" style="font-size:10px"></i> Базовый</div>';
     document.getElementById('ps-wish').textContent=LS.wish().length;
     document.getElementById('ps-ref').textContent='—';
     document.getElementById('ps-days').textContent='—';
@@ -1982,28 +2088,31 @@ async function loadProfile() {
     loaded.profile=true;
     document.getElementById('ps-wish').textContent=d.wishlist_count??0;
     document.getElementById('ps-ref').textContent=d.referrals??0;
-    if (d.reg_date) {
-      const dt=new Date(d.reg_date.replace(' ','T')+'Z');
-      document.getElementById('ps-days').textContent=Math.max(0,Math.floor((Date.now()-dt)/86400000));
-    }
-    // Auto-renew from server
+    const refInv=document.getElementById('ref-invited');
+    const refVip=document.getElementById('ref-vip-earned');
+    if(refInv) refInv.textContent=d.referrals??0;
+    if(refVip) refVip.textContent=((d.referrals??0)*7);
+
     autoRenewVal = d.auto_renew||false;
     updateARToggle(autoRenewVal);
     const p=LS.prefs(); p.auto_renew=autoRenewVal; LS.setPrefs(p);
 
     if (d.is_vip) {
-      document.getElementById('pr-vip-badge').innerHTML='<div class="vip-pill">⭐ VIP АКТИВЕН</div>';
+      document.getElementById('pr-vip-badge').innerHTML='<div class="pr-ubadge pr-ubadge-vip"><i class="ti ti-star" style="font-size:10px"></i> VIP Активен</div>';
       document.getElementById('vip-block').classList.add('active');
-      document.getElementById('vb-title').textContent='✅ VIP Активен';
+      document.getElementById('vb-title').textContent='VIP Активен ✅';
       if (d.premium_until) {
         const dt=new Date(d.premium_until.replace(' ','T')+'Z');
+        const daysLeft=Math.max(0,Math.ceil((dt-Date.now())/86400000));
         document.getElementById('vb-sub').textContent='Активна до: '+dt.toLocaleDateString('ru-RU');
+        document.getElementById('ps-days').textContent=daysLeft;
       }
       document.getElementById('vip-buy-btn').textContent='🔄 Продлить · 100 ⭐';
       document.getElementById('vip-buy-btn').classList.add('renew');
       unlockAch('vip');
     } else {
-      document.getElementById('pr-vip-badge').innerHTML='<div class="free-pill">🔓 Базовый</div>';
+      document.getElementById('pr-vip-badge').innerHTML='<div class="pr-ubadge pr-ubadge-free"><i class="ti ti-lock" style="font-size:10px"></i> Базовый</div>';
+      document.getElementById('ps-days').textContent='—';
     }
     if (d.want_news) document.getElementById('tog-news').classList.add('on'); else document.getElementById('tog-news').classList.remove('on');
     if (d.want_freebies) document.getElementById('tog-free').classList.add('on'); else document.getElementById('tog-free').classList.remove('on');
@@ -2063,7 +2172,7 @@ async function buyVip() {
 
 /* ─── Donate via Telegram Stars ─── */
 function selectDonate(el, amt) {
-  document.querySelectorAll('.da').forEach(d=>d.classList.remove('on'));
+  document.querySelectorAll('.pr-star-opt').forEach(d=>d.classList.remove('on'));
   el.classList.add('on'); selectedDonate=amt;
   document.getElementById('donate-btn').textContent=`⭐ Поддержать ${amt} звёздами`;
 }
@@ -2151,15 +2260,37 @@ const ACHS=[
   {key:'s50',   icon:'💰',name:'Экономист'},
 ];
 function buildAchievements() {
+  const total=ACHS.length;
+  const unlocked=ACHS.filter(a=>hasAch(a.key)).length;
+  const pct=Math.round(unlocked/total*100);
+  const fill=document.getElementById('ach-prog-fill');
+  const label=document.getElementById('ach-prog-label');
+  const pctEl=document.getElementById('ach-prog-pct');
+  const psAch=document.getElementById('ps-ach');
+  if(fill) fill.style.width=pct+'%';
+  if(label) label.textContent=unlocked+' из '+total+' получено';
+  if(pctEl) pctEl.textContent=pct+'%';
+  if(psAch) psAch.textContent=unlocked;
   document.getElementById('ach-grid').innerHTML=ACHS.map(a=>{
     const ok=hasAch(a.key);
-    return `<div class="ach ${ok?'ok':'lk'}">
-      ${ok?'<div class="achk">✓</div>':''}
-      <div class="ae">${a.icon}</div>
-      <div class="at">${a.name}</div>
+    return `<div class="pr-ach ${ok?'done':''}">
+      ${ok?'<div class="pr-ach-check">✓</div>':''}
+      <div class="pr-ach-icon">${a.icon}</div>
+      <div class="pr-ach-name">${a.name}</div>
     </div>`;
   }).join('');
 }
+
+/* ─── Profile sub-tab switching ─── */
+document.querySelectorAll('.pr-ntab').forEach(function(ntab){
+  ntab.addEventListener('click',function(){
+    document.querySelectorAll('.pr-ntab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.pr-tab-page').forEach(p=>p.classList.remove('active'));
+    ntab.classList.add('active');
+    const page=document.getElementById('prtab-'+ntab.dataset.ptab);
+    if(page) page.classList.add('active');
+  });
+});
 
 /* ── Auto-load home feed on start ── */
 loadHomeFeed();
