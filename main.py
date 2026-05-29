@@ -489,4 +489,8 @@ if __name__ == "__main__":
             bot.infinity_polling(timeout=60, long_polling_timeout=60)
         except Exception as e:
             logger.error(f"Bot Polling Error: {e}")
-            time.sleep(5)
+            if "409" in str(e) or "Conflict" in str(e):
+                logger.warning("Конфликт сессий (409) — ожидание 30 секунд перед переподключением...")
+                time.sleep(30)
+            else:
+                time.sleep(5)
