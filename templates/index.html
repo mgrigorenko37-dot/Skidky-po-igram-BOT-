@@ -1363,9 +1363,9 @@ function renderRecentSearch() {
 ═══════════════════════════════════════ */
 /* Вернуть лучший URL изображения для игры */
 function gameImgUrl(d) {
-  if (d.steam_app_id)
-    return `https://cdn.akamai.steamstatic.com/steam/apps/${d.steam_app_id}/capsule_616x353.jpg`;
   if (d.thumb) return d.thumb;
+  if (d.steam_app_id)
+    return `https://cdn.akamai.steamstatic.com/steam/apps/${d.steam_app_id}/capsule_231x87.jpg`;
   return '';
 }
 
