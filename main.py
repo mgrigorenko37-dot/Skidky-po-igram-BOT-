@@ -8,6 +8,9 @@ import json
 from datetime import datetime, timedelta
 from telebot import types
 
+# Flask app export for gunicorn deployment
+from app import app  # noqa: F401
+
 # Импортируем настройки и базу
 import config
 import database
