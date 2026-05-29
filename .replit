@@ -32,19 +32,19 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "uv run gunicorn --bind 0.0.0.0:5000 --workers 2 app:app"
+args = ".pythonlibs/bin/gunicorn --bind 0.0.0.0:5000 --workers 2 app:app"
 waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Telegram Bot"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "uv run python main.py"
-
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 main.py"
 
 [[ports]]
 localPort = 5000
