@@ -139,38 +139,23 @@ def get_webapp_url():
 
 def main_kbrd(uid=None):
     """
-    Главное меню бота
+    Главное меню бота — только кнопка Mini App + админ-команды
     """
     m = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2, selective=False)
 
-    # 0. MINI APP (если доступен URL)
     webapp_url = get_webapp_url()
     if webapp_url:
         m.add(types.KeyboardButton(
-            "🌐 Открыть приложение",
+            "🎮 Game Broker — открыть",
             web_app=types.WebAppInfo(url=webapp_url)
         ))
+    else:
+        m.add(types.KeyboardButton("🎮 Game Broker"))
 
-    # 1. ГЛАВНЫЕ ФУНКЦИИ (Поиск и Скидки)
-    m.row(types.KeyboardButton("🔎 Поиск игры"), types.KeyboardButton("🔥 Топ скидок"))
-
-    # 2. ИНСТРУМЕНТЫ
-    m.row(types.KeyboardButton("🔍 Поиск по жанрам"), types.KeyboardButton("📋 Шорт-лист"))
-
-    # 3. VIP ПОДПИСКА (Широкая кнопка по центру для привлечения внимания)
-    m.add(types.KeyboardButton("⭐️ VIP Подписка"))
-
-    # 4. НАСТРОЙКИ И ИНФО
-    m.row(types.KeyboardButton("ℹ️ О боте"), types.KeyboardButton("⚙️ Настройки"))
-    m.row(types.KeyboardButton("💬 Сообщество"), types.KeyboardButton("🤝 Партнерка"))
-
-    # 5. Донат
-    m.add(types.KeyboardButton("⭐ Поддержать проект"))
-
-    # 6. Админка
     if str(uid) == str(config.ADMIN_ID):
-        m.add(types.KeyboardButton("📢 Реклама"), types.KeyboardButton("📊 Статистика"))
+        m.row(types.KeyboardButton("📢 Реклама"), types.KeyboardButton("📊 Статистика"))
         m.add(types.KeyboardButton("📝 Пост в канал"))
+
     return m
 
 # ==========================================

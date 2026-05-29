@@ -68,6 +68,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .scroll-row::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--rx);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;color:var(--text)}
 .chip.on{background:linear-gradient(135deg,rgba(124,111,255,.25),rgba(255,107,157,.15));border-color:var(--accent);color:var(--accent)}
+.chip.aaa-on{background:linear-gradient(135deg,rgba(255,215,64,.22),rgba(255,171,0,.15));border-color:var(--gold);color:var(--gold)}
 .chip:active{transform:scale(.94)}
 
 /* PRICE RANGE */
@@ -150,23 +151,37 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .sc-val{font-size:24px;font-weight:900;background:linear-gradient(90deg,var(--accent),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .sc-lbl{font-size:10px;color:var(--hint);margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
 
-/* QUICK ACTIONS */
-.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
-.qa{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px}
-.qa:active{transform:scale(.97);background:rgba(255,255,255,.07)}
-.qa .qai{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.qa .qat{font-size:13px;font-weight:700;line-height:1.3}
-.qa .qas{font-size:11px;color:var(--hint);margin-top:2px}
+/* VIP BLOCK */
+.vip-block{background:linear-gradient(135deg,rgba(255,215,64,.13),rgba(255,171,0,.08));border:1px solid rgba(255,215,64,.3);border-radius:18px;padding:18px 16px;margin-bottom:14px;position:relative;overflow:hidden}
+.vip-block::before{content:'⭐';position:absolute;right:14px;top:12px;font-size:38px;opacity:.15;pointer-events:none}
+.vip-block.active{background:linear-gradient(135deg,rgba(0,230,118,.1),rgba(0,200,100,.07));border-color:rgba(0,230,118,.3)}
+.vip-block.active::before{content:'✅'}
+.vb-title{font-size:17px;font-weight:900;margin-bottom:4px}
+.vb-sub{font-size:12px;color:var(--hint);margin-bottom:12px;line-height:1.5}
+.vb-perks{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.vb-perk{font-size:12px;color:var(--text);display:flex;align-items:flex-start;gap:6px;line-height:1.4}
+.vb-perk span{flex-shrink:0}
+/* auto-renew inside vip block */
+.vip-ar{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px}
+.vip-ar-info{font-size:12px;color:var(--hint)}
+.vip-ar-info strong{color:var(--text);display:block;font-size:13px;font-weight:700;margin-bottom:1px}
+.vip-buy-btn{width:100%;padding:13px;border:none;border-radius:var(--rs);font-size:14px;font-weight:900;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--gold),#ffab00);color:#000;box-shadow:0 4px 18px rgba(255,215,64,.3)}
+.vip-buy-btn:active{transform:scale(.97);opacity:.85}
+.vip-buy-btn:disabled{opacity:.5;transform:none;cursor:not-allowed}
+.vip-buy-btn.renew{background:linear-gradient(135deg,var(--green),#00c853);color:#000;box-shadow:0 4px 18px rgba(0,230,118,.25)}
 
-/* ACHIEVEMENTS */
-.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
-.ach{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 8px;text-align:center;position:relative}
-.ach.ok{border-color:rgba(255,215,64,.3);background:rgba(255,215,64,.04)}
-.ach.lk{filter:grayscale(1);opacity:.4}
-.ach .ae{font-size:28px;line-height:1;margin-bottom:5px}
-.ach .at{font-size:10px;font-weight:700;color:var(--hint);letter-spacing:.2px;line-height:1.3}
-.ach.ok .at{color:var(--gold)}
-.ach .achk{position:absolute;top:5px;right:6px;font-size:10px}
+/* DONATE BLOCK */
+.donate-block{background:linear-gradient(135deg,rgba(124,111,255,.1),rgba(255,107,157,.08));border:1px solid rgba(124,111,255,.2);border-radius:18px;padding:16px;margin-bottom:14px}
+.donate-title{font-size:15px;font-weight:800;margin-bottom:4px}
+.donate-sub{font-size:12px;color:var(--hint);margin-bottom:12px;line-height:1.5}
+.donate-amounts{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:12px}
+.da{padding:9px 4px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);font-size:12px;font-weight:900;cursor:pointer;color:var(--text);text-align:center;transition:all .15s;display:flex;flex-direction:column;gap:2px;align-items:center}
+.da:active{transform:scale(.9)}
+.da.on{background:rgba(124,111,255,.2);border-color:var(--accent);color:var(--accent)}
+.da .da-star{font-size:14px}
+.donate-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),var(--a2));color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:800;cursor:pointer;transition:all .2s}
+.donate-btn:active{opacity:.8}
+.donate-btn:disabled{opacity:.5;cursor:not-allowed}
 
 /* SETTINGS ROWS */
 .srow{display:flex;align-items:center;justify-content:space-between;padding:13px 14px}
@@ -194,12 +209,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .ref-card .rv{font-size:12px;font-family:monospace;background:rgba(0,0,0,.3);padding:9px 11px;border-radius:var(--rs);word-break:break-all;color:var(--accent);margin-bottom:9px}
 .ref-copy{width:100%;padding:10px;background:linear-gradient(135deg,var(--accent),var(--a2));color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:800;cursor:pointer}
 
-/* VIP CARD */
-.vip-card{background:linear-gradient(135deg,rgba(255,215,64,.12),rgba(255,171,0,.08));border:1px solid rgba(255,215,64,.25);border-radius:var(--r);padding:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer}
-.vip-card:active{opacity:.8}
-.vip-card .vt{font-size:15px;font-weight:800;color:var(--gold)}
-.vip-card .vs{font-size:12px;color:var(--hint);margin-top:3px}
-.vbtn{padding:9px 16px;background:linear-gradient(135deg,var(--gold),#ffab00);color:#000;border:none;border-radius:var(--rs);font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap}
+/* ACHIEVEMENTS */
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.ach{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 8px;text-align:center;position:relative}
+.ach.ok{border-color:rgba(255,215,64,.3);background:rgba(255,215,64,.04)}
+.ach.lk{filter:grayscale(1);opacity:.4}
+.ach .ae{font-size:28px;line-height:1;margin-bottom:5px}
+.ach .at{font-size:10px;font-weight:700;color:var(--hint);letter-spacing:.2px;line-height:1.3}
+.ach.ok .at{color:var(--gold)}
+.ach .achk{position:absolute;top:5px;right:6px;font-size:10px}
 
 /* MODAL */
 #modal{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;pointer-events:none;opacity:0;transition:opacity .2s}
@@ -241,7 +259,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .add-row button{padding:12px 16px;background:linear-gradient(135deg,var(--accent),var(--a2));color:#fff;border:none;border-radius:var(--rs);font-size:18px;font-weight:700;cursor:pointer}
 .btn-full{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--a2));color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(124,111,255,.25)}
 .btn-full:active{opacity:.85}
-#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-90px);padding:11px 20px;border-radius:var(--rx);font-size:13px;font-weight:800;z-index:9999;transition:transform .3s cubic-bezier(.34,1.4,.64,1);white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5);pointer-events:none;max-width:calc(100vw - 40px)}
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-90px);padding:11px 20px;border-radius:var(--rx);font-size:13px;font-weight:800;z-index:9999;transition:transform .3s cubic-bezier(.34,1.4,.64,1);white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5);pointer-events:none;max-width:calc(100vw - 40px);background:var(--accent);color:#fff}
 #toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
@@ -288,29 +306,36 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <h1>🔥 Скидки</h1>
     <span class="bdg bdg-r" id="deals-cnt">—</span>
   </div>
+
+  <!-- AAA Banner -->
+  <div id="aaa-banner" style="display:none;margin-bottom:12px;background:linear-gradient(135deg,rgba(255,215,64,.12),rgba(255,171,0,.08));border:1px solid rgba(255,215,64,.3);border-radius:var(--r);padding:11px 14px;display:none;align-items:center;gap:10px">
+    <span style="font-size:22px">🏆</span>
+    <div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--gold)">Только ААА игры</div><div style="font-size:11px;color:var(--hint);margin-top:1px">Metacritic 75+ · цена от $15 · без мусора</div></div>
+    <button onclick="toggleAAA()" style="background:rgba(255,215,64,.15);border:1px solid rgba(255,215,64,.3);border-radius:var(--rs);color:var(--gold);font-size:11px;font-weight:800;padding:5px 10px;cursor:pointer">✕ Сбросить</button>
+  </div>
+
   <div class="scroll-row" id="sort-row">
-    <div class="chip on" data-sort="Savings" onclick="setSort(this,'Savings')">💰 Скидка</div>
-    <div class="chip" data-sort="Price" onclick="setSort(this,'Price')">🏷 Цена</div>
+    <div class="chip aaa-on" id="chip-aaa" onclick="toggleAAA()">🏆 Только ААА</div>
+    <div class="chip" data-sort="Savings" onclick="setSort(this,'Savings')">💰 По скидке</div>
     <div class="chip" data-sort="Reviews" onclick="setSort(this,'Reviews')">⭐ Рейтинг</div>
-    <div class="chip" data-sort="recent" onclick="setSort(this,'recent')">🆕 Новые</div>
+    <div class="chip" data-sort="Price"   onclick="setSort(this,'Price')">🏷 Цена</div>
+    <div class="chip" data-sort="recent"  onclick="setSort(this,'recent')">🆕 Новые</div>
     <div class="chip" id="sv50" onclick="toggleSv(50)">−50%+</div>
     <div class="chip" id="sv75" onclick="toggleSv(75)">−75%+</div>
     <div class="chip" id="sv90" onclick="toggleSv(90)">−90%+</div>
   </div>
   <div class="scroll-row" id="genre-row">
-    <div class="chip on" data-g="" onclick="setGenre(this,'')">🌍 Все</div>
-    <div class="chip" data-g="action" onclick="setGenre(this,'action')">⚔️ Экшен</div>
-    <div class="chip" data-g="rpg" onclick="setGenre(this,'rpg')">🧙 РПГ</div>
-    <div class="chip" data-g="strategy" onclick="setGenre(this,'strategy')">🧠 Стратегии</div>
-    <div class="chip" data-g="shooter" onclick="setGenre(this,'shooter')">🔫 Шутеры</div>
+    <div class="chip on" data-g="" onclick="setGenre(this,'')">🌍 Все жанры</div>
+    <div class="chip" data-g="action"    onclick="setGenre(this,'action')">⚔️ Экшен</div>
+    <div class="chip" data-g="rpg"       onclick="setGenre(this,'rpg')">🧙 РПГ</div>
+    <div class="chip" data-g="strategy"  onclick="setGenre(this,'strategy')">🧠 Стратегии</div>
+    <div class="chip" data-g="shooter"   onclick="setGenre(this,'shooter')">🔫 Шутеры</div>
     <div class="chip" data-g="adventure" onclick="setGenre(this,'adventure')">🗺 Приключения</div>
-    <div class="chip" data-g="horror" onclick="setGenre(this,'horror')">👻 Хоррор</div>
+    <div class="chip" data-g="horror"    onclick="setGenre(this,'horror')">👻 Хоррор</div>
     <div class="chip" data-g="simulator" onclick="setGenre(this,'simulator')">🚜 Симуляторы</div>
-    <div class="chip" data-g="racing" onclick="setGenre(this,'racing')">🏎 Гонки</div>
-    <div class="chip" data-g="sport" onclick="setGenre(this,'sport')">⚽ Спорт</div>
-    <div class="chip" data-g="puzzle" onclick="setGenre(this,'puzzle')">🧩 Головоломки</div>
+    <div class="chip" data-g="racing"    onclick="setGenre(this,'racing')">🏎 Гонки</div>
+    <div class="chip" data-g="sport"     onclick="setGenre(this,'sport')">⚽ Спорт</div>
   </div>
-  <!-- Price range -->
   <div class="price-range">
     <label>Цена $</label>
     <input type="number" id="price-min" placeholder="0" min="0" max="999" value="0">
@@ -332,7 +357,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <div class="card" style="padding:13px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
     <div>
       <div style="font-size:13px;font-weight:700">⭐ Только качественные</div>
-      <div style="font-size:11px;color:var(--hint);margin-top:2px">Metacritic 65+, цена $5+ · без дешёвого инди</div>
+      <div style="font-size:11px;color:var(--hint);margin-top:2px">Metacritic 65+ или рейтинг Steam 70% · цена от $5</div>
     </div>
     <button class="tog on" id="free-quality" onclick="toggleFQ()"></button>
   </div>
@@ -361,8 +386,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <div id="w-limit" style="display:none;margin-top:12px">
     <div class="card" style="padding:14px;text-align:center">
       <div style="font-size:22px;margin-bottom:6px">🔒</div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Лимит достигнут</div>
-      <p style="font-size:12px;color:var(--hint)">Бесплатно: 5 игр · VIP: до 100 игр<br>Купи VIP в боте командой /vip</p>
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Лимит 5 игр</div>
+      <p style="font-size:12px;color:var(--hint)">VIP даёт безлимитный список до 100 игр</p>
+      <button class="btn-full" style="max-width:200px;margin:10px auto 0;background:linear-gradient(135deg,var(--gold),#ffab00);color:#000;font-size:12px" onclick="tab('profile')">⭐ Купить VIP</button>
     </div>
   </div>
 </div>
@@ -389,34 +415,43 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="sc"><div class="sc-val" id="ps-days">—</div><div class="sc-lbl">Дней</div></div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="slabel">Быстрые действия</div>
-    <div class="qa-grid">
-      <div class="qa" id="qa-vip" onclick="doVip()">
-        <div class="qai" style="background:linear-gradient(135deg,rgba(255,215,64,.2),rgba(255,171,0,.15))">⭐</div>
-        <div><div class="qat" id="qa-vip-txt">Купить VIP</div><div class="qas">Через Telegram бот</div></div>
+    <!-- ═══ VIP BLOCK ═══ -->
+    <div class="slabel">VIP Подписка</div>
+    <div class="vip-block" id="vip-block">
+      <div class="vb-title" id="vb-title">⭐ VIP — Подписка на 30 дней</div>
+      <div class="vb-sub" id="vb-sub">100 звёзд Telegram · Авто-продление опционально</div>
+      <div class="vb-perks">
+        <div class="vb-perk"><span>🎁</span><span>Радар элитной халявы — AAA и топ инди прямо в ЛС</span></div>
+        <div class="vb-perk"><span>♾️</span><span>Безлимитный шорт-лист до 100 игр</span></div>
+        <div class="vb-perk"><span>🚫</span><span>Ad-Free — полное отключение рекламы</span></div>
+        <div class="vb-perk"><span>📉</span><span>Приоритетные уведомления о снижении цены</span></div>
       </div>
-      <div class="qa" onclick="doCommunity()">
-        <div class="qai" style="background:linear-gradient(135deg,rgba(79,195,247,.2),rgba(41,182,246,.15))">💬</div>
-        <div><div class="qat">Наше сообщество</div><div class="qas">@GameBroker_Official</div></div>
+      <!-- Auto-renew toggle -->
+      <div class="vip-ar">
+        <div class="vip-ar-info">
+          <strong>⚙️ Автопродление</strong>
+          <span id="ar-status-txt">Выключено</span>
+        </div>
+        <button class="tog" id="tog-ar" onclick="toggleAutoRenew()"></button>
       </div>
-      <div class="qa" onclick="tab('wish')">
-        <div class="qai" style="background:linear-gradient(135deg,rgba(124,111,255,.2),rgba(255,107,157,.15))">📋</div>
-        <div><div class="qat">Мой список</div><div class="qas" id="qa-wish-cnt">0 игр</div></div>
-      </div>
-      <div class="qa" onclick="copyRef()">
-        <div class="qai" style="background:linear-gradient(135deg,rgba(0,230,118,.15),rgba(0,200,100,.1))">🔗</div>
-        <div><div class="qat">Пригласить друга</div><div class="qas">Реферальная ссылка</div></div>
-      </div>
+      <button class="vip-buy-btn" id="vip-buy-btn" onclick="buyVip()">
+        ⭐ Оформить подписку · 100 звёзд
+      </button>
     </div>
 
-    <!-- VIP card -->
-    <div class="vip-card" id="vip-upgrade-card" onclick="doVip()">
-      <div>
-        <div class="vt" id="vip-card-title">⭐ VIP Подписка</div>
-        <div class="vs" id="vip-card-sub">Безлимитный список · Приоритет уведомлений</div>
+    <!-- ═══ SUPPORT PROJECT ═══ -->
+    <div class="slabel">Поддержать проект</div>
+    <div class="donate-block">
+      <div class="donate-title">❤️ Помочь развитию</div>
+      <div class="donate-sub">Твои звёзды помогают поддерживать серверы и делать бот лучше. Спасибо!</div>
+      <div class="donate-amounts">
+        <div class="da" onclick="selectDonate(this,25)"><span class="da-star">⭐</span><span>25</span></div>
+        <div class="da" onclick="selectDonate(this,50)"><span class="da-star">⭐</span><span>50</span></div>
+        <div class="da on" onclick="selectDonate(this,100)"><span class="da-star">⭐</span><span>100</span></div>
+        <div class="da" onclick="selectDonate(this,250)"><span class="da-star">⭐</span><span>250</span></div>
+        <div class="da" onclick="selectDonate(this,500)"><span class="da-star">⭐</span><span>500</span></div>
       </div>
-      <button class="vbtn" id="vip-btn">Активировать</button>
+      <button class="donate-btn" id="donate-btn" onclick="sendDonate()">⭐ Поддержать 100 звёздами</button>
     </div>
 
     <!-- Achievements -->
@@ -425,9 +460,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
     <!-- Referral -->
     <div class="ref-card" id="ref-card">
-      <div class="rl">Твоя реферальная ссылка</div>
+      <div class="rl">Реферальная ссылка</div>
       <div class="rv" id="ref-link">Загружаем…</div>
-      <button class="ref-copy" onclick="copyRef()">📋 Скопировать ссылку</button>
+      <button class="ref-copy" onclick="copyRef()">📋 Скопировать</button>
     </div>
 
     <!-- Notifications -->
@@ -444,7 +479,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="srow">
         <div class="srow-l">
           <div class="srow-ico" style="background:rgba(255,215,64,.1)">🎁</div>
-          <div><div class="st">Халява</div><div class="ss">Бесплатные игры в бот</div></div>
+          <div><div class="st">Халява</div><div class="ss">Бесплатные игры в личку</div></div>
         </div>
         <button class="tog" id="tog-free" onclick="togSetting('free')"></button>
       </div>
@@ -464,16 +499,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="curr-grid" id="curr-grid"></div>
     </div>
 
-    <!-- App info -->
+    <!-- Community / Info -->
     <div class="slabel">О приложении</div>
     <div class="card" style="margin-bottom:20px">
-      <div class="srow">
-        <div class="srow-l">
-          <div class="srow-ico" style="background:rgba(124,111,255,.1)">🎮</div>
-          <div><div class="st">Game Broker</div><div class="ss">v2.0 · 35+ магазинов</div></div>
-        </div>
-      </div>
-      <div class="divider"></div>
       <div class="srow" onclick="doCommunity()" style="cursor:pointer">
         <div class="srow-l">
           <div class="srow-ico" style="background:rgba(79,195,247,.1)">💬</div>
@@ -481,18 +509,26 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
         </div>
         <span style="font-size:18px;color:var(--hint)">›</span>
       </div>
+      <div class="divider"></div>
+      <div class="srow">
+        <div class="srow-l">
+          <div class="srow-ico" style="background:rgba(124,111,255,.1)">🎮</div>
+          <div><div class="st">Game Broker</div><div class="ss">v2.0 · 35+ магазинов</div></div>
+        </div>
+      </div>
     </div>
-  </div>
+
+  </div><!-- /pr-content -->
 </div>
 
 </div><!-- /content -->
 
 <nav id="nav">
-  <button class="nb on" id="nb-search" onclick="tab('search')"><span class="ni">🔎</span>Поиск</button>
-  <button class="nb" id="nb-deals"  onclick="tab('deals')"><span class="ni">🔥</span>Скидки</button>
-  <button class="nb" id="nb-free"   onclick="tab('free')"><span class="ni">🎁</span>Халява</button>
-  <button class="nb" id="nb-wish"   onclick="tab('wish')"><span class="ni">📋</span>Список</button>
-  <button class="nb" id="nb-profile" onclick="tab('profile')"><span class="ni">👤</span>Я</button>
+  <button class="nb on"  id="nb-search"  onclick="tab('search')"><span class="ni">🔎</span>Поиск</button>
+  <button class="nb"     id="nb-deals"   onclick="tab('deals')"><span class="ni">🔥</span>Скидки</button>
+  <button class="nb"     id="nb-free"    onclick="tab('free')"><span class="ni">🎁</span>Халява</button>
+  <button class="nb"     id="nb-wish"    onclick="tab('wish')"><span class="ni">📋</span>Список</button>
+  <button class="nb"     id="nb-profile" onclick="tab('profile')"><span class="ni">👤</span>Я</button>
 </nav>
 </div>
 
@@ -507,11 +543,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <div id="toast"></div>
 
 <script>
-/* ═══════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════ */
+/* ═══════════ INIT ═══════════ */
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.disableVerticalSwipes?.(); }
+
 const userId    = tg?.initDataUnsafe?.user?.id || null;
 const userFirst = tg?.initDataUnsafe?.user?.first_name || '';
 const userLast  = tg?.initDataUnsafe?.user?.last_name  || '';
@@ -519,16 +554,13 @@ const userName  = tg?.initDataUnsafe?.user?.username   || '';
 const BOT       = 'GameBrokerPriceBot';
 const CHANNEL   = 'GameBroker_Official';
 
-/* ═══════════════════════════════════════════
-   LOCAL STORAGE LAYER
-   Works without Telegram userId - full fallback
-═══════════════════════════════════════════ */
+/* ═══════════ LOCAL STORAGE ═══════════ */
 const LS = {
   get: k => { try { return JSON.parse(localStorage.getItem('gb_'+k)); } catch { return null; } },
   set: (k,v) => { try { localStorage.setItem('gb_'+k, JSON.stringify(v)); } catch {} },
   wish:    () => LS.get('wish')   || [],
   setWish: v  => LS.set('wish', v),
-  prefs:   () => LS.get('prefs') || { currency:'USD', want_news:false, want_free:false, want_price:true },
+  prefs:   () => LS.get('prefs') || { currency:'USD', want_news:false, want_free:false, want_price:true, auto_renew:false },
   setPrefs:(v) => LS.set('prefs', v),
   recent:  () => LS.get('recent') || [],
   ach:     () => LS.get('ach')    || [],
@@ -543,9 +575,7 @@ function unlockAch(key) {
 }
 function hasAch(k) { return LS.ach().includes(k); }
 
-/* ═══════════════════════════════════════════
-   TABS
-═══════════════════════════════════════════ */
+/* ═══════════ TABS ═══════════ */
 let curTab = 'search';
 const loaded = {};
 
@@ -562,14 +592,11 @@ function tab(t) {
   if (t==='profile' && !loaded.profile) loadProfile();
 }
 
-/* ═══════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════ */
+/* ═══════════ TOAST ═══════════ */
 let tt;
-function toast(msg, color) {
+function toast(msg, color, dark) {
   const el = document.getElementById('toast');
   el.textContent = msg;
-  const dark = color==='var(--green)' || color==='var(--gold)';
   el.style.background = color || 'var(--accent)';
   el.style.color = dark ? '#000' : '#fff';
   el.classList.add('show');
@@ -577,15 +604,12 @@ function toast(msg, color) {
   tt = setTimeout(()=>el.classList.remove('show'), 2800);
 }
 
-/* ═══════════════════════════════════════════
-   HELPERS
-═══════════════════════════════════════════ */
+/* ═══════════ HELPERS ═══════════ */
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function ea(s)  { return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
-function openUrl(u) { tg ? tg.openLink(u) : window.open(u,'_blank'); }
-function doVip()       { openUrl(`https://t.me/${BOT}?start=vip`); }
+function openUrl(u) { if (tg && tg.openLink) { tg.openLink(u); } else { window.open(u,'_blank'); } }
 function doCommunity() { openUrl(`https://t.me/${CHANNEL}`); }
-function rateStars(p)  { const n=+p; if(n>=90)return'⭐⭐⭐⭐⭐'; if(n>=75)return'⭐⭐⭐⭐'; if(n>=60)return'⭐⭐⭐'; if(n>=40)return'⭐⭐'; if(n>0)return'⭐'; return''; }
+function rateStars(p) { const n=+p; if(n>=90)return'⭐⭐⭐⭐⭐'; if(n>=75)return'⭐⭐⭐⭐'; if(n>=60)return'⭐⭐⭐'; if(n>=40)return'⭐⭐'; if(n>0)return'⭐'; return''; }
 
 const GENRE_KW = {
   action:    ['action','batman','devil may cry','god of war','doom','wolfenstein','metal gear','yakuza','sekiro','ghost of tsushima','nioh'],
@@ -597,20 +621,16 @@ const GENRE_KW = {
   simulator: ['farming','truck','bus','flight','train','stardew','sims','planet','project cars','euro','american'],
   racing:    ['racing','f1','forza','need for speed','burnout','dirt','wreckfest','grid','gran turismo'],
   sport:     ['fifa','pes','football','nba','rocket league','nhl','madden','mlb','golf','tennis'],
-  puzzle:    ['portal','braid','limbo','inside','talos','witness','antichamber','room','returnal','superliminal'],
 };
 
-/* ═══════════════════════════════════════════
-   WISHLIST STATE
-═══════════════════════════════════════════ */
+/* ═══════════ WISHLIST STATE ═══════════ */
 let wishSet = new Set();
 
-/* ═══════════════════════════════════════════
+/* ═══════════════════════════════════════
    SEARCH
-═══════════════════════════════════════════ */
+═══════════════════════════════════════ */
 let stimer;
 const si = document.getElementById('si');
-
 si.addEventListener('input', () => {
   const v = si.value.trim();
   document.getElementById('sx').style.display = v ? 'flex' : 'none';
@@ -620,10 +640,8 @@ si.addEventListener('input', () => {
   stimer = setTimeout(()=>doSearch(v), 420);
 });
 si.addEventListener('keydown', e => { if (e.key==='Enter') { clearTimeout(stimer); doSearch(si.value.trim()); } });
-
 function clearSrch() { si.value=''; document.getElementById('sx').style.display='none'; showS('hint'); si.focus(); }
 function qs(n) { si.value=n; document.getElementById('sx').style.display='flex'; showS('load'); doSearch(n); }
-
 function showS(s) {
   document.getElementById('s-hint').style.display  = s==='hint' ? 'block' : 'none';
   document.getElementById('s-load').style.display  = s==='load' ? 'flex'  : 'none';
@@ -632,13 +650,12 @@ function showS(s) {
   document.getElementById('srch-cnt').style.display= s==='res'  ? 'inline-flex':'none';
   if (s==='hint') renderRecentSearch();
 }
-
 async function doSearch(q) {
-  if (!q || q.length < 2) return;
+  if (!q||q.length<2) return;
   try {
     const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
     const data = await r.json();
-    if (!Array.isArray(data) || !data.length) { showS('empty'); return; }
+    if (!Array.isArray(data)||!data.length) { showS('empty'); return; }
     pushRecent(q);
     unlockAch('search');
     document.getElementById('srch-cnt').textContent = data.length + ' игр';
@@ -659,14 +676,13 @@ async function doSearch(q) {
     showS('res');
   } catch { showS('empty'); }
 }
-
 function renderRecentSearch() {
   const arr = LS.recent();
   const sec = document.getElementById('recent-search-section');
   const list = document.getElementById('recent-search-list');
   const tip  = document.getElementById('search-tip');
   if (!arr.length) { sec.style.display='none'; tip.style.display='flex'; return; }
-  sec.style.display = 'block'; tip.style.display = 'none';
+  sec.style.display='block'; tip.style.display='none';
   list.innerHTML = arr.map(s=>`<div class="gr" onclick="qs('${ea(s)}')" style="border:none">
     <div style="width:36px;height:36px;border-radius:9px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🕐</div>
     <div class="gi"><div class="gt">${esc(s)}</div></div>
@@ -674,11 +690,11 @@ function renderRecentSearch() {
   </div>`).join('<div class="divider"></div>');
 }
 
-/* ═══════════════════════════════════════════
+/* ═══════════════════════════════════════
    DEALS
-═══════════════════════════════════════════ */
+═══════════════════════════════════════ */
 let dPage=0, dSort='Savings', dMinSv=0, dGenre='', dAllDeals=[];
-let dMinPrice=0, dMaxPrice=60;
+let dMinPrice=0, dMaxPrice=60, dAAA=true;
 
 async function loadDeals(append=false) {
   if (!append) {
@@ -688,8 +704,9 @@ async function loadDeals(append=false) {
     dAllDeals=[];
   }
   try {
-    const url = `/api/deals?page=${dPage}&sort=${dSort}&min_savings=${dMinSv}&max_price=${dMaxPrice}` +
-                (dMinPrice>0?`&min_price=${dMinPrice}`:'');
+    let url = `/api/deals?page=${dPage}&sort=${dSort}&min_savings=${dMinSv}&max_price=${dMaxPrice}`;
+    if (dMinPrice>0) url += `&min_price=${dMinPrice}`;
+    if (dAAA)        url += `&aaa=1`;
     const r = await fetch(url);
     const data = await r.json();
     if (!Array.isArray(data)) throw new Error();
@@ -704,7 +721,6 @@ async function loadDeals(append=false) {
     document.getElementById('d-load').innerHTML='<div class="em"><div class="em-icon">⚠️</div><h3>Ошибка</h3></div>';
   }
 }
-
 function renderDeals() {
   const kws = dGenre ? GENRE_KW[dGenre]||[] : null;
   const list = kws ? dAllDeals.filter(d=>kws.some(k=>d.title.toLowerCase().includes(k))) : dAllDeals;
@@ -732,9 +748,7 @@ function renderDeals() {
       </div>
     </div>`).join('');
 }
-
 function moreDeals() { const b=document.getElementById('d-more'); b.textContent='Загружаем…'; dPage++; loadDeals(true).then(()=>b.textContent='Загрузить ещё ↓'); }
-
 function setSort(el, sort) {
   document.querySelectorAll('#sort-row .chip[data-sort]').forEach(c=>c.classList.remove('on'));
   el.classList.add('on'); dSort=sort; dPage=0; loaded.deals=false; loadDeals();
@@ -745,7 +759,7 @@ function toggleSv(pct) {
   else { Object.values(ids).forEach(id=>document.getElementById(id).classList.remove('on')); dMinSv=pct; document.getElementById(ids[pct]).classList.add('on'); }
   dPage=0; loaded.deals=false; loadDeals();
 }
-function setGenre(el, genre) {
+function setGenre(el,genre) {
   document.querySelectorAll('#genre-row .chip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on'); dGenre=genre;
   if (dAllDeals.length) renderDeals(); else loadDeals();
@@ -756,12 +770,20 @@ function applyPriceFilter() {
   dMinPrice=mn; dMaxPrice=mx; dPage=0; loaded.deals=false; loadDeals();
   toast(`💰 Цена $${mn}–$${mx}`);
 }
+function toggleAAA() {
+  dAAA = !dAAA;
+  const chip = document.getElementById('chip-aaa');
+  const banner = document.getElementById('aaa-banner');
+  chip.classList.toggle('aaa-on', dAAA);
+  banner.style.display = dAAA ? 'flex' : 'none';
+  dPage=0; loaded.deals=false; loadDeals();
+  toast(dAAA ? '🏆 Только ААА игры' : '🌍 Все игры');
+}
 
-/* ═══════════════════════════════════════════
+/* ═══════════════════════════════════════
    FREE
-═══════════════════════════════════════════ */
+═══════════════════════════════════════ */
 let freeQ = true;
-
 async function loadFree() {
   document.getElementById('f-load').style.display='flex';
   document.getElementById('f-list').style.display='none';
@@ -795,28 +817,27 @@ async function loadFree() {
     document.getElementById('f-load').innerHTML='<div class="em"><div class="em-icon">⚠️</div><h3>Ошибка</h3></div>';
   }
 }
-
 function toggleFQ() {
-  freeQ = !freeQ;
-  document.getElementById('free-quality').classList.toggle('on', freeQ);
+  freeQ=!freeQ;
+  document.getElementById('free-quality').classList.toggle('on',freeQ);
   loaded.free=false; loadFree();
-  toast(freeQ ? '⭐ Только качественные' : '📦 Все бесплатные');
+  toast(freeQ?'⭐ Только качественные':'📦 Все бесплатные');
 }
 
-/* ═══════════════════════════════════════════
-   GAME DETAIL MODAL
-═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   GAME MODAL
+═══════════════════════════════════════ */
 async function openGame(id, title) {
-  if (!id || id==='undefined') return;
-  const body = document.getElementById('mbody');
-  body.innerHTML = '<div class="em"><div class="spin"></div></div>';
+  if (!id||id==='undefined') return;
+  const body=document.getElementById('mbody');
+  body.innerHTML='<div class="em"><div class="spin"></div></div>';
   document.getElementById('modal').classList.add('open');
   try {
     const r = await fetch(`/api/game/${id}`);
     const d = await r.json();
     if (d.error) throw new Error();
-    const added = wishSet.has(title);
-    body.innerHTML = `
+    const added=wishSet.has(title);
+    body.innerHTML=`
       ${d.thumb?`<img class="m-cover" src="${esc(d.thumb)}" onerror="this.style.display='none'">`:''}
       <div class="m-title">${esc(d.title||title)}</div>
       <div class="m-tags">
@@ -825,10 +846,10 @@ async function openGame(id, title) {
         ${d.cheapest_price?`<span class="bdg bdg-p">🏷 Мин: $${d.cheapest_price}</span>`:''}
       </div>
       <button class="m-add ${added?'on':''}" id="m-add-btn" onclick="addW('${ea(title)}',this)">
-        ${added ? '✓ В шорт-листе' : '+ Добавить в шорт-лист'}
+        ${added?'✓ В шорт-листе':'+ Добавить в шорт-лист'}
       </button>
       <div style="font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Цены по магазинам</div>
-      ${d.deals&&d.deals.length ? d.deals.map(dd=>`
+      ${d.deals&&d.deals.length?d.deals.map(dd=>`
         <div class="deal-row">
           <div class="dr-store">${esc(dd.store)}</div>
           <div class="dr-prices">
@@ -836,55 +857,44 @@ async function openGame(id, title) {
             ${dd.savings>0?`<span class="dr-orig">$${parseFloat(dd.normal_price).toFixed(2)}</span><span class="dr-disc">−${dd.savings}%</span>`:''}
           </div>
           <button class="dr-btn" onclick="openUrl('${ea(dd.deal_url)}')">Купить</button>
-        </div>`).join('') : '<div class="em" style="padding:20px"><div class="em-icon">🔍</div><h3>Цены не найдены</h3></div>'}`;
+        </div>`).join(''):'<div class="em" style="padding:20px"><div class="em-icon">🔍</div><h3>Цены не найдены</h3></div>'}`;
   } catch {
-    body.innerHTML = '<div class="em"><div class="em-icon">⚠️</div><h3>Не удалось загрузить</h3></div>';
+    body.innerHTML='<div class="em"><div class="em-icon">⚠️</div><h3>Не удалось загрузить</h3></div>';
   }
 }
-
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
-let msY = 0;
-document.getElementById('mhandle').addEventListener('touchstart', e=>{ msY=e.touches[0].clientY; }, {passive:true});
-document.getElementById('mhandle').addEventListener('touchmove',  e=>{ if(e.touches[0].clientY-msY>70)closeModal(); }, {passive:true});
+let msY=0;
+document.getElementById('mhandle').addEventListener('touchstart',e=>{msY=e.touches[0].clientY;},{passive:true});
+document.getElementById('mhandle').addEventListener('touchmove', e=>{if(e.touches[0].clientY-msY>70)closeModal();},{passive:true});
 
-/* ═══════════════════════════════════════════
-   WISHLIST  — works with userId OR localStorage
-═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   WISHLIST  — localStorage fallback
+═══════════════════════════════════════ */
 async function loadWish() {
   document.getElementById('w-load').style.display='flex';
   document.getElementById('w-content').innerHTML='';
   document.getElementById('w-empty').style.display='none';
-
-  let items = [];
+  let items=[];
   if (userId) {
-    try {
-      const r = await fetch(`/api/wishlist/${userId}`);
-      items = await r.json();
-    } catch { items = LS.wish(); }
-  } else {
-    items = LS.wish();
-  }
-
+    try { const r=await fetch(`/api/wishlist/${userId}`); items=await r.json(); } catch { items=LS.wish(); }
+  } else { items=LS.wish(); }
   document.getElementById('w-load').style.display='none';
-  wishSet = new Set(items.map(i=>i.name));
-  renderWish(items);
-  loaded.wish = true;
-  document.getElementById('ps-wish').textContent = items.length;
-  document.getElementById('qa-wish-cnt').textContent = items.length + ' игр';
-  document.getElementById('wish-cnt').textContent = items.length;
+  wishSet=new Set(items.map(i=>i.name));
+  renderWish(items); loaded.wish=true;
+  document.getElementById('ps-wish').textContent=items.length;
+  document.getElementById('wish-cnt').textContent=items.length;
   if (items.length>=5) unlockAch('wish5');
 }
-
 function renderWish(items) {
-  document.getElementById('w-limit').style.display = (items.length>=5 && !userId) ? 'block' : 'none';
+  document.getElementById('w-limit').style.display=(items.length>=5&&!userId)?'block':'none';
   if (!items.length) { document.getElementById('w-empty').style.display='flex'; return; }
-  const icons = ['🎮','🕹','👾','🗡','🔫','🧙','🏎','⚔️','🎯','🚀','🐉','🤖'];
-  document.getElementById('w-content').innerHTML = `<div class="card">${
+  const icons=['🎮','🕹','👾','🗡','🔫','🧙','🏎','⚔️','🎯','🚀','🐉','🤖'];
+  document.getElementById('w-content').innerHTML=`<div class="card">${
     items.map((item,i)=>`<div class="wi">
       <div class="wico">${icons[i%icons.length]}</div>
       <div class="wtext">
         <div class="wn">${esc(item.name)}</div>
-        <div class="wp">${item.last_price ? 'Последняя цена: $'+item.last_price : 'Ожидает отслеживания'}</div>
+        <div class="wp">${item.last_price?'Последняя: $'+item.last_price:'Ожидает отслеживания'}</div>
       </div>
       <div class="wi-act">
         <button class="icon-btn ib-s" onclick="qs('${ea(item.name)}');tab('search')">🔎</button>
@@ -893,217 +903,256 @@ function renderWish(items) {
     </div>`).join('<div class="divider"></div>')
   }</div>`;
 }
-
 async function addWishManual() {
-  const inp = document.getElementById('wi');
-  const name = inp.value.trim();
+  const inp=document.getElementById('wi');
+  const name=inp.value.trim();
   if (!name) return;
-  await addW(name, null, ()=>inp.value='');
+  await addW(name,null,()=>inp.value='');
 }
-
-async function addW(name, btn, cb) {
+async function addW(name,btn,cb) {
   if (btn) { if (btn.classList.contains('on')) { toast('Уже в шорт-листе'); return; } btn.textContent='…'; }
-
   if (userId) {
-    // SERVER
     try {
-      const r = await fetch(`/api/wishlist/${userId}`, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})
-      });
-      const d = await r.json();
+      const r=await fetch(`/api/wishlist/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+      const d=await r.json();
       if (d.ok) {
         wishSet.add(name);
-        if (btn) { btn.classList.add('on'); btn.textContent='✓'; }
-        toast('✅ Добавлено!', 'var(--green)');
-        loaded.wish=false;
-        if (cb) cb();
-        unlockAch('wish1');
+        if (btn){btn.classList.add('on');btn.textContent='✓';}
+        toast('✅ Добавлено!','var(--green)',true);
+        loaded.wish=false; if (cb) cb(); unlockAch('wish1');
       } else if (d.error==='limit') {
-        toast(`🔒 Лимит ${d.limit} игр — нужен VIP`, '#ff4757');
+        toast(`🔒 Лимит ${d.limit} игр — нужен VIP`,'var(--red)');
         if (btn) btn.textContent='+';
-      } else { throw new Error(); }
-    } catch { toast('Ошибка сервера', '#ff4757'); if (btn) btn.textContent='+'; }
+      } else throw new Error();
+    } catch { toast('Ошибка сервера','var(--red)'); if (btn) btn.textContent='+'; }
   } else {
-    // LOCALSTORAGE
-    const w = LS.wish();
-    if (w.length >= 5) { toast('🔒 Лимит 5 игр · VIP до 100', '#ff4757'); if(btn)btn.textContent='+'; return; }
-    if (!w.find(x=>x.name===name)) {
-      w.unshift({name, last_price:null});
-      LS.setWish(w);
-    }
+    const w=LS.wish();
+    if (w.length>=5) { toast('🔒 Лимит 5 игр · VIP до 100','var(--red)'); if(btn)btn.textContent='+'; return; }
+    if (!w.find(x=>x.name===name)) { w.unshift({name,last_price:null}); LS.setWish(w); }
     wishSet.add(name);
-    if (btn) { btn.classList.add('on'); btn.textContent='✓'; }
-    toast('✅ Добавлено!', 'var(--green)');
-    loaded.wish=false;
-    if (cb) cb();
-    unlockAch('wish1');
+    if (btn){btn.classList.add('on');btn.textContent='✓';}
+    toast('✅ Добавлено!','var(--green)',true);
+    loaded.wish=false; if (cb) cb(); unlockAch('wish1');
   }
 }
-
 async function delWish(name) {
-  if (userId) {
-    try {
-      await fetch(`/api/wishlist/${userId}/${encodeURIComponent(name)}`, {method:'DELETE'});
-    } catch {}
-  } else {
-    LS.setWish(LS.wish().filter(x=>x.name!==name));
-  }
-  wishSet.delete(name);
-  toast('Удалено', 'var(--orange)');
-  loaded.wish=false;
-  loadWish();
+  if (userId) { try { await fetch(`/api/wishlist/${userId}/${encodeURIComponent(name)}`,{method:'DELETE'}); } catch {} }
+  else { LS.setWish(LS.wish().filter(x=>x.name!==name)); }
+  wishSet.delete(name); toast('Удалено','var(--orange)');
+  loaded.wish=false; loadWish();
 }
 
-/* ═══════════════════════════════════════════
-   PROFILE  — works without userId via localStorage
-═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   PROFILE
+═══════════════════════════════════════ */
+let autoRenewVal = false;
+let selectedDonate = 100;
+
 async function loadProfile() {
   document.getElementById('pr-load').style.display='flex';
   document.getElementById('pr-content').style.display='none';
 
-  const name = (userFirst + (userLast?' '+userLast:'')).trim() || 'Геймер';
-  document.getElementById('pr-name').textContent = name;
-  const emojis = ['🎮','🕹','👾','🏆','⚔️','🎯','🧙','🦾','🤖','🎲'];
-  document.getElementById('pr-ava').textContent = emojis[Math.abs(userId||Math.random()*100|0)%emojis.length];
+  const name=(userFirst+(userLast?' '+userLast:'')).trim()||'Геймер';
+  document.getElementById('pr-name').textContent=name;
+  const emojis=['🎮','🕹','👾','🏆','⚔️','🎯','🧙','🦾','🤖','🎲'];
+  document.getElementById('pr-ava').textContent=emojis[Math.abs(userId||Math.random()*100|0)%emojis.length];
 
-  const prefs = LS.prefs();
+  const prefs=LS.prefs();
   buildCurrency(prefs.currency||'USD');
-  if (prefs.want_news)  document.getElementById('tog-news').classList.add('on');
-  if (prefs.want_free)  document.getElementById('tog-free').classList.add('on');
-  if (prefs.want_price) document.getElementById('tog-price').classList.add('on');
+  document.getElementById('tog-news').classList.toggle('on', prefs.want_news||false);
+  document.getElementById('tog-free').classList.toggle('on', prefs.want_free||false);
+  document.getElementById('tog-price').classList.toggle('on', prefs.want_price!==false);
 
-  const wishItems = userId ? [] : LS.wish();
-  const wishCnt   = userId ? 0  : wishItems.length;
+  autoRenewVal = prefs.auto_renew||false;
+  updateARToggle(autoRenewVal);
 
   document.getElementById('pr-load').style.display='none';
   document.getElementById('pr-content').style.display='block';
 
-  // Referral link (works even without server data)
   const refUrl = userId ? `https://t.me/${BOT}?start=ref${userId}` : `https://t.me/${BOT}`;
-  document.getElementById('ref-link').textContent = refUrl;
+  document.getElementById('ref-link').textContent=refUrl;
 
   if (!userId) {
-    document.getElementById('pr-uid').textContent = 'Без аккаунта';
-    document.getElementById('pr-vip-badge').innerHTML = '<div class="free-pill">🔓 Базовый</div>';
-    document.getElementById('ps-wish').textContent = wishCnt;
-    document.getElementById('ps-ref').textContent  = '—';
-    document.getElementById('ps-days').textContent = '—';
-    document.getElementById('qa-wish-cnt').textContent = wishCnt + ' игр';
-    buildAchievements();
-    loaded.profile=true;
-    return;
+    document.getElementById('pr-uid').textContent='Без аккаунта (откройте в Telegram)';
+    document.getElementById('pr-vip-badge').innerHTML='<div class="free-pill">🔓 Базовый</div>';
+    document.getElementById('ps-wish').textContent=LS.wish().length;
+    document.getElementById('ps-ref').textContent='—';
+    document.getElementById('ps-days').textContent='—';
+    buildAchievements(); loaded.profile=true; return;
   }
 
-  document.getElementById('pr-uid').textContent = userName ? `@${userName}` : `ID: ${userId}`;
+  document.getElementById('pr-uid').textContent=userName?`@${userName}`:`ID: ${userId}`;
 
   try {
-    const r = await fetch(`/api/profile/${userId}`);
-    const d = await r.json();
+    const r=await fetch(`/api/profile/${userId}`);
+    const d=await r.json();
     loaded.profile=true;
-
-    document.getElementById('ps-wish').textContent = d.wishlist_count ?? 0;
-    document.getElementById('ps-ref').textContent  = d.referrals ?? 0;
-    document.getElementById('qa-wish-cnt').textContent = (d.wishlist_count??0) + ' игр';
-
+    document.getElementById('ps-wish').textContent=d.wishlist_count??0;
+    document.getElementById('ps-ref').textContent=d.referrals??0;
     if (d.reg_date) {
-      const dt  = new Date(d.reg_date.replace(' ','T')+'Z');
-      const days = Math.max(0, Math.floor((Date.now()-dt)/86400000));
-      document.getElementById('ps-days').textContent = days;
+      const dt=new Date(d.reg_date.replace(' ','T')+'Z');
+      document.getElementById('ps-days').textContent=Math.max(0,Math.floor((Date.now()-dt)/86400000));
     }
+    // Auto-renew from server
+    autoRenewVal = d.auto_renew||false;
+    updateARToggle(autoRenewVal);
+    const p=LS.prefs(); p.auto_renew=autoRenewVal; LS.setPrefs(p);
 
     if (d.is_vip) {
       document.getElementById('pr-vip-badge').innerHTML='<div class="vip-pill">⭐ VIP АКТИВЕН</div>';
-      const vc = document.getElementById('vip-upgrade-card');
-      vc.style.background='linear-gradient(135deg,rgba(0,230,118,.1),rgba(0,200,100,.07))';
-      vc.style.borderColor='rgba(0,230,118,.25)';
-      document.getElementById('vip-card-title').style.color='var(--green)';
-      document.getElementById('vip-card-title').textContent='✅ VIP Активен';
-      document.getElementById('vip-btn').textContent='Продлить';
+      document.getElementById('vip-block').classList.add('active');
+      document.getElementById('vb-title').textContent='✅ VIP Активен';
       if (d.premium_until) {
         const dt=new Date(d.premium_until.replace(' ','T')+'Z');
-        document.getElementById('vip-card-sub').textContent='До: '+dt.toLocaleDateString('ru-RU');
+        document.getElementById('vb-sub').textContent='Активна до: '+dt.toLocaleDateString('ru-RU');
       }
-      document.getElementById('qa-vip-txt').textContent='Продлить VIP';
+      document.getElementById('vip-buy-btn').textContent='🔄 Продлить · 100 ⭐';
+      document.getElementById('vip-buy-btn').classList.add('renew');
       unlockAch('vip');
     } else {
       document.getElementById('pr-vip-badge').innerHTML='<div class="free-pill">🔓 Базовый</div>';
     }
-
-    // Sync prefs from server
     if (d.want_news) document.getElementById('tog-news').classList.add('on'); else document.getElementById('tog-news').classList.remove('on');
     if (d.want_freebies) document.getElementById('tog-free').classList.add('on'); else document.getElementById('tog-free').classList.remove('on');
     buildCurrency(d.currency||'USD');
     if (d.referrals>0) unlockAch('ref1');
-  } catch {
-    /* server failed — still show localStorage data */
-  }
+  } catch { /* показываем localStorage данные */ }
+
   buildAchievements();
 }
 
-function copyRef() {
-  const txt = document.getElementById('ref-link')?.textContent || `https://t.me/${BOT}`;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(txt).then(()=>toast('📋 Ссылка скопирована!','var(--accent)'));
-  } else {
-    const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    toast('📋 Скопировано!','var(--accent)');
-  }
-  unlockAch('share');
+/* ─── Auto-Renew ─── */
+function updateARToggle(val) {
+  document.getElementById('tog-ar').classList.toggle('on', val);
+  document.getElementById('ar-status-txt').textContent = val ? 'Включено — бот продлит автоматически' : 'Выключено';
 }
-
-/* ─── Currency — localStorage + server ─── */
-const CURRENCIES = ['USD','EUR','RUB','KZT','UAH','BYN','UZS','KGS','AMD','GBP'];
-function buildCurrency(current) {
-  document.getElementById('curr-grid').innerHTML = CURRENCIES.map(c=>
-    `<button class="cb ${c===current?'on':''}" onclick="setCurrency('${c}')">${c}</button>`
-  ).join('');
-}
-async function setCurrency(c) {
-  document.querySelectorAll('.cb').forEach(b=>b.classList.toggle('on', b.textContent===c));
-  const p = LS.prefs(); p.currency=c; LS.setPrefs(p);
-  toast(`💱 Валюта: ${c}`);
+async function toggleAutoRenew() {
+  autoRenewVal = !autoRenewVal;
+  updateARToggle(autoRenewVal);
+  const p=LS.prefs(); p.auto_renew=autoRenewVal; LS.setPrefs(p);
+  toast(autoRenewVal ? '🔄 Автопродление включено' : '⏹ Автопродление выключено');
   if (userId) {
-    try { await fetch(`/api/settings/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currency:c})}); } catch {}
+    try { await fetch(`/api/settings/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({auto_renew:autoRenewVal})}); } catch {}
   }
 }
 
-/* ─── Notifications — localStorage + server ─── */
+/* ─── VIP Purchase via Telegram Stars ─── */
+async function buyVip() {
+  if (!tg) { openUrl(`https://t.me/${BOT}?start=vip`); return; }
+  const btn = document.getElementById('vip-buy-btn');
+  btn.disabled=true; btn.textContent='⏳ Создаём счёт…';
+  try {
+    const uid = userId || 0;
+    const r = await fetch(`/api/vip/invoice/${uid}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({auto_renew: autoRenewVal})
+    });
+    const d = await r.json();
+    if (!d.link) throw new Error(d.error||'no_link');
+    tg.openInvoice(d.link, status => {
+      if (status==='paid') {
+        toast('🎉 VIP активирован! Спасибо!','var(--gold)',true);
+        unlockAch('vip');
+        loaded.profile=false; loadProfile();
+      } else if (status==='cancelled') {
+        toast('Оплата отменена');
+      } else if (status==='failed') {
+        toast('Ошибка оплаты — попробуй ещё раз','var(--red)');
+      }
+    });
+  } catch(e) {
+    toast('Ошибка создания счёта','var(--red)');
+  }
+  btn.disabled=false;
+  btn.textContent = document.getElementById('vip-block').classList.contains('active')
+    ? '🔄 Продлить · 100 ⭐' : '⭐ Оформить подписку · 100 звёзд';
+}
+
+/* ─── Donate via Telegram Stars ─── */
+function selectDonate(el, amt) {
+  document.querySelectorAll('.da').forEach(d=>d.classList.remove('on'));
+  el.classList.add('on'); selectedDonate=amt;
+  document.getElementById('donate-btn').textContent=`⭐ Поддержать ${amt} звёздами`;
+}
+async function sendDonate() {
+  if (!tg) { openUrl(`https://t.me/${BOT}`); return; }
+  const btn=document.getElementById('donate-btn');
+  btn.disabled=true; btn.textContent='⏳ Создаём счёт…';
+  try {
+    const uid=userId||0;
+    const r=await fetch(`/api/donate/invoice/${uid}/${selectedDonate}`,{method:'POST'});
+    const d=await r.json();
+    if (!d.link) throw new Error(d.error||'no_link');
+    tg.openInvoice(d.link, status=>{
+      if (status==='paid') {
+        toast('❤️ Спасибо за поддержку!','var(--accent)');
+        unlockAch('share');
+      } else if (status==='cancelled') {
+        toast('Донат отменён');
+      }
+    });
+  } catch {
+    toast('Ошибка создания счёта','var(--red)');
+  }
+  btn.disabled=false;
+  btn.textContent=`⭐ Поддержать ${selectedDonate} звёздами`;
+}
+
+/* ─── Settings / Notifications ─── */
 async function togSetting(key) {
-  const ids = {news:'tog-news', free:'tog-free', price:'tog-price'};
-  const tog = document.getElementById(ids[key]);
-  const newVal = !tog.classList.contains('on');
+  const ids={news:'tog-news',free:'tog-free',price:'tog-price'};
+  const tog=document.getElementById(ids[key]);
+  const newVal=!tog.classList.contains('on');
   tog.classList.toggle('on');
-
-  // Save locally always
-  const p = LS.prefs();
-  if (key==='news')  p.want_news  = newVal;
-  if (key==='free')  p.want_free  = newVal;
-  if (key==='price') p.want_price = newVal;
+  const p=LS.prefs();
+  if(key==='news')  p.want_news=newVal;
+  if(key==='free')  p.want_free=newVal;
+  if(key==='price') p.want_price=newVal;
   LS.setPrefs(p);
-  toast(newVal ? '✅ Включено' : '❌ Выключено');
-
-  // Sync to server if logged in
-  if (userId && key!=='price') {
-    const map = {news:'want_news', free:'want_freebies'};
+  toast(newVal?'✅ Включено':'❌ Выключено');
+  if (userId&&key!=='price') {
+    const map={news:'want_news',free:'want_freebies'};
     try { await fetch(`/api/settings/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({[map[key]]:newVal})}); } catch {}
   }
 }
 
+/* ─── Currency ─── */
+const CURRENCIES=['USD','EUR','RUB','KZT','UAH','BYN','UZS','KGS','AMD','GBP'];
+function buildCurrency(current) {
+  document.getElementById('curr-grid').innerHTML=CURRENCIES.map(c=>
+    `<button class="cb ${c===current?'on':''}" onclick="setCurrency('${c}')">${c}</button>`
+  ).join('');
+}
+async function setCurrency(c) {
+  document.querySelectorAll('.cb').forEach(b=>b.classList.toggle('on',b.textContent===c));
+  const p=LS.prefs(); p.currency=c; LS.setPrefs(p);
+  toast(`💱 ${c}`);
+  if (userId) { try { await fetch(`/api/settings/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currency:c})}); } catch {} }
+}
+
+/* ─── Referral ─── */
+function copyRef() {
+  const txt=document.getElementById('ref-link')?.textContent||`https://t.me/${BOT}`;
+  if (navigator.clipboard) { navigator.clipboard.writeText(txt).then(()=>toast('📋 Ссылка скопирована!')); }
+  else { const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('📋 Скопировано!'); }
+  unlockAch('share');
+}
+
 /* ─── Achievements ─── */
-const ACHS = [
-  {key:'search', icon:'🔍', name:'Первый поиск'},
-  {key:'deals',  icon:'🔥', name:'Охотник скидок'},
-  {key:'free',   icon:'🎁', name:'Халявщик'},
-  {key:'wish1',  icon:'📋', name:'Составил список'},
-  {key:'wish5',  icon:'📚', name:'Коллекционер'},
-  {key:'ref1',   icon:'👥', name:'Рекрутёр'},
-  {key:'vip',    icon:'⭐', name:'VIP Геймер'},
-  {key:'share',  icon:'📣', name:'Амбассадор'},
-  {key:'s50',    icon:'💰', name:'Экономист'},
+const ACHS=[
+  {key:'search',icon:'🔍',name:'Первый поиск'},
+  {key:'deals', icon:'🔥',name:'Охотник скидок'},
+  {key:'free',  icon:'🎁',name:'Халявщик'},
+  {key:'wish1', icon:'📋',name:'Составил список'},
+  {key:'wish5', icon:'📚',name:'Коллекционер'},
+  {key:'ref1',  icon:'👥',name:'Рекрутёр'},
+  {key:'vip',   icon:'⭐',name:'VIP Геймер'},
+  {key:'share', icon:'📣',name:'Донатер'},
+  {key:'s50',   icon:'💰',name:'Экономист'},
 ];
 function buildAchievements() {
-  document.getElementById('ach-grid').innerHTML = ACHS.map(a=>{
-    const ok = hasAch(a.key);
+  document.getElementById('ach-grid').innerHTML=ACHS.map(a=>{
+    const ok=hasAch(a.key);
     return `<div class="ach ${ok?'ok':'lk'}">
       ${ok?'<div class="achk">✓</div>':''}
       <div class="ae">${a.icon}</div>
