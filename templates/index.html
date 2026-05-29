@@ -68,23 +68,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 /* CARDS */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 
-/* SEARCH BOX — gb-search style */
-.gb-search-wrap{margin-bottom:10px}
-.gb-search{display:flex;align-items:center;gap:10px;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:10px 14px;transition:border-color .15s}
-.gb-search:focus-within{border-color:var(--accent)}
-.gb-search .s-ico{color:var(--hint);font-size:18px;flex-shrink:0;pointer-events:none}
-.gb-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;min-width:0;font-family:inherit}
-.gb-search input::placeholder{color:var(--hint)}
-.gb-search .sclr{background:transparent;border:none;color:var(--hint);font-size:14px;cursor:pointer;padding:0 2px;flex-shrink:0;display:none;line-height:1}
-.gb-search .s-adj{color:var(--accent);font-size:18px;flex-shrink:0;cursor:pointer}
-
-/* TAGS (gb-tag style) */
-.gb-tags{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;margin-bottom:12px;scrollbar-width:none}
-.gb-tags::-webkit-scrollbar{display:none}
-.gb-tag{display:flex;align-items:center;gap:5px;padding:5px 12px;background:var(--card);border:0.5px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;color:var(--text);transition:all .15s;flex-shrink:0}
-.gb-tag:active,.gb-tag:hover{border-color:var(--accent);color:var(--accent)}
-.gb-tag.active{background:rgba(124,90,247,.12);border-color:var(--accent);color:var(--accent)}
-
 /* CHIPS (kept for deals page filters) */
 .scroll-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
 .scroll-row::-webkit-scrollbar{display:none}
@@ -284,38 +267,67 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 #toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-90px);padding:11px 20px;border-radius:var(--rx);font-size:13px;font-weight:800;z-index:9999;transition:transform .3s cubic-bezier(.34,1.4,.64,1);white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5);pointer-events:none;max-width:calc(100vw - 40px);background:var(--accent);color:#fff}
 #toast.show{transform:translateX(-50%) translateY(0)}
 
-/* ── STATS ROW ── */
-.gb-stats-row{display:flex;gap:8px;margin:10px 0 14px}
-.gb-stat-card{flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:11px 6px;text-align:center}
-.gb-stat-num{font-size:18px;font-weight:700;line-height:1}
-.gb-stat-label{font-size:10px;color:var(--hint);margin-top:3px;font-weight:500}
+/* ── SEARCH PAGE: zero padding, sections handle own spacing ── */
+#p-search{padding:0 0 calc(var(--nav) + var(--safe) + 8px) !important}
 
-/* ── FEATURED BANNER ── */
-.gb-featured{background:var(--card);border:0.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px}
-.gb-featured-banner{height:96px;background:#12102a;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.gb-banner-glow{position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(124,90,247,.22);filter:blur(44px);top:-80px;left:50%;transform:translateX(-50%)}
-.gb-banner-glow2{position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(240,90,126,.16);filter:blur(36px);bottom:-60px;right:10px}
+/* ── SEARCH WRAP — точно по дизайну ── */
+.gb-search-wrap{padding:16px 20px 12px;background:var(--bg2)}
+.gb-search{display:flex;align-items:center;gap:10px;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:10px 14px;transition:border-color .15s}
+.gb-search:focus-within{border-color:var(--accent)}
+.gb-search i{color:var(--hint);font-size:18px}
+.gb-search .s-ico{color:var(--hint);font-size:18px;flex-shrink:0;pointer-events:none}
+.gb-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;width:100%;font-family:inherit}
+.gb-search input::placeholder{color:var(--hint)}
+.gb-search .sclr{background:transparent;border:none;color:var(--hint);font-size:14px;cursor:pointer;padding:0 2px;flex-shrink:0;display:none;line-height:1}
+.gb-search .s-adj{color:var(--accent);font-size:18px;flex-shrink:0;cursor:pointer}
+
+/* ── TAGS BAR — точно по дизайну ── */
+.gb-tags{padding:10px 20px 14px;background:var(--bg2);display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:0.5px solid var(--border)}
+.gb-tags::-webkit-scrollbar{display:none}
+.gb-tag{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--card);border:0.5px solid var(--border);border-radius:20px;font-size:12px;white-space:nowrap;cursor:pointer;color:var(--text);transition:all .15s;flex-shrink:0}
+.gb-tag:hover{border-color:var(--accent);color:var(--accent)}
+.gb-tag.active{background:rgba(124,90,247,.12);border-color:var(--accent);color:var(--accent)}
+
+/* ── STATS ROW — точно по дизайну ── */
+.gb-stats-row{display:flex;gap:10px;padding:14px 20px 0}
+.gb-stat-card{flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:10px 12px;text-align:center}
+.gb-stat-num{font-size:18px;font-weight:500;color:var(--text)}
+.gb-stat-num.accent{color:var(--accent)}
+.gb-stat-num.green{color:var(--green)}
+.gb-stat-num.pink{color:var(--a2)}
+.gb-stat-label{font-size:10px;color:var(--hint);margin-top:2px}
+
+/* ── FEATURED BANNER — точно по дизайну ── */
+.gb-featured{margin:16px 20px 0;background:var(--card);border:0.5px solid var(--border);border-radius:16px;overflow:hidden}
+.gb-featured-banner{height:100px;background:#1a1030;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.gb-banner-glow{position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(124,90,247,.18);filter:blur(40px);top:-60px;left:50%;transform:translateX(-50%)}
+.gb-banner-glow2{position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(240,90,126,.14);filter:blur(35px);bottom:-50px;right:20px}
 .gb-banner-content{position:relative;z-index:1;text-align:center}
-.gb-banner-title{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em}
-.gb-banner-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px}
-.gb-featured-body{padding:11px 13px;display:flex;align-items:center;justify-content:space-between}
-.gb-featured-stores{display:flex;gap:6px;flex-wrap:wrap}
-.gb-store-pill{padding:4px 10px;border-radius:20px;font-size:11px;border:0.5px solid var(--border);color:var(--hint);background:var(--bg2);font-weight:600}
-.gb-store-pill.best{border-color:var(--accent);color:var(--accent);background:rgba(124,90,247,.1)}
-.gb-featured-price{font-size:17px;font-weight:700;color:var(--accent)}
+.gb-banner-title{font-size:20px;font-weight:500;color:#fff;letter-spacing:-.02em}
+.gb-banner-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.gb-featured-body{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.gb-featured-stores{display:flex;gap:6px}
+.gb-store-pill{padding:4px 10px;border-radius:20px;font-size:11px;border:0.5px solid var(--border);color:var(--hint);background:var(--bg2)}
+.gb-store-pill.best{border-color:var(--accent);color:var(--accent);background:rgba(124,90,247,.08)}
+.gb-featured-price{font-size:16px;font-weight:500;color:var(--accent)}
 .gb-featured-disc{font-size:10px;color:var(--hint);text-align:right;margin-top:1px}
 
-/* ── HOME DEAL CARDS (emoji thumb style) ── */
-.gb-deal-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;padding:11px 13px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;margin-bottom:8px}
+/* ── SECTION LABEL — точно по дизайну ── */
+.gb-section-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);padding:16px 20px 10px;font-weight:500}
+
+/* ── HOME DEAL CARDS — точно по дизайну ── */
+.gb-deals{padding:0 20px;display:flex;flex-direction:column;gap:10px;padding-bottom:12px}
+.gb-deal-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
+.gb-deal-card:hover{border-color:var(--accent)}
 .gb-deal-card:active{border-color:var(--accent);opacity:.88}
-.gb-game-thumb{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.gb-game-thumb{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
 .gb-game-info{flex:1;min-width:0}
-.gb-game-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gb-game-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gb-game-meta{font-size:11px;color:var(--hint);margin-top:2px}
 .gb-game-price{text-align:right;flex-shrink:0}
-.gb-price-now{font-size:15px;font-weight:700;color:var(--green)}
+.gb-price-now{font-size:15px;font-weight:500;color:var(--green)}
 .gb-price-old{font-size:11px;color:var(--hint);text-decoration:line-through}
-.gb-discount-badge{display:inline-block;background:rgba(29,233,164,.12);color:var(--green);border:0.5px solid rgba(29,233,164,.25);border-radius:6px;padding:1px 6px;font-size:10px;font-weight:700;margin-top:2px}
+.gb-discount-badge{display:inline-block;background:rgba(29,233,164,.12);color:var(--green);border-radius:6px;padding:1px 6px;font-size:10px;font-weight:500;margin-top:2px}
 
 /* ── DEAL CARDS refined (deals page) ── */
 .dc{margin-bottom:8px;cursor:pointer;border-radius:var(--r);overflow:hidden;background:var(--card);border:0.5px solid var(--border);transition:border-color .15s}
@@ -380,15 +392,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <!-- Stats -->
     <div class="gb-stats-row">
       <div class="gb-stat-card">
-        <div class="gb-stat-num" style="color:var(--accent)">35+</div>
+        <div class="gb-stat-num accent">35+</div>
         <div class="gb-stat-label">Магазинов</div>
       </div>
       <div class="gb-stat-card">
-        <div class="gb-stat-num" style="color:var(--green)">-89%</div>
+        <div class="gb-stat-num green">-89%</div>
         <div class="gb-stat-label">Макс. скидка</div>
       </div>
       <div class="gb-stat-card">
-        <div class="gb-stat-num" style="color:var(--a2)">12K</div>
+        <div class="gb-stat-num pink">12K</div>
         <div class="gb-stat-label">Игр</div>
       </div>
     </div>
@@ -398,16 +410,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
     <!-- Hot deals -->
     <div id="home-deals-wrap" style="display:none">
-      <div class="slabel">Горячие предложения</div>
-      <div id="home-deals-list"></div>
-      <button class="lmore" onclick="tab('deals')" style="margin-top:4px">Все скидки <i class="ti ti-arrow-right" style="font-size:13px"></i></button>
+      <div class="gb-section-label">Горячие предложения</div>
+      <div class="gb-deals" id="home-deals-list"></div>
+      <div style="padding:4px 16px 0"><button class="lmore" onclick="tab('deals')">Все скидки <i class="ti ti-arrow-right" style="font-size:13px"></i></button></div>
     </div>
 
     <!-- Loading state for home feed -->
     <div id="home-feed-load" class="em" style="padding:30px 20px"><div class="spin"></div></div>
 
     <!-- Recent searches (shown after first search) -->
-    <div id="recent-search-section" style="display:none;margin-top:4px">
+    <div id="recent-search-section" style="display:none;padding:0 16px;margin-top:4px">
       <div class="slabel">Недавние поиски</div>
       <div class="card" id="recent-search-list"></div>
     </div>
@@ -415,9 +427,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
   <!-- Search results states -->
   <div id="s-load" style="display:none" class="em"><div class="spin"></div></div>
-  <div class="card" id="s-res" style="display:none"></div>
+  <div class="card" id="s-res" style="display:none;margin:0 16px"></div>
   <div id="s-empty" style="display:none" class="em"><div class="em-icon">😢</div><h3>Ничего не найдено</h3><p>Попробуй написать название на английском или проверь правописание</p></div>
-  <span class="bdg bdg-p" id="srch-cnt" style="display:none;margin-top:8px"></span>
+  <span class="bdg bdg-p" id="srch-cnt" style="display:none;margin:8px 16px 0"></span>
 </div>
 
 <!-- ══════ DEALS ══════ -->

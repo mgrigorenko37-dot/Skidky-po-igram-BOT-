@@ -1,0 +1,528 @@
+
+<style>
+  :root {
+    --gb-bg: #0d0f14;
+    --gb-surface: #14171f;
+    --gb-card: #1a1d27;
+    --gb-border: #2a2d3a;
+    --gb-accent: #7c5af7;
+    --gb-accent2: #f05a7e;
+    --gb-text: #e8e8f0;
+    --gb-muted: #6b6e80;
+    --gb-green: #1de9a4;
+    --gb-amber: #f5a623;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .gb-app {
+    background: var(--gb-bg);
+    min-height: 700px;
+    font-family: var(--font-sans);
+    color: var(--gb-text);
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 0.5px solid var(--gb-border);
+    position: relative;
+  }
+
+  .gb-header {
+    padding: 20px 20px 16px;
+    border-bottom: 0.5px solid var(--gb-border);
+    background: var(--gb-surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .gb-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .gb-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--gb-accent) 0%, var(--gb-accent2) 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+  }
+
+  .gb-logo-text {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--gb-text);
+  }
+
+  .gb-logo-text span {
+    color: var(--gb-accent);
+  }
+
+  .gb-header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .gb-icon-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--gb-card);
+    border: 0.5px solid var(--gb-border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--gb-muted);
+    transition: all 0.15s;
+  }
+
+  .gb-icon-btn:hover { color: var(--gb-text); border-color: var(--gb-accent); }
+
+  .gb-search-wrap {
+    padding: 16px 20px 12px;
+    background: var(--gb-surface);
+  }
+
+  .gb-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--gb-card);
+    border: 0.5px solid var(--gb-border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: border-color 0.15s;
+  }
+
+  .gb-search:focus-within { border-color: var(--gb-accent); }
+  .gb-search i { color: var(--gb-muted); font-size: 18px; }
+  .gb-search input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--gb-text);
+    font-size: 14px;
+    width: 100%;
+    font-family: var(--font-sans);
+  }
+  .gb-search input::placeholder { color: var(--gb-muted); }
+
+  .gb-tags {
+    padding: 10px 20px 14px;
+    background: var(--gb-surface);
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 0.5px solid var(--gb-border);
+  }
+  .gb-tags::-webkit-scrollbar { display: none; }
+
+  .gb-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: var(--gb-card);
+    border: 0.5px solid var(--gb-border);
+    border-radius: 20px;
+    font-size: 12px;
+    white-space: nowrap;
+    cursor: pointer;
+    color: var(--gb-text);
+    transition: all 0.15s;
+  }
+  .gb-tag:hover { border-color: var(--gb-accent); color: var(--gb-accent); }
+  .gb-tag.active { background: rgba(124,90,247,0.12); border-color: var(--gb-accent); color: var(--gb-accent); }
+
+  .gb-section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gb-muted);
+    padding: 16px 20px 10px;
+    font-weight: 500;
+  }
+
+  .gb-deals {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .gb-deal-card {
+    background: var(--gb-card);
+    border: 0.5px solid var(--gb-border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .gb-deal-card:hover { border-color: var(--gb-accent); }
+
+  .gb-game-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .gb-game-info { flex: 1; min-width: 0; }
+
+  .gb-game-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gb-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gb-game-meta {
+    font-size: 11px;
+    color: var(--gb-muted);
+    margin-top: 2px;
+  }
+
+  .gb-game-price {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .gb-price-now {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gb-green);
+  }
+
+  .gb-price-old {
+    font-size: 11px;
+    color: var(--gb-muted);
+    text-decoration: line-through;
+  }
+
+  .gb-discount-badge {
+    display: inline-block;
+    background: rgba(29,233,164,0.12);
+    color: var(--gb-green);
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  .gb-featured {
+    margin: 16px 20px 0;
+    background: var(--gb-card);
+    border: 0.5px solid var(--gb-border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .gb-featured-banner {
+    height: 100px;
+    background: #1a1030;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gb-banner-glow {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(124,90,247,0.18);
+    filter: blur(40px);
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .gb-banner-glow2 {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(240,90,126,0.14);
+    filter: blur(35px);
+    bottom: -50px;
+    right: 20px;
+  }
+
+  .gb-banner-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .gb-banner-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: white;
+    letter-spacing: -0.02em;
+  }
+
+  .gb-banner-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+  }
+
+  .gb-featured-body {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .gb-featured-stores {
+    display: flex;
+    gap: 6px;
+  }
+
+  .gb-store-pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    border: 0.5px solid var(--gb-border);
+    color: var(--gb-muted);
+    background: var(--gb-surface);
+  }
+
+  .gb-store-pill.best {
+    border-color: var(--gb-accent);
+    color: var(--gb-accent);
+    background: rgba(124,90,247,0.08);
+  }
+
+  .gb-featured-price {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--gb-accent);
+  }
+
+  .gb-stats-row {
+    display: flex;
+    gap: 10px;
+    padding: 14px 20px 0;
+  }
+
+  .gb-stat-card {
+    flex: 1;
+    background: var(--gb-card);
+    border: 0.5px solid var(--gb-border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .gb-stat-num {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--gb-text);
+  }
+
+  .gb-stat-num.accent { color: var(--gb-accent); }
+  .gb-stat-num.green { color: var(--gb-green); }
+  .gb-stat-num.pink { color: var(--gb-accent2); }
+
+  .gb-stat-label {
+    font-size: 10px;
+    color: var(--gb-muted);
+    margin-top: 2px;
+  }
+
+  .gb-bottom-nav {
+    margin-top: 20px;
+    padding: 12px 20px 16px;
+    background: var(--gb-surface);
+    border-top: 0.5px solid var(--gb-border);
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .gb-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--gb-muted);
+    transition: color 0.15s;
+    font-size: 10px;
+  }
+
+  .gb-nav-item.active { color: var(--gb-accent); }
+  .gb-nav-item i { font-size: 20px; }
+
+  .gb-nav-item.fire.active { color: var(--gb-accent2); }
+
+  .gb-watermark {
+    text-align: center;
+    padding: 10px;
+    font-size: 11px;
+    color: var(--gb-muted);
+    background: var(--gb-bg);
+    letter-spacing: 0.03em;
+  }
+</style>
+
+<h2 class="sr-only">Game Broker — концепт редизайна мобильного приложения для сравнения цен на игры</h2>
+
+<div style="padding: 1rem 0; background: transparent;">
+  <div class="gb-app">
+
+    <div class="gb-header">
+      <div class="gb-logo">
+        <div class="gb-logo-icon"><i class="ti ti-device-gamepad-2" aria-hidden="true"></i></div>
+        <span class="gb-logo-text">Game<span>Broker</span></span>
+      </div>
+      <div class="gb-header-actions">
+        <div class="gb-icon-btn"><i class="ti ti-bell" aria-hidden="true"></i></div>
+        <div class="gb-icon-btn"><i class="ti ti-user" aria-hidden="true"></i></div>
+      </div>
+    </div>
+
+    <div class="gb-search-wrap">
+      <div class="gb-search">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" placeholder="Найди свою игру..." />
+        <i class="ti ti-adjustments-horizontal" aria-hidden="true" style="color: var(--gb-accent); cursor:pointer;"></i>
+      </div>
+    </div>
+
+    <div class="gb-tags">
+      <div class="gb-tag active"><i class="ti ti-flame" style="font-size:12px"></i>Топ скидки</div>
+      <div class="gb-tag">GTA V</div>
+      <div class="gb-tag">Cyberpunk</div>
+      <div class="gb-tag">Elden Ring</div>
+      <div class="gb-tag">Baldur's Gate 3</div>
+      <div class="gb-tag">Hogwarts</div>
+    </div>
+
+    <div class="gb-stats-row">
+      <div class="gb-stat-card">
+        <div class="gb-stat-num accent">35+</div>
+        <div class="gb-stat-label">Магазинов</div>
+      </div>
+      <div class="gb-stat-card">
+        <div class="gb-stat-num green">-89%</div>
+        <div class="gb-stat-label">Макс. скидка</div>
+      </div>
+      <div class="gb-stat-card">
+        <div class="gb-stat-num pink">12K</div>
+        <div class="gb-stat-label">Игр</div>
+      </div>
+    </div>
+
+    <div class="gb-featured">
+      <div class="gb-featured-banner">
+        <div class="gb-banner-glow"></div>
+        <div class="gb-banner-glow2"></div>
+        <div class="gb-banner-content">
+          <div class="gb-banner-title">Cyberpunk 2077</div>
+          <div class="gb-banner-sub">Лучшая цена дня · GOG</div>
+        </div>
+      </div>
+      <div class="gb-featured-body">
+        <div class="gb-featured-stores">
+          <div class="gb-store-pill best">GOG</div>
+          <div class="gb-store-pill">Steam</div>
+          <div class="gb-store-pill">Epic</div>
+        </div>
+        <div>
+          <div class="gb-featured-price">199 ₽</div>
+          <div style="font-size:10px; color: var(--gb-muted); text-align:right">-90%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gb-section-label">Горячие предложения</div>
+
+    <div class="gb-deals">
+      <div class="gb-deal-card">
+        <div class="gb-game-thumb" style="background: rgba(240,90,126,0.12);">🎮</div>
+        <div class="gb-game-info">
+          <div class="gb-game-name">GTA V Enhanced</div>
+          <div class="gb-game-meta">Steam · Action / Open world</div>
+        </div>
+        <div class="gb-game-price">
+          <div class="gb-price-now">349 ₽</div>
+          <div class="gb-price-old">1 499 ₽</div>
+          <div class="gb-discount-badge">-77%</div>
+        </div>
+      </div>
+
+      <div class="gb-deal-card">
+        <div class="gb-game-thumb" style="background: rgba(124,90,247,0.12);">⚔️</div>
+        <div class="gb-game-info">
+          <div class="gb-game-name">Elden Ring</div>
+          <div class="gb-game-meta">GMG · RPG / FromSoftware</div>
+        </div>
+        <div class="gb-game-price">
+          <div class="gb-price-now">899 ₽</div>
+          <div class="gb-price-old">3 199 ₽</div>
+          <div class="gb-discount-badge">-72%</div>
+        </div>
+      </div>
+
+      <div class="gb-deal-card">
+        <div class="gb-game-thumb" style="background: rgba(29,233,164,0.1);">🧙</div>
+        <div class="gb-game-info">
+          <div class="gb-game-name">Baldur's Gate 3</div>
+          <div class="gb-game-meta">GOG · RPG / Larian</div>
+        </div>
+        <div class="gb-game-price">
+          <div class="gb-price-now">1 299 ₽</div>
+          <div class="gb-price-old">3 999 ₽</div>
+          <div class="gb-discount-badge">-68%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gb-bottom-nav">
+      <div class="gb-nav-item active">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <span>Поиск</span>
+      </div>
+      <div class="gb-nav-item fire">
+        <i class="ti ti-flame" aria-hidden="true"></i>
+        <span>Скидки</span>
+      </div>
+      <div class="gb-nav-item">
+        <i class="ti ti-gift" aria-hidden="true"></i>
+        <span>Халява</span>
+      </div>
+      <div class="gb-nav-item">
+        <i class="ti ti-bookmark" aria-hidden="true"></i>
+        <span>Список</span>
+      </div>
+      <div class="gb-nav-item">
+        <i class="ti ti-user-circle" aria-hidden="true"></i>
+        <span>Я</span>
+      </div>
+    </div>
+
+    <div class="gb-watermark">@GameBroker_bot</div>
+  </div>
+</div>
