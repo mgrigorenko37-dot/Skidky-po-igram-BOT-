@@ -1334,7 +1334,7 @@ async function doSearch(q) {
       const pc = isNaN(n)||n===0 ? 'pt pt-f' : 'pt pt-g';
       const added = wishSet.has(g.title);
       return `<div class="gr" onclick="openGame('${ea(g.id)}','${ea(g.title)}')">
-        <img src="${esc(g.thumb)}" loading="lazy" onerror="this.style.opacity=.2">
+        <img src="${esc(g.thumb)}" alt="" loading="lazy" onerror="this.outerHTML='<div style=&quot;width:76px;height:43px;border-radius:8px;background:#1a1d27;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px&quot;>🎮</div>'">
         <div class="gi"><div class="gt">${esc(g.title)}</div><div class="gs">35+ магазинов</div></div>
         <div class="gp">
           <span class="${pc}">${pl}</span>
@@ -1472,7 +1472,7 @@ async function loadHomeFeed() {
       dealsList.innerHTML = hot.map((d)=>{
         const img = gameImgUrl(d);
         const thumbHtml = img
-          ? `<img src="${ea(img)}" alt="${esc(d.title)}" style="width:54px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--bg3)" loading="lazy" onerror="this.style.background='var(--bg3)'">`
+          ? `<img src="${ea(img)}" alt="" style="width:54px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--bg3)" loading="lazy" onerror="this.outerHTML='<div style=&quot;width:54px;height:40px;border-radius:8px;background:#1a1d27;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px&quot;>🎮</div>'">`
           : `<div style="width:54px;height:40px;border-radius:8px;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px">🎮</div>`;
         const clickFn = d.game_id ? `openGame('${ea(d.game_id)}','${ea(d.title)}')` : `openUrl('${ea(d.deal_url)}')`;
         return `
