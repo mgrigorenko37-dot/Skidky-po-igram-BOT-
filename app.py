@@ -53,8 +53,10 @@ def api_deals():
     min_mc  = int(request.args.get('min_meta', 0))
     min_rt  = int(request.args.get('min_rating', 0))
     try:
+        min_px = request.args.get('min_price', '0.01')
         params = {'upperPrice': max_px, 'sortBy': sort,
-                  'pageSize': 30, 'pageNumber': page, 'lowerPrice': 0.01}
+                  'pageSize': 30, 'pageNumber': page,
+                  'lowerPrice': max(float(min_px), 0.01)}
         if store:
             params['storeID'] = store
         r = requests.get('https://www.cheapshark.com/api/1.0/deals', params=params, timeout=8)
