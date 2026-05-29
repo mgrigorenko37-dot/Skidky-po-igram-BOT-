@@ -238,12 +238,12 @@ def api_wishlist_delete(user_id, game_name):
 def api_profile(user_id):
     try:
         with sqlite3.connect(config.DB_FILE) as conn:
-            user  = conn.execute("SELECT reg_date FROM mining_users WHERE user_id=?", (user_id,)).fetchone()
+            user  = conn.execute("SELECT reg_date FROM users WHERE user_id=?", (user_id,)).fetchone()
             prefs = conn.execute(
                 "SELECT premium_until, currency, want_news, want_freebies, auto_renew FROM user_news_prefs WHERE user_id=?",
                 (user_id,)).fetchone()
             wc = conn.execute("SELECT COUNT(*) FROM wishlist WHERE user_id=?", (user_id,)).fetchone()[0]
-            rc = conn.execute("SELECT COUNT(*) FROM mining_users WHERE referrer_id=?", (user_id,)).fetchone()[0]
+            rc = conn.execute("SELECT COUNT(*) FROM users WHERE referrer_id=?", (user_id,)).fetchone()[0]
         is_vip = False; premium_until = None
         currency = 'USD'; want_news = False; want_freebies = False; auto_renew = 0
         if prefs:

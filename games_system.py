@@ -341,14 +341,18 @@ def check_wishlist_prices(bot):
     logger.info("🕵️‍♂️ Запуск проверки цен в шорт-листах...")
 
     with sqlite3.connect(config.DB_FILE) as conn:
-        items = conn.execute("SELECT user_id, game_id, game_title FROM wishlist").fetchall()
+        items = conn.execute(
+            "SELECT user_id, game_id, game_name FROM wishlist WHERE game_id IS NOT NULL"
+        ).fetchall()
 
     if not items:
-        logger.info("📭 Шорт-листы пусты.")
+        logger.info("📭 Шорт-листы пусты или нет записей с game_id.")
         return
 
     games_to_check = {}
     for uid, gid, title in items:
+        if not gid:
+            continue
         if gid not in games_to_check:
             games_to_check[gid] = []
         games_to_check[gid].append(uid)
@@ -656,17 +660,30 @@ def show_top_deals(chat_id, page=0):
         utils.safe_send_message(chat_id, "Ошибка поиска скидок. Попробуйте позже.")
 
 def show_my_wishlist(chat_id, user_id):
-    # 🔥 ОБНОВЛЯЕМ АКТИВНОСТЬ
     database.update_user_activity(chat_id)
     try:
         with sqlite3.connect(config.DB_FILE) as conn:
-            items = conn.execute("SELECT game_id, game_title FROM wishlist WHERE user_id = ?", (user_id,)).fetchall()
-        if not items: return utils.safe_send_message(chat_id, "🛒 Твой шорт-лист пока пуст.")
+            items = conn.execute(
+                "SELECT game_id, game_name FROM wishlist WHERE user_id = ?", (user_id,)
+            ).fetchall()
+        if not items:
+            return utils.safe_send_message(chat_id, "🛒 Твой шорт-лист пока пуст.")
         mk = types.InlineKeyboardMarkup()
-        for g_id, g_title in items:
-            mk.add(types.InlineKeyboardButton(f"🎮 {g_title}", callback_data=f"find_{g_id}"), types.InlineKeyboardButton("❌", callback_data=f"remove_wish_{g_id}"))
+        for g_id, g_name in items:
+            display = g_name or "Игра"
+            if g_id:
+                mk.add(
+                    types.InlineKeyboardButton(f"🎮 {display}", callback_data=f"find_{g_id}"),
+                    types.InlineKeyboardButton("❌", callback_data=f"remove_wish_{g_id}")
+                )
+            else:
+                mk.add(
+                    types.InlineKeyboardButton(f"🎮 {display}", callback_data=f"noop"),
+                    types.InlineKeyboardButton("❌", callback_data=f"remove_wish_name_{display}")
+                )
         utils.safe_send_message(chat_id, "📋 **Твой шорт-лист:**", parse_mode='Markdown', reply_markup=mk)
-    except Exception as e: logger.error(f"Wishlist show error: {e}")
+    except Exception as e:
+        logger.error(f"Wishlist show error: {e}")
 
 def search_game(chat_id, query):
     # 🔥 ОБНОВЛЯЕМ АКТИВНОСТЬ
@@ -794,9 +811,8 @@ def register_handlers(bot):
     @bot.callback_query_handler(func=lambda c: c.data.startswith("wish_"))
     def add_wish(c):
         gid = c.data.split('_')[1]
-        user_id = c.from_user.id 
+        user_id = c.from_user.id
 
-        # 🔥 ОБНОВЛЯЕМ АКТИВНОСТЬ
         database.update_user_activity(user_id)
 
         with sqlite3.connect(config.DB_FILE) as conn:
@@ -815,9 +831,10 @@ def register_handlers(bot):
                 wish_count = cursor.fetchone()[0]
 
                 if not is_vip and wish_count >= 5:
-                    bot.answer_callback_query(c.id, "🛑 Лимит 5 игр исчерпан!\nОформи ⭐️ VIP Подписку для безлимита!", show_alert=True)
+                    bot.answer_callback_query(c.id, "🛑 Лимит 5 игр!\nОформи ⭐️ VIP для безлимита!", show_alert=True)
                     return
-            except Exception as e: logger.error(f"Wishlist Limit Check Error: {e}")
+            except Exception as e:
+                logger.error(f"Wishlist Limit Check Error: {e}")
 
             g_title = "Game"
             try:
@@ -827,28 +844,35 @@ def register_handlers(bot):
             except: pass
 
             try:
-                cursor.execute("SELECT game_id, game_title FROM wishlist LIMIT 1")
-            except sqlite3.OperationalError:
-                try: cursor.execute("ALTER TABLE wishlist ADD COLUMN game_id TEXT")
-                except: pass
-                try: cursor.execute("ALTER TABLE wishlist ADD COLUMN game_title TEXT")
-                except: pass
+                cursor.execute(
+                    "INSERT OR REPLACE INTO wishlist (user_id, game_name, game_id) VALUES (?, ?, ?)",
+                    (user_id, g_title, gid)
+                )
                 conn.commit()
-
-            try:
-                cursor.execute("DELETE FROM wishlist WHERE user_id=? AND game_id=?", (user_id, gid))
-                cursor.execute("INSERT INTO wishlist (user_id, game_id, game_title) VALUES (?, ?, ?)", (user_id, gid, g_title))
-                conn.commit()
-                bot.answer_callback_query(c.id, "✅ Сохранено")
+                bot.answer_callback_query(c.id, "✅ Сохранено в шорт-лист")
             except Exception as e:
                 logger.error(f"Add Wish Error: {e}")
                 bot.answer_callback_query(c.id, "⚠️ Ошибка")
+
+    @bot.callback_query_handler(func=lambda c: c.data == "noop")
+    def noop_handler(c):
+        bot.answer_callback_query(c.id)
+
+    @bot.callback_query_handler(func=lambda c: c.data.startswith("remove_wish_name_"))
+    def rm_wish_by_name(c):
+        name = c.data[len("remove_wish_name_"):]
+        with sqlite3.connect(config.DB_FILE) as conn:
+            conn.execute("DELETE FROM wishlist WHERE user_id=? AND game_name=?", (c.from_user.id, name))
+            conn.commit()
+        bot.answer_callback_query(c.id, "🗑 Удалено")
+        show_my_wishlist(c.message.chat.id, c.from_user.id)
 
     @bot.callback_query_handler(func=lambda c: c.data.startswith("remove_wish_"))
     def rm_wish(c):
         gid = c.data.split('_')[2]
         with sqlite3.connect(config.DB_FILE) as conn:
             conn.execute("DELETE FROM wishlist WHERE user_id=? AND game_id=?", (c.from_user.id, gid))
+            conn.commit()
         bot.answer_callback_query(c.id, "🗑 Удалено")
         show_my_wishlist(c.message.chat.id, c.from_user.id)
 
