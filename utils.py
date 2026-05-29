@@ -131,9 +131,18 @@ def convert_price(usd_price, user_currency):
 # ==========================================
 
 def get_webapp_url():
-    """Возвращает URL для Telegram Mini App"""
-    domain = os.environ.get('REPLIT_DEV_DOMAIN', '')
+    """Возвращает URL для Telegram Mini App.
+    Приоритет: WEBAPP_URL (задаётся вручную) → REPLIT_DOMAINS (деплой/дев)
+    """
+    # 1. Явно заданный URL (например, после деплоя)
+    custom = os.environ.get('WEBAPP_URL', '').strip().rstrip('/')
+    if custom:
+        return custom
+    # 2. Домен Replit (работает и в деплое, и в дев-режиме)
+    domain = os.environ.get('REPLIT_DOMAINS', '') or os.environ.get('REPLIT_DEV_DOMAIN', '')
     if domain:
+        # REPLIT_DOMAINS может содержать несколько доменов через запятую — берём первый
+        domain = domain.split(',')[0].strip()
         return f"https://{domain}"
     return None
 
