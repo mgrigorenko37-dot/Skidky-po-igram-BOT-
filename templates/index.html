@@ -575,11 +575,13 @@ const SIGNS = {
   USD:'$', RUB:'₽', KZT:'₸', BYN:'Br', UAH:'₴', UZS:"so'm",
   KGS:'с', AMD:'֏', AZN:'₼', TJS:'som', EUR:'€', GBP:'£'
 };
+let currentCurrency = (()=>{ try{ return JSON.parse(localStorage.getItem('gb_prefs'))?.currency||'USD'; }catch{return 'USD';} })();
+
 function fmtPrice(usd) {
   const v = parseFloat(usd);
   if (isNaN(v)) return '';
   if (v === 0) return 'FREE';
-  const cur = LS.prefs().currency || 'USD';
+  const cur = currentCurrency;
   const rate = RATES[cur] || 1;
   const sign = SIGNS[cur] || cur + ' ';
   const converted = v * rate;
@@ -1145,15 +1147,17 @@ function buildCurrency(current) {
   ).join('');
 }
 async function setCurrency(c) {
+  currentCurrency = c;
   document.querySelectorAll('.cb').forEach(b=>b.classList.toggle('on',b.textContent===c));
   const p=LS.prefs(); p.currency=c; LS.setPrefs(p);
   toast(`💱 ${c}`);
   if (userId) { try { await fetch(`/api/settings/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currency:c})}); } catch {} }
-  // Re-render any already-loaded content so prices update immediately
-  if (loaded.deals) { renderDeals(); }
-  if (loaded.free)  { loaded.free=false; loadFree(); }
-  if (loaded.wish)  { loaded.wish=false; loadWish(); }
-  if (si.value.trim().length>=2) doSearch(si.value.trim());
+  // Force-reset all tabs so they reload with the new currency
+  loaded.deals=false; loaded.free=false; loaded.wish=false;
+  if (curTab==='deals')   loadDeals();
+  else if (curTab==='free')  loadFree();
+  else if (curTab==='wish')  loadWish();
+  else if (curTab==='search' && si.value.trim().length>=2) doSearch(si.value.trim());
 }
 
 /* ─── Referral ─── */
