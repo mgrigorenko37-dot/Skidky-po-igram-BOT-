@@ -1,0 +1,3082 @@
+import os
+import telebot
+import requests
+import time
+import schedule
+import sqlite3
+import json
+import threading
+import feedparser
+import re
+import random
+import logging
+from threading import Thread
+from telebot import types, apihelper
+from deep_translator import GoogleTranslator
+from flask import Flask
+from bs4 import BeautifulSoup
+from urllib.parse import quote 
+from datetime import datetime, timedelta
+from logging.handlers import RotatingFileHandler
+
+# =================================================================
+# ⛏️ [НОВОЕ] КОНФИГУРАЦИЯ МАЙНИНГА И ЭКОНОМИКИ
+# =================================================================
+
+CRYPTO_BOT_TOKEN = os.environ.get('CRYPTO_PAY_API_KEY') # Берем из Secrets
+
+# 1. ФИНАНСЫ
+CURRENCY_MAIN = "USDT"
+MIN_WITHDRAWAL = 15.0     # Мин. вывод $15
+WITHDRAWAL_FEE = 0.10     # Комиссия 10%
+
+# 2. УРОВНИ (ROI и Доход)
+TIERS_CONFIG = {
+    1: {"name": "Новичок",  "type": "pack", "price": 10.0, "income": 0.33}, # Пакет
+    2: {"name": "Любитель", "type": "box",  "price": 2.0,  "income": 1.35},
+    3: {"name": "Профи",    "type": "box",  "price": 6.0,  "income": 4.50},
+    4: {"name": "Элита",    "type": "box",  "price": 15.0, "income": 11.60},
+    5: {"name": "Легенда",  "type": "box",  "price": 30.0, "income": 27.00}
+}
+
+# 3. ШАНСЫ ВЫПАДЕНИЯ (Хардкор режим)
+# Чем выше уровень коробки, тем сложнее выбить Ядро.
+DROP_RATES = {
+    2: {"trash": 60, "iron": 35, "core": 5.0}, 
+    3: {"trash": 65, "iron": 31.5, "core": 3.5},
+    4: {"trash": 70, "iron": 28, "core": 2.0},
+    5: {"trash": 75, "iron": 23.8, "core": 1.2} 
+}
+
+# 4. ДОХОДНОСТЬ ДЕТАЛЕЙ
+# (Ядро приносит 50% дохода, Железо 40%, Мелочь 10%)
+PART_INCOME_RATIO = {
+    "trash": 0.025, 
+    "iron":  0.10,  
+    "core":  0.25   
+}
+
+# 5. СТРУКТУРА ПК (10 СЛОТОВ)
+PC_STRUCTURE = {
+    "trash": ["mouse", "keyboard", "headphones", "pad"],
+    "iron":  ["case", "ram", "disk", "monitor"],
+    "core":  ["gpu", "cpu"]
+}
+
+# 6. КЭШБЕК (Продажа дубликатов)
+SELL_RATES = {
+    "trash": 0.10, 
+    "iron":  0.15, 
+    "core":  0.20  
+}
+
+# 7. ИЗНОС И РЕСТАВРАЦИЯ
+BREAKDOWN_IMMUNITY_DAYS = 10    # Иммунитет новичка (было 5, ставим 10)
+MAX_DAILY_LOSS_PERCENT = 0.20   # Защита: не более 20% убытка (было 50%)
+ITEM_LIFESPAN_DAYS = 0          # Глобальный таймер отключен
+RESTORE_PRICE_RATIO = 0.30      # ✅ Цена реставрации 30% (было 60%)
+AGING_PENALTY = 0.10            # Штраф за старость
+CORE_LIVES_LIMIT = 3            # ✅ Ядро сгорает после 3-го ремонта
+BREAKDOWN_MIN_DAYS = 5          # ✅ Кулдаун поломки одной детали
+
+# --- 1. НАСТРОЙКИ ---
+BOT_TOKEN = os.environ.get('BOT_TOKEN') 
+# ОБНОВЛЕННЫЙ ID АДМИНА (Сюда придут заявки)
+ADMIN_ID = os.environ.get('ADMIN_ID', '8463157443')  # 👈 Берем из переменных окружения
+# Юзернейм админа (резервный способ)
+ADMIN_USERNAME = "@chadmin_official"
+CHANNEL_ID = "@GameBroker_Official" 
+DB_FILE = "wishlist.db"
+
+# =================================================================
+# 💰 БЛОК ПАРТНЕРСКИХ ПРОГРАММ
+# =================================================================
+
+GGSEL_AFF_LINK = "https://xnmik.com/g/ngv70om7ow2992f3b792768e16fdce/?erid=2bL9aMPo2e49hMef4phyrMWkN2&ulp="
+
+PARTNER_LINKS = {
+    "2": "",   # GamersGate
+    "3": "",   # GreenManGaming
+    "7": "",   # GOG
+    "11": "",  # Humble Store
+    "13": "",  # Ubisoft Store (Uplay)
+    "15": "",  # Fanatical
+    "21": "",  # WinGameStore
+    "23": "",  # GameBillet
+    "24": "",  # Voidu
+    "25": "",  # Epic Games Store
+    "27": "",  # Gamesplanet
+    "29": "",  # 2Game
+    "30": "",  # IndieGala
+    "32": "",  # DreamGame
+    "34": "",  # Itch.io
+}
+
+ADMITAD_SUBID = "game_broker_bot"
+
+# =================================================================
+
+GENRES = {
+    "Action": "Экшен ⚔️", "RPG": "RPG 🧙‍♂️", "Strategy": "Стратегии 🧠",
+    "Adventure": "Приключения 🗺️", "Shooter": "Шутеры 🔫", "Horror": "Хорроры 👻",
+    "Simulation": "Симуляторы 🚜", "Survival": "Выживание 🏕️", "Puzzle": "Головоломки 🧩",
+    "Racing": "Гонки 🏎️", "Sports": "Спорт ⚽", "Platformer": "Платформеры 🏃",
+    "Stealth": "Стелс 👤", "Fighting": "Файтнги 🥊", "Open World": "Открытый мир 🌍"
+}
+
+# Валюты СНГ и их обозначения
+CURRENCY_SIGNS = {
+    "USD": "$",
+    "RUB": "₽",
+    "KZT": "₸",
+    "BYN": "Br",
+    "UAH": "₴",
+    "UZS": "so'm",
+    "KGS": "с",
+    "AMD": "֏",
+    "AZN": "₼",
+    "TJS": "som"
+}
+
+# --- 🎮 КОНТЕНТ ДЛЯ СБОРКИ ПК (НОВЫЕ ЦЕНЫ ДЛЯ БАЛАНСА) ---
+PC_PARTS = {
+    "CASE": [
+        {"name": "Коробка из-под обуви", "score": 1, "rarity": 1, "price": 50},
+        {"name": "Старый офисный ящик", "score": 10, "rarity": 1, "price": 50},
+        {"name": "Корпус без крышки", "score": 20, "rarity": 2, "price": 100},
+        {"name": "Бюджетный корпус", "score": 50, "rarity": 2, "price": 100},
+        {"name": "Zalman Z9", "score": 100, "rarity": 3, "price": 150},
+        {"name": "NZXT H510", "score": 200, "rarity": 3, "price": 150},
+        {"name": "Lian Li Dynamic", "score": 350, "rarity": 4, "price": 200},
+        {"name": "Кастомный стол-ПК", "score": 500, "rarity": 5, "price": 250}
+    ],
+    "MONITOR": [
+        {"name": "ЭЛТ Монитор", "score": 5, "rarity": 1, "price": 50},
+        {"name": "Квадратный 1280x1024", "score": 15, "rarity": 1, "price": 50},
+        {"name": "HD Ноутбучный", "score": 30, "rarity": 2, "price": 100},
+        {"name": "FullHD Офисный", "score": 60, "rarity": 2, "price": 100},
+        {"name": "Игровой 144Hz", "score": 150, "rarity": 3, "price": 150},
+        {"name": "Ultrawide 34\"", "score": 300, "rarity": 4, "price": 200},
+        {"name": "4K OLED 240Hz", "score": 600, "rarity": 5, "price": 250}
+    ],
+    "MOUSE": [
+        {"name": "Шариковая мышь", "score": 2, "rarity": 1, "price": 50},
+        {"name": "Офисная Genius", "score": 10, "rarity": 1, "price": 50},
+        {"name": "X7", "score": 40, "rarity": 2, "price": 100},
+        {"name": "Bloody", "score": 60, "rarity": 2, "price": 100},
+        {"name": "Logitech G102", "score": 100, "rarity": 3, "price": 150},
+        {"name": "Logitech G Pro", "score": 250, "rarity": 4, "price": 200},
+        {"name": "Razer Viper Signature", "score": 400, "rarity": 5, "price": 250}
+    ],
+    "PAD": [
+        {"name": "Лист А4", "score": 1, "rarity": 1, "price": 50},
+        {"name": "Стол (Без коврика)", "score": 5, "rarity": 1, "price": 50},
+        {"name": "Коврик Windows", "score": 15, "rarity": 2, "price": 100},
+        {"name": "Тканевый коврик", "score": 40, "rarity": 2, "price": 100},
+        {"name": "Ковер во весь стол", "score": 80, "rarity": 3, "price": 150},
+        {"name": "RGB Коврик", "score": 120, "rarity": 4, "price": 200},
+        {"name": "Стеклянный Skypad", "score": 200, "rarity": 5, "price": 250}
+    ],
+    "CPU": [
+        {"name": "Intel Celeron 2005", "score": 5, "rarity": 1, "price": 50},
+        {"name": "Intel Core 2 Duo", "score": 15, "rarity": 1, "price": 50},
+        {"name": "AMD FX-6300", "score": 30, "rarity": 2, "price": 100},
+        {"name": "Intel Core i3-10100F", "score": 80, "rarity": 2, "price": 100},
+        {"name": "AMD Ryzen 5 3600", "score": 120, "rarity": 3, "price": 150},
+        {"name": "Intel Core i5-12400F", "score": 180, "rarity": 3, "price": 150},
+        {"name": "AMD Ryzen 7 5800X3D", "score": 300, "rarity": 4, "price": 200},
+        {"name": "Intel Core i9-13900K", "score": 500, "rarity": 4, "price": 200},
+        {"name": "AMD Ryzen 9 7950X", "score": 550, "rarity": 5, "price": 250},
+        {"name": "Квантовый Процессор", "score": 999, "rarity": 5, "price": 250}
+    ],
+    "GPU": [
+        {"name": "Интегрированная", "score": 5, "rarity": 1, "price": 50},
+        {"name": "NVIDIA GT 210", "score": 10, "rarity": 1, "price": 50},
+        {"name": "GTX 750 Ti", "score": 40, "rarity": 2, "price": 100},
+        {"name": "GTX 1060 6GB", "score": 90, "rarity": 2, "price": 100},
+        {"name": "RX 580 8GB", "score": 95, "rarity": 3, "price": 150},
+        {"name": "RTX 3060", "score": 200, "rarity": 3, "price": 150},
+        {"name": "RTX 4070", "score": 400, "rarity": 4, "price": 200},
+        {"name": "RX 7900 XTX", "score": 600, "rarity": 4, "price": 200},
+        {"name": "RTX 4090", "score": 800, "rarity": 5, "price": 250},
+        {"name": "Чипсет Skynet", "score": 1000, "rarity": 5, "price": 250}
+    ],
+    "RAM": [
+        {"name": "2GB DDR2", "score": 5, "rarity": 1, "price": 50},
+        {"name": "4GB DDR3", "score": 15, "rarity": 1, "price": 50},
+        {"name": "8GB DDR4", "score": 30, "rarity": 2, "price": 100},
+        {"name": "16GB DDR4", "score": 60, "rarity": 3, "price": 150},
+        {"name": "32GB DDR5", "score": 120, "rarity": 4, "price": 200},
+        {"name": "64GB DDR5 RGB", "score": 200, "rarity": 5, "price": 250}
+    ],
+    "DISK": [
+        {"name": "HDD 80GB", "score": 5, "rarity": 1, "price": 50},
+        {"name": "HDD 500GB", "score": 20, "rarity": 2, "price": 100},
+        {"name": "SATA SSD 120GB", "score": 50, "rarity": 2, "price": 100},
+        {"name": "SATA SSD 1TB", "score": 100, "rarity": 3, "price": 150},
+        {"name": "M.2 NVMe 1TB", "score": 200, "rarity": 4, "price": 200},
+        {"name": "M.2 NVMe 4TB", "score": 400, "rarity": 5, "price": 250}
+    ]
+}
+
+# --- КРАСИВЫЕ 3D ИКОНКИ ---
+PART_IMAGES = {
+    "CASE": "https://img.icons8.com/fluency/512/workstation.png",
+    "MONITOR": "https://img.icons8.com/fluency/512/monitor.png",
+    "MOUSE": "https://img.icons8.com/fluency/512/mouse.png",
+    "PAD": "https://img.icons8.com/fluency/512/surface.png", 
+    "CPU": "https://img.icons8.com/fluency/512/processor.png",
+    "GPU": "https://img.icons8.com/fluency/512/video-card.png",
+    "RAM": "https://img.icons8.com/fluency/512/memory-slot.png",
+    "DISK": "https://img.icons8.com/fluency/512/hdd.png"
+}
+
+RSS_NEWS = "https://www.igromania.ru/rss/news.xml"
+RSS_FREEBIES = "https://freesteam.ru/feed/"
+
+SUPPORTED_STORES = {
+    "1": "Steam", "2": "GamersGate", "3": "GreenManGaming", "6": "Direct2Drive", "7": "GOG",
+    "8": "Origin", "11": "Humble Store", "13": "Uplay", "15": "Fanatical", "21": "WinGameStore",
+    "23": "GameBillet", "24": "Voidu", "25": "Epic Games", "27": "Gamesplanet", "28": "Gamesload",
+    "29": "2Game", "30": "IndieGala", "31": "Blizzard Shop", "32": "AllYouPlay", "33": "DLGamer",
+    "34": "Itch.io", "35": "Noctre"
+}
+
+apihelper.CONNECT_TIMEOUT = 60
+apihelper.READ_TIMEOUT = 120
+
+# =================================================================
+# 🔧 ДОБАВЛЕННЫЕ УЛУЧШЕНИЯ
+# =================================================================
+
+# --- [АНТИ-ФЛУД] Защита от быстрых нажатий (debounce) ---
+COOLDOWNS = {}  # Формат: {user_id: {action: timestamp}}
+FLOOD_TIMEOUT = 2  # Секунды между одинаковыми действиями
+
+def check_cooldown(user_id, action, timeout=FLOOD_TIMEOUT):
+    """
+    Проверяет, прошло ли достаточно времени с последнего действия.
+    Возвращает True если можно выполнять, False если нужно подождать.
+    """
+    current_time = time.time()
+    if user_id not in COOLDOWNS:
+        COOLDOWNS[user_id] = {}
+    
+    last_time = COOLDOWNS[user_id].get(action, 0)
+    time_passed = current_time - last_time
+    
+    if time_passed >= timeout:
+        COOLDOWNS[user_id][action] = current_time
+        return True
+    return False
+
+# --- [БЕЗОПАСНОСТЬ] Белый список SQL колонок ---
+COLUMNS_WHITELIST = {
+    'news': 'want_news',
+    'freebies': 'want_freebies'
+}
+
+# --- [ЛОГИРОВАНИЕ] Настройка логирования ---
+def setup_logging():
+    """Настройка логирования с ротацией файлов"""
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+    try:
+        # Файловый лог (макс 10МБ, 5 файлов ротации)
+        file_handler = RotatingFileHandler(
+            'bot.log', 
+            maxBytes=10*1024*1024, 
+            backupCount=5,
+            encoding='utf-8'
+        )
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(logging.Formatter(log_format))
+
+        # Консольный лог
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.WARNING)
+        console_handler.setFormatter(logging.Formatter(log_format))
+
+        # Настройка корневого логгера
+        logging.basicConfig(
+            level=logging.INFO,
+            handlers=[file_handler, console_handler],
+            format=log_format
+        )
+
+        return logging.getLogger(__name__)
+    except Exception as e:
+        # Если не удалось настроить файловое логирование, используем только консоль
+        logging.basicConfig(level=logging.INFO, format=log_format)
+        logger = logging.getLogger(__name__)
+        logger.warning(f"File logging failed, using console only: {e}")
+        return logger
+
+logger = setup_logging()
+
+# === ПРОВЕРКА КОНФИГУРАЦИИ ===
+print("\n" + "="*60)
+print("🤖 Game Broker Bot - Initialization")
+print("="*60)
+
+if not BOT_TOKEN:
+    print("❌ ERROR: BOT_TOKEN not found in Secrets!")
+    print("📝 Add to 🔑 Secrets:")
+    print("   KEY: BOT_TOKEN")
+    print("   VALUE: Your token from @BotFather")
+    print("   https://t.me/BotFather")
+    exit(1)
+else:
+    print("✅ BOT_TOKEN: Found")
+
+if not CRYPTO_BOT_TOKEN:
+    print("⚠️  WARNING: CRYPTO_PAY_API_KEY not found!")
+    print("📝 To enable payments, add to 🔑 Secrets:")
+    print("   KEY: CRYPTO_PAY_API_KEY")
+    print("   VALUE: Your API key from https://cryptobot.dev")
+    print("   (Payments will not work without this)")
+else:
+    print("✅ CRYPTO_PAY_API_KEY: Found")
+
+print("="*60)
+print("✅ Bot started successfully!\n")
+
+# --- [БЕЗОПАСНОСТЬ] Умная обертка для Telegram API ---
+def safe_api_call(func, *args, **kwargs):
+    """
+    Безопасный вызов Telegram API методов.
+    Возвращает результат функции или None при ошибках, которые можно проигнорировать.
+    """
+    try:
+        return func(*args, **kwargs)
+    except telebot.apihelper.ApiTelegramException as e:
+        error_msg = str(e).lower()
+
+        # Категории ошибок, которые можно безопасно игнорировать
+        ignorable_errors = [
+            "message to edit not found",
+            "message is not modified",
+            "message to delete not found",
+            "chat not found",
+            "bot was blocked by the user",
+            "user is deactivated",
+            "not enough rights",
+            "message can't be deleted",
+            "message identifier is not specified"
+        ]
+
+        if any(err in error_msg for err in ignorable_errors):
+            # Тихий логинг только для блокировок
+            if "bot was blocked" in error_msg:
+                logger.info(f"User blocked the bot")
+            return None
+        else:
+            # Критические ошибки логируем
+            logger.error(f"Telegram API Error [{func.__name__}]: {e}")
+            return None
+    except Exception as e:
+        logger.error(f"Unexpected error in {func.__name__}: {e}")
+        return None
+
+# --- [УТИЛИТЫ] Быстрые обертки для частых операций ---
+def safe_send_message(chat_id, text, **kwargs):
+    """Безопасная отправка сообщения"""
+    return safe_api_call(bot.send_message, chat_id, text, **kwargs)
+
+def safe_edit_message_text(text, chat_id, message_id, **kwargs):
+    """Безопасное редактирование сообщения"""
+    return safe_api_call(bot.edit_message_text, text, chat_id, message_id, **kwargs)
+
+def safe_delete_message(chat_id, message_id):
+    """Безопасное удаление сообщения"""
+    return safe_api_call(bot.delete_message, chat_id, message_id)
+
+def safe_answer_callback(callback_query_id, text=None, show_alert=False):
+    """Безопасный ответ на callback"""
+    if text:
+        return safe_api_call(bot.answer_callback_query, callback_query_id, text, show_alert)
+    return safe_api_call(bot.answer_callback_query, callback_query_id)
+
+def safe_send_photo(chat_id, photo_url, **kwargs):
+    """Безопасная отправка фото"""
+    return safe_api_call(bot.send_photo, chat_id, photo_url, **kwargs)
+
+def safe_edit_message_reply_markup(chat_id, message_id, reply_markup):
+    """Безопасное изменение клавиатуры"""
+    return safe_api_call(bot.edit_message_reply_markup, chat_id, message_id, reply_markup=reply_markup)
+
+# --- [УТИЛИТЫ] Безопасная работа с JSON ---
+def safe_json_loads(json_str, default=None):
+    """Безопасная загрузка JSON с обработкой ошибок"""
+    if default is None:
+        default = {}
+
+    if not json_str or not isinstance(json_str, str):
+        return default
+
+    try:
+        return json.loads(json_str)
+    except (json.JSONDecodeError, TypeError, ValueError) as e:
+        logger.warning(f"JSON decode error: {e}, data: {json_str[:100]}")
+        return default
+
+def safe_json_dumps(data, default=None):
+    """Безопасная сериализация в JSON"""
+    if default is None:
+        default = "{}"
+
+    try:
+        return json.dumps(data, ensure_ascii=False)
+    except (TypeError, ValueError) as e:
+        logger.error(f"JSON encode error: {e}")
+        return default
+
+# =================================================================
+
+# --- 2. ИНИЦИАЛИЗАЦИЯ БАЗЫ ДАННЫХ ---
+def init_db():
+    try:
+        with sqlite3.connect(DB_FILE, check_same_thread=False) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''CREATE TABLE IF NOT EXISTS wishlist 
+                (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, game_name TEXT, last_price REAL, UNIQUE(user_id, game_name))''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS user_stores (user_id INTEGER, store_id TEXT, UNIQUE(user_id, store_id))''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS user_news_prefs (user_id INTEGER PRIMARY KEY, want_news INTEGER DEFAULT 1, want_freebies INTEGER DEFAULT 1, is_supporter INTEGER DEFAULT 0, referrer_id INTEGER)''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS sent_news (news_id TEXT PRIMARY KEY)''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS posted_deals (game_id TEXT PRIMARY KEY, date_sent TEXT)''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS payments (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, amount INTEGER, date TEXT)''')
+
+            cursor.execute("PRAGMA table_info(user_news_prefs)")
+            columns = [column[1] for column in cursor.fetchall()]
+            if 'is_supporter' not in columns:
+                cursor.execute("ALTER TABLE user_news_prefs ADD COLUMN is_supporter INTEGER DEFAULT 0")
+            if 'referrer_id' not in columns:
+                cursor.execute("ALTER TABLE user_news_prefs ADD COLUMN referrer_id INTEGER")
+            if 'bonus_stars' not in columns:
+                cursor.execute("ALTER TABLE user_news_prefs ADD COLUMN bonus_stars INTEGER DEFAULT 0")
+            if 'currency' not in columns:
+                cursor.execute("ALTER TABLE user_news_prefs ADD COLUMN currency TEXT DEFAULT 'USD'")
+
+            if 'last_bonus_date' not in columns:
+                cursor.execute("ALTER TABLE user_news_prefs ADD COLUMN last_bonus_date TEXT")
+            if 'pc_data' not in columns:
+                cursor.execute("ALTER TABLE user_news_prefs ADD COLUMN pc_data TEXT DEFAULT '{}'")
+            if 'balance' not in columns:
+                cursor.execute("ALTER TABLE user_news_prefs ADD COLUMN balance INTEGER DEFAULT 0")
+            if 'parts_inventory' not in columns:
+                cursor.execute("ALTER TABLE user_news_prefs ADD COLUMN parts_inventory TEXT DEFAULT '{}'")
+
+            # --- [НОВОЕ] ТАБЛИЦЫ ДЛЯ МАЙНИНГА ---
+
+            # Профиль майнера (USDT)
+            cursor.execute('''CREATE TABLE IF NOT EXISTS mining_users (
+                user_id INTEGER PRIMARY KEY,
+                balance_usdt REAL DEFAULT 0.0,
+                buffer_usdt REAL DEFAULT 0.0,
+                last_collect_date TEXT,
+                reg_date TEXT,
+                referrer_id INTEGER
+            )''')
+            
+            cursor.execute("PRAGMA table_info(mining_users)")
+            m_columns = [column[1] for column in cursor.fetchall()]
+            if 'buffer_usdt' not in m_columns:
+                cursor.execute("ALTER TABLE mining_users ADD COLUMN buffer_usdt REAL DEFAULT 0.0")
+            if 'last_collect_date' not in m_columns:
+                cursor.execute("ALTER TABLE mining_users ADD COLUMN last_collect_date TEXT")
+
+            # Инвентарь (10 слотов + запасные)
+            cursor.execute('''CREATE TABLE IF NOT EXISTS mining_inventory (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                part_type TEXT,    
+                rarity TEXT,       
+                tier INTEGER,      
+                is_installed INTEGER DEFAULT 0,
+                install_date TEXT
+            )''')
+
+            # Установленная Ферма (Активные слоты и их состояние)
+            cursor.execute('''CREATE TABLE IF NOT EXISTS mining_farm (
+                user_id INTEGER,
+                slot_name TEXT,       
+                inventory_item_id INTEGER, 
+                install_date TEXT,    
+                restores_count INTEGER DEFAULT 0, 
+                is_broken INTEGER DEFAULT 0,      
+                UNIQUE(user_id, slot_name)
+            )''')
+
+            # История транзакций USDT
+            cursor.execute('''CREATE TABLE IF NOT EXISTS crypto_transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                amount REAL,
+                currency TEXT,
+                reason TEXT,
+                date TEXT
+            )''')
+
+            conn.commit()
+            logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"❌ Database initialization error: {e}")
+        print(f"❌ Ошибка БД: {e}")
+
+init_db()
+
+if not BOT_TOKEN:
+    logger.critical("❌ BOT_TOKEN is not set!")
+    print("❌ ОШИБКА: BOT_TOKEN не установлен!")
+    print("📝 Добавьте переменную окружения BOT_TOKEN в Secrets")
+    print("   1. Откройте 🔑 Secrets слева")
+    print("   2. Добавьте 'BOT_TOKEN' с вашим токеном от @BotFather")
+    exit(1)
+
+bot = telebot.TeleBot(BOT_TOKEN)
+
+# --- 6. ЛОГИКА МАЙНИНГА (GAME ENGINE) ---
+
+def get_usdt_balance(user_id):
+    with sqlite3.connect(DB_FILE) as conn:
+        res = conn.execute("SELECT balance_usdt FROM mining_users WHERE user_id = ?", (user_id,)).fetchone()
+        return res[0] if res else 0.0
+
+def update_usdt_balance(user_id, amount, reason=""):
+    with sqlite3.connect(DB_FILE) as conn:
+        # Проверяем, есть ли юзер
+        if not conn.execute("SELECT 1 FROM mining_users WHERE user_id = ?", (user_id,)).fetchone():
+            conn.execute("INSERT INTO mining_users (user_id, reg_date) VALUES (?, ?)", 
+                         (user_id, datetime.now().strftime('%Y-%m-%d')))
+            logger.info(f"New mining user registered: {user_id}")
+
+        conn.execute("UPDATE mining_users SET balance_usdt = balance_usdt + ? WHERE user_id = ?", (amount, user_id))
+        conn.execute("INSERT INTO crypto_transactions (user_id, amount, currency, reason, date) VALUES (?, ?, ?, ?, ?)",
+                     (user_id, amount, "USDT", reason, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        conn.commit()
+
+    logger.info(f"USDT balance updated: user={user_id}, amount={amount}, reason={reason}")
+
+BUFFER_CAPACITY_RATIO = 2.0  # Вместимость буфера = доход за 2 дня
+
+def calculate_farm_income(user_id):
+    # Считаем доход по каждой установленной детали
+    # Учитываем: Тип детали (Part Ratio), Уровень (Tier Income), Поломку, Старение
+    total_income = 0.0
+    with sqlite3.connect(DB_FILE) as conn:
+        conn.row_factory = sqlite3.Row
+        # Получаем все детали в ферме, джойним с инвентарем чтобы знать уровень (tier)
+        query = """
+            SELECT f.slot_name, f.is_broken, f.restores_count, i.tier, i.rarity 
+            FROM mining_farm f
+            JOIN mining_inventory i ON f.inventory_item_id = i.id
+            WHERE f.user_id = ?
+        """
+        parts = conn.execute(query, (user_id,)).fetchall()
+
+        for p in parts:
+            if p['is_broken']: continue # Сломанная деталь не майнит
+
+            # Базовый доход уровня (например, Элита = $11.60)
+            tier_info = TIERS_CONFIG.get(p['tier'], TIERS_CONFIG[1])
+            base_tier_income = tier_info['income']
+
+            # Доля дохода этой детали (GPU = 25%, Mouse = 2.5%)
+            ratio = PART_INCOME_RATIO.get(p['rarity'], 0.0)
+
+            # Штраф за старение (каждая реставрация -10%)
+            aging_factor = 1.0 - (p['restores_count'] * AGING_PENALTY)
+            if aging_factor < 0.1: aging_factor = 0.1 # Минимум 10% эффективности
+
+            # ИТОГ ПО ДЕТАЛИ
+            part_income = base_tier_income * ratio * aging_factor
+            total_income += part_income
+
+    return round(total_income, 4)
+
+def update_mining_buffer(user_id):
+    """Обновляет накопления в буфере на основе прошедшего времени"""
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT buffer_usdt, last_collect_date FROM mining_users WHERE user_id = ?", (user_id,))
+            row = cursor.fetchone()
+            
+            # Если юзера нет в таблице майнинга - создаем его
+            if not row:
+                cursor.execute("INSERT INTO mining_users (user_id, reg_date, balance_usdt, buffer_usdt) VALUES (?, ?, 0.0, 0.0)", 
+                             (user_id, datetime.now().strftime('%Y-%m-%d')))
+                conn.commit()
+                buffer, last_date = 0.0, None
+            else:
+                buffer, last_date = row
+            
+            now = datetime.now()
+            income_per_day = calculate_farm_income(user_id)
+            
+            # Лимит хранилища (буфера) - не более дохода за 24 часа (100% от дневного дохода)
+            # Пользователь должен заходить хотя бы раз в сутки, иначе майнинг "простаивает"
+            max_buffer = round(income_per_day, 6)
+            if max_buffer < 0.001: max_buffer = 0.001 # Минимальный лимит для совсем слабых ферм
+            
+            if not last_date:
+                cursor.execute("UPDATE mining_users SET last_collect_date = ? WHERE user_id = ?", (str(now), user_id))
+                conn.commit()
+                return buffer, max_buffer, 0
+                
+            last_dt = datetime.fromisoformat(last_date)
+            seconds_passed = (now - last_dt).total_seconds()
+            
+            # Расчет дохода: (Доход_в_день / 86400) * секунды
+            income_per_second = income_per_day / 86400.0
+            new_accrual = seconds_passed * income_per_second
+            
+            # Итоговый буфер с жестким ограничением
+            final_buffer = min(buffer + new_accrual, max_buffer)
+            
+            # Обновляем базу
+            cursor.execute("UPDATE mining_users SET buffer_usdt = ?, last_collect_date = ? WHERE user_id = ?", 
+                         (final_buffer, str(now), user_id))
+            conn.commit()
+            
+            percent = int((final_buffer / max_buffer * 100)) if max_buffer > 0 else 0
+            if percent > 100: percent = 100
+            
+            return round(final_buffer, 6), max_buffer, percent
+    except Exception as e:
+        logger.error(f"Buffer update error: {e}")
+        return 0, 0, 0
+
+def open_box_rng(tier):
+    # Гача-рандом на основе конфига DROP_RATES
+    rates = DROP_RATES.get(tier, DROP_RATES[2]) # По дефолту Любитель
+    roll = random.uniform(0, 100)
+
+    # 1. Проверяем Ядро (Самое редкое)
+    if roll < rates['core']:
+        rarity = "core"
+        part_type = random.choice(PC_STRUCTURE["core"])
+    # 2. Проверяем Железо
+    elif roll < (rates['core'] + rates['iron']):
+        rarity = "iron"
+        part_type = random.choice(PC_STRUCTURE["iron"])
+    # 3. Иначе Мусор
+    else:
+        rarity = "trash"
+        part_type = random.choice(PC_STRUCTURE["trash"])
+
+    return part_type, rarity
+
+def trigger_daily_breakdown(user_id):
+    # Умная поломка: проверяем иммунитет и кошелек
+    with sqlite3.connect(DB_FILE) as conn:
+        conn.row_factory = sqlite3.Row
+        user = conn.execute("SELECT reg_date, balance_usdt FROM mining_users WHERE user_id = ?", (user_id,)).fetchone()
+        if not user: return None
+
+        # 1. Иммунитет новичка
+        reg_date = datetime.strptime(user['reg_date'], '%Y-%m-%d')
+        if (datetime.now() - reg_date).days < BREAKDOWN_IMMUNITY_DAYS:
+            return None # Не ломаем
+
+        # 2. Правило "Тормоз" (не ломаем, если ремонт стоит > 50% дохода)
+        daily_income = calculate_farm_income(user_id)
+        if daily_income <= 0: return None
+
+        # Выбираем деталь для поломки
+        installed = conn.execute("SELECT slot_name, inventory_item_id FROM mining_farm WHERE user_id = ? AND is_broken = 0", (user_id,)).fetchall()
+        if not installed: return None
+
+        target = random.choice(installed)
+
+        # Тут должна быть проверка: есть ли деньги на ремонт этой детали?
+        # Для упрощения пока просто ломаем рандомную рабочую деталь
+        conn.execute("UPDATE mining_farm SET is_broken = 1 WHERE user_id = ? AND slot_name = ?", (user_id, target['slot_name']))
+        conn.commit()
+        logger.info(f"Part breakdown: user={user_id}, part={target['slot_name']}")
+        return target['slot_name']
+
+# --- 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+
+def generate_aff_link(original_url, store_id):
+    store_id = str(store_id)
+    if store_id in PARTNER_LINKS and PARTNER_LINKS[store_id]:
+        partner_base = PARTNER_LINKS[store_id]
+        if "?" in partner_base:
+             return f"{partner_base}{quote(original_url)}&subid={ADMITAD_SUBID}"
+        else:
+             return f"{partner_base}?ulp={quote(original_url)}&subid={ADMITAD_SUBID}"
+    return original_url
+
+def get_ggsel_link(game_title):
+    search_url = f"https://ggsel.net/catalog?q={game_title}"
+    return f"{GGSEL_AFF_LINK}{quote(search_url)}"
+
+def get_user_stores(user_id):
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT store_id FROM user_stores WHERE user_id = ?", (user_id,))
+            rows = cursor.fetchall()
+            return [r[0] for r in rows] if rows else list(SUPPORTED_STORES.keys())
+    except:
+        return list(SUPPORTED_STORES.keys())
+
+def get_user_currency(user_id):
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            cur = conn.execute("SELECT currency FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()
+            return cur[0] if cur else 'USD'
+    except: return 'USD'
+
+def get_game_best_deal(game_name, allowed_stores=None):
+    try:
+        url = f"https://www.cheapshark.com/api/1.0/games?title={game_name}&limit=5"
+
+        try:
+            response = requests.get(url, timeout=15)
+            if response.status_code != 200:
+                logger.error(f"CheapShark API error: {response.status_code}")
+                return None
+
+            data = response.json()
+        except requests.exceptions.Timeout:
+            logger.error(f"Timeout error for game: {game_name}")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request error for game {game_name}: {e}")
+            return None
+
+        if not data:
+            return None
+
+        # Получаем первую игру из результатов
+        game = data[0]
+        game_id = game['gameID']
+        thumb = game['thumb']
+
+        # Получаем детальную информацию об игре
+        detail_url = f"https://www.cheapshark.com/api/1.0/games?id={game_id}"
+        try:
+            detail_response = requests.get(detail_url, timeout=15)
+            if detail_response.status_code != 200:
+                return None
+            full_data = detail_response.json()
+        except Exception as e:
+            logger.error(f"Detail API error for game {game_id}: {e}")
+            return None
+
+        deals = full_data.get('deals', [])
+
+        # Фильтруем по разрешенным магазинам
+        if allowed_stores:
+            filtered_deals = []
+            for deal in deals:
+                if deal['storeID'] in allowed_stores:
+                    filtered_deals.append(deal)
+            deals = filtered_deals
+
+        if not deals:
+            return None
+
+        # Находим лучшую сделку (самую низкую цену)
+        best = min(deals, key=lambda x: float(x['price']))
+
+        # Формируем сырую ссылку
+        raw_url = f"https://www.cheapshark.com/redirect?dealID={best['dealID']}"
+
+        # Генерируем партнерскую ссылку
+        aff_url = generate_aff_link(raw_url, best['storeID'])
+        if not aff_url:
+            aff_url = raw_url  # Фолбэк
+
+        # Получаем полную ссылку на изображение
+        if thumb and not thumb.startswith('http'):
+            thumb = 'https://www.cheapshark.com' + thumb
+
+        return {
+            "title": game['external'],
+            "price": best['price'],
+            "url": aff_url,
+            "thumb": thumb,
+            "storeID": best['storeID']
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting game deal for '{game_name}': {e}")
+        return None
+
+# --- КОНВЕРТАЦИЯ ВАЛЮТ (СНГ) ---
+RATES_CACHE = {"rates": {}, "time": 0}
+
+def get_rates():
+    if time.time() - RATES_CACHE["time"] > 3600 or not RATES_CACHE["rates"]: 
+        try:
+            resp = requests.get("https://open.er-api.com/v6/latest/USD", timeout=10).json()
+            if resp.get('result') == 'success':
+                RATES_CACHE["rates"] = resp['rates']
+                RATES_CACHE["time"] = time.time()
+                logger.info("Exchange rates updated")
+        except Exception as e:
+            logger.error(f"Exchange rates API error: {e}")
+            if not RATES_CACHE["rates"]:
+                RATES_CACHE["rates"] = {'USD': 1.0, 'RUB': 90.0, 'KZT': 450.0, 'UAH': 38.0}
+    return RATES_CACHE["rates"]
+
+# === ПЛАТЕЖНАЯ ФУНКЦИЯ НА ВЕРХНИЙ УРОВЕНЬ ===
+def create_cryptopay_invoice(user_id, amount):
+    """Создает реальный счет через API CryptoPay"""
+    token = os.environ.get('CRYPTO_PAY_API_KEY')
+    if not token:
+        return None
+
+    url = "https://pay.crypt.bot/api/createInvoice"
+    headers = {"Crypto-Pay-API-Token": token}
+    payload = {
+        "asset": "USDT",
+        "amount": str(amount),
+        "description": "Game Broker Bot",
+        "payload": str(user_id)
+    }
+    try:
+        r = requests.post(url, json=payload, headers=headers, timeout=10).json()
+        if r.get('ok'):
+            return r['result']['pay_url']
+        logger.error(f"CryptoPay API error: {r}")
+        return None
+    except Exception as e:
+        logger.error(f"CryptoPay error: {e}")
+        return None
+
+def process_withdrawal_usdt(message, max_balance):
+    """Обработчик суммы вывода"""
+    try:
+        amount = float(message.text)
+        user_id = message.chat.id
+
+        if amount <= 0:
+            safe_send_message(user_id, "❌ Сумма должна быть больше 0")
+            return
+
+        if amount > max_balance:
+            safe_send_message(user_id, f"❌ Недостаточно средств!\nДоступно: ${max_balance}")
+            return
+
+        if amount < MIN_WITHDRAWAL:
+            safe_send_message(user_id, f"❌ Минимум: ${MIN_WITHDRAWAL}")
+            return
+
+        # Создаем вывод
+        fee = amount * WITHDRAWAL_FEE
+        final_amount = amount - fee
+
+        mk = types.InlineKeyboardMarkup()
+        mk.add(types.InlineKeyboardButton("✅ Подтвердить", callback_data=f"confirm_withdraw_{amount}_{final_amount}"))
+        mk.add(types.InlineKeyboardButton("❌ Отмена", callback_data="cancel_withdraw"))
+
+        text = f"💸 **Подтверждение вывода**\n\nСумма: ${amount}\nКомиссия (10%): ${fee:.2f}\n**Получите: ${final_amount:.2f}**"
+        safe_send_message(user_id, text, parse_mode='Markdown', reply_markup=mk)
+    except:
+        safe_send_message(message.chat.id, "❌ Введите корректную сумму (число)")
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith('confirm_withdraw_'))
+def finalize_withdrawal(c):
+    """Финализирует вывод"""
+    try:
+        parts = c.data.split('_')
+        amount = float(parts[2])
+        final = float(parts[3])
+        user_id = c.from_user.id
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cur_balance = conn.execute("SELECT balance FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()
+            if not cur_balance or cur_balance[0] < amount:
+                safe_answer_callback(c.id, "❌ Недостаточно средств", show_alert=True)
+                return
+
+            new_balance = cur_balance[0] - amount
+            conn.execute("UPDATE user_news_prefs SET balance = ? WHERE user_id = ?", (new_balance, user_id))
+            conn.commit()
+
+        safe_edit_message_text(
+            f"✅ **Вывод обработан!**\n\nВы получите ${final:.2f}\nПроцесс может занять 1-24 часа",
+            c.message.chat.id, c.message.message_id, parse_mode='Markdown'
+        )
+        safe_answer_callback(c.id)
+    except Exception as e:
+        logger.error(f"Withdrawal error: {e}")
+        safe_answer_callback(c.id, "❌ Ошибка при выводе", show_alert=True)
+
+@bot.callback_query_handler(func=lambda c: c.data == "cancel_withdraw")
+def cancel_withdrawal(c):
+    """Отмена вывода"""
+    safe_edit_message_text("❌ Вывод отменен", c.message.chat.id, c.message.message_id)
+    safe_answer_callback(c.id)
+
+def format_price(usd_price, user_id=None):
+    if not usd_price: return ""
+    try:
+        price_float = float(usd_price)
+        if price_float == 0: return "Бесплатно"
+        target_curr = 'USD'
+        if user_id:
+            target_curr = get_user_currency(user_id)
+        rates = get_rates()
+        if target_curr not in rates:
+            target_curr = 'USD'
+        final_price = price_float * rates[target_curr]
+        sign = CURRENCY_SIGNS.get(target_curr, target_curr)
+        if target_curr == 'USD':
+            return "" 
+        return f"~{int(final_price) if final_price > 10 else round(final_price, 2)} {sign}"
+    except: return ""
+
+# --- 4. НОВОСТИ, ПАРСИНГ И АВТО-СКИДКИ ---
+
+def get_image_from_url(url):
+    try:
+        r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        og_image = soup.find('meta', property='og:image')
+        if isinstance(og_image, telebot.types.Tag) and og_image.get('content'):
+            return str(og_image['content'])
+        for img in soup.find_all('img'):
+            src = img.get('src')
+            if src and isinstance(src, str) and (src.startswith('http') or src.startswith('//')):
+                if 'logo' not in src.lower(): return src if src.startswith('http') else 'https:' + src
+        return None
+    except Exception as e:
+        logger.error(f"Error getting image from URL: {e}")
+        return None
+
+def extract_image(entry):
+    if 'media_content' in entry and entry.media_content: return entry.media_content[0]['url']
+    content = entry.get('description', '') + entry.get('summary', '')
+    if content:
+        soup = BeautifulSoup(content, 'html.parser')
+        img = soup.find('img')
+        if img and isinstance(img, telebot.types.Tag) and img.get('src'): return str(img.get('src'))
+    return get_image_from_url(entry.link)
+
+def broadcast_news(title, link, type_news, img=None, custom_caption=None, custom_markup=None):
+    if type_news == "freebie":
+        icon = "🎁 ХАЛЯВА"
+        caption = f"{icon}\n\n**{title}**"
+        markup = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton("🔗 Забрать", url=link))
+    elif type_news == "news":
+        icon = "📰 НОВОСТИ"
+        caption = f"{icon}\n\n**{title}**"
+        markup = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton("🔗 Читать", url=link))
+    elif type_news == "sale":
+        caption = custom_caption
+        markup = custom_markup
+
+    if not img and type_news != "sale":
+        img = get_image_from_url(link)
+
+    # Отправка в канал
+    try:
+        if img:
+            bot.send_photo(CHANNEL_ID, img, caption=caption, parse_mode='Markdown', reply_markup=markup)
+        else:
+            bot.send_message(CHANNEL_ID, caption, parse_mode='Markdown', reply_markup=markup, disable_web_page_preview=False)
+        logger.info(f"Broadcast sent to channel: {title}")
+    except Exception as e:
+        logger.error(f"❌ Channel broadcast error: {e}")
+
+    # Отправка пользователям
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            if type_news == "freebie":
+                cursor.execute("SELECT user_id FROM user_news_prefs WHERE want_freebies = 1")
+            else:
+                cursor.execute("SELECT user_id FROM user_news_prefs WHERE want_news = 1")
+            users = cursor.fetchall()
+
+        for (uid,) in users:
+            try:
+                if img:
+                    safe_send_photo(uid, img, caption=caption, parse_mode='Markdown', reply_markup=markup)
+                else:
+                    safe_send_message(uid, caption, parse_mode='Markdown', reply_markup=markup)
+                time.sleep(0.05)
+            except:
+                continue
+    except Exception as e:
+        logger.error(f"User broadcast error: {e}")
+
+# --- 5. МЕНЮ И КЛАВИАТУРЫ ---
+
+# [ОБНОВЛЕНО] Главное меню: Оставлены только основные функции
+def main_kbrd(uid=None):
+    m = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    m.add("⛏️ Майнинг Ферма") 
+    m.add("➕ Отследить игру", "🔍 Поиск по жанрам")
+    m.add("📋 Мой шорт лист", "🔥 Топ скидок")
+    m.add("⚙️ Настройки", "👥 Рефералы")
+    m.add("💬 Сообщество", "⭐ Поддержать проект")
+    m.add("📢 Реклама")
+    if uid and int(uid) == int(ADMIN_ID):
+        m.add("📊 Статистика")
+    return m
+
+def mining_menu_kbrd():
+    mk = types.InlineKeyboardMarkup(row_width=2)
+    mk.add(
+        types.InlineKeyboardButton("🖥 Моя Ферма", callback_data="mine_farm"),
+        types.InlineKeyboardButton("🎒 Инвентарь", callback_data="mine_inv"),
+        types.InlineKeyboardButton("🏪 Магазин Деталей", callback_data="mine_shop"),
+        types.InlineKeyboardButton("💳 Кошелек USDT", callback_data="mine_wallet")
+    )
+    mk.add(types.InlineKeyboardButton("📢 Наш канал", url="https://t.me/GameBroker_Official"))
+    return mk
+
+# [НОВОЕ] Меню Магазина
+def mining_shop_kbrd():
+    mk = types.InlineKeyboardMarkup(row_width=1)
+
+    # 1. Пак Новичка (Особый)
+    n = TIERS_CONFIG[1]
+    mk.add(types.InlineKeyboardButton(f"📦 {n['name']} (${n['price']}) - Готовый ПК", callback_data="buy_pack_1"))
+
+    # 2. Коробки (Гача)
+    for t in range(2, 6):
+        info = TIERS_CONFIG[t]
+        mk.add(types.InlineKeyboardButton(f"🗳 {info['name']} (${info['price']})", callback_data=f"buy_box_{t}"))
+
+    mk.add(types.InlineKeyboardButton("🔙 Назад в меню фермы", callback_data="back_to_mine"))
+    return mk
+
+def settings_kbrd(uid):
+    with sqlite3.connect(DB_FILE) as conn:
+        row = conn.execute("SELECT want_news, want_freebies, currency FROM user_news_prefs WHERE user_id = ?", (uid,)).fetchone()
+        n, f, curr = (row[0], row[1], row[2]) if row else (1, 1, 'USD')
+    mk = types.InlineKeyboardMarkup(row_width=1)
+    mk.add(
+        types.InlineKeyboardButton(f"{'✅' if n else '❌'} Игровые новости", callback_data="tgl_news"),
+        types.InlineKeyboardButton(f"{'✅' if f else '❌'} Уведомления о халяве", callback_data="tgl_free"),
+        types.InlineKeyboardButton(f"💱 Валюта: {curr} {CURRENCY_SIGNS.get(curr, '')}", callback_data="change_currency"),
+        types.InlineKeyboardButton("🏬 Настройка магазинов", callback_data="manage_stores")
+    )
+    return mk
+
+def currency_kbrd():
+    mk = types.InlineKeyboardMarkup(row_width=3)
+    btns = []
+    for code, sign in CURRENCY_SIGNS.items():
+        btns.append(types.InlineKeyboardButton(f"{code} {sign}", callback_data=f"set_curr_{code}"))
+    mk.add(*btns)
+    mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_settings"))
+    return mk
+
+# --- ОБРАБОТЧИКИ ---
+
+def mining_main_handler(m):
+    user_id = m.chat.id
+    balance = get_usdt_balance(user_id)
+    # Обновляем буфер перед показом
+    buffer, max_buf, percent = update_mining_buffer(user_id)
+    
+    income = calculate_farm_income(user_id)
+    
+    # Визуализация прогресс-бара
+    filled = int(percent / 10)
+    bar = "🟩" * filled + "⬜" * (10 - filled)
+    
+    display_buffer = round(buffer, 6)
+    
+    text = (f"🏭 **Статус Майнинга**\n\n"
+            f"⚡ Скорость: **${income} / день**\n"
+            f"🔋 Хранилище: **${display_buffer:.6f}** (Заполнено на {percent}%)\n"
+            f"[{bar}]\n\n"
+            f"💰 Баланс: **${balance:.4f} USDT**\n\n"
+            f"Вентиляторы крутятся, крипта мутится...")
+    
+    mk = mining_menu_kbrd()
+    # Добавляем кнопку сбора прибыли прямо в главное меню
+    mk.add(
+        types.InlineKeyboardButton(f"💰 Собрать (${display_buffer:.6f})", callback_data="collect_profit"),
+        types.InlineKeyboardButton("🔄 Обновить", callback_data="back_to_mine")
+    )
+    
+    safe_send_message(user_id, text, parse_mode='Markdown', reply_markup=mk)
+
+@bot.message_handler(func=lambda m: m.text == "⛏️ Майнинг Ферма")
+def mining_main_handler_wrapper(m):
+    mining_main_handler(m)
+
+@bot.message_handler(func=lambda m: m.text == "🔥 Топ скидок")
+def hot_deals_wrapper(m):
+    hot_deals_cmd(m)
+
+@bot.message_handler(func=lambda m: m.text == "⭐ Поддержать проект")
+def support_info_wrapper(m):
+    support_info(m)
+@bot.callback_query_handler(func=lambda c: c.data == "deposit_usdt")
+def handle_deposit_usdt(c):
+    """Обработчик кнопки 'Пополнить (CryptoBot)'"""
+    user_id = c.message.chat.id
+    mk = types.InlineKeyboardMarkup(row_width=2)
+    mk.add(
+        types.InlineKeyboardButton("💵 $10", callback_data="dep_10"),
+        types.InlineKeyboardButton("💵 $25", callback_data="dep_25"),
+        types.InlineKeyboardButton("💵 $50", callback_data="dep_50"),
+        types.InlineKeyboardButton("💵 $100", callback_data="dep_100")
+    )
+    mk.add(types.InlineKeyboardButton("✏️ Другая сумма", callback_data="custom_dep_usdt"))
+    mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="mine_wallet"))
+    text = "💳 **Пополнение USDT**\n\nВыберите сумму:\nОплата через CryptoBot (USDT, TON, BTC, ETH)"
+    safe_edit_message_text(text, user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith('dep_'))
+def process_deposit_amount(c):
+    """Создание ссылки на оплату"""
+    user_id = c.message.chat.id
+    amount = int(c.data.split('_')[1])
+    pay_url = create_cryptopay_invoice(user_id, amount)
+    if pay_url:
+        mk = types.InlineKeyboardMarkup()
+        mk.add(types.InlineKeyboardButton("💳 Оплатить в CryptoBot", url=pay_url))
+        text = f"💎 **Счет на {amount} USDT готов!**\n\nНажмите кнопку для оплаты.\nБаланс обновится автоматически."
+        safe_send_message(user_id, text, parse_mode='Markdown', reply_markup=mk)
+        safe_answer_callback(c.id)
+    else:
+        safe_answer_callback(c.id, "❌ Ошибка API. Проверь CRYPTO_PAY_API_KEY в Secrets!", show_alert=True)
+
+@bot.callback_query_handler(func=lambda c: c.data == "custom_dep_usdt")
+def custom_deposit_usdt(call):
+    """Ввод пользовательской суммы для пополнения USDT"""
+    user_id = call.from_user.id
+    try:
+        msg = safe_send_message(call.message.chat.id, "💳 **Введите сумму для пополнения** (в USDT):\n\n📌 Минимум: $1\n📌 Максимум: $10,000", parse_mode='Markdown')
+        if msg:
+            bot.register_next_step_handler(msg, process_custom_deposit_usdt)
+        safe_answer_callback(call.id)
+    except Exception as e:
+        logger.error(f"Custom deposit USDT error for {user_id}: {e}")
+
+def process_custom_deposit_usdt(message):
+    """Обработка пользовательской суммы USDT"""
+    try:
+        amount_text = message.text.strip()
+        try:
+            amount = float(amount_text)
+        except:
+            safe_send_message(message.chat.id, "❌ Пожалуйста, введите корректное число.")
+            return
+
+        if amount <= 0:
+            safe_send_message(message.chat.id, "❌ Сумма должна быть больше нуля.")
+            return
+
+        if amount > 10000:
+            safe_send_message(message.chat.id, "❌ Максимум за раз: $10,000 USDT.")
+            return
+
+        user_id = message.chat.id
+        pay_url = create_cryptopay_invoice(user_id, int(amount))
+        if pay_url:
+            mk = types.InlineKeyboardMarkup()
+            mk.add(types.InlineKeyboardButton("💳 Оплатить в CryptoBot", url=pay_url))
+            text = f"💎 **Счет на {amount} USDT готов!**\n\nНажмите кнопку для оплаты.\nБаланс обновится автоматически."
+            safe_send_message(user_id, text, parse_mode='Markdown', reply_markup=mk)
+        else:
+            safe_send_message(message.chat.id, "❌ Ошибка при создании счета. Попробуйте позже.")
+    except Exception as e:
+        logger.error(f"Process custom deposit USDT error: {e}")
+        safe_send_message(message.chat.id, "❌ Ошибка при пополнении. Попробуйте позже.")
+
+@bot.callback_query_handler(func=lambda c: c.data == "withdraw_usdt")
+def handle_withdraw_usdt(c):
+    """Обработчик кнопки 'Вывести'"""
+    user_id = c.message.chat.id
+    balance = get_usdt_balance(user_id)
+    if balance < MIN_WITHDRAWAL:
+        safe_answer_callback(c.id, f"❌ Минимум: ${MIN_WITHDRAWAL}\nБаланс: ${balance}", show_alert=True)
+        return
+    msg = safe_send_message(user_id, f"💸 **Вывод USDT**\n\nДоступно: ${balance}\nВведите сумму:", parse_mode='Markdown')
+    if msg:
+        bot.register_next_step_handler(msg, process_withdrawal_usdt, balance)
+
+    # [НОВОЕ] Обработка Магазина, Инвентаря, Сборки
+@bot.callback_query_handler(func=lambda c: c.data.startswith('mine_') or c.data.startswith('buy_') or c.data.startswith('install_') or c.data.startswith('sell_') or c.data == 'back_to_mine')
+def mining_callbacks(c):
+    user_id = c.message.chat.id
+    if c.data == "back_to_mine":
+        # Перед показом главного меню обновляем буфер
+        update_mining_buffer(user_id)
+        mining_main_handler(c.message)
+        return
+
+    elif c.data == "mine_shop":
+        balance = get_usdt_balance(user_id)
+        text = (f"🏪 **Магазин Деталей**\n"
+                f"Ваш баланс: `${balance}`\n\n"
+                f"📦 **Новичок:** Вы получаете сразу 10 деталей для старта.\n"
+                f"🗳 **Коробки:** Случайная деталь (шанс выпадения зависит от уровня).")
+        safe_edit_message_text(text, user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mining_shop_kbrd())
+
+    # ИНВЕНТАРЬ (СПИСОК)
+    elif c.data == "mine_inv":
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.row_factory = sqlite3.Row
+            inv = conn.execute("SELECT id, part_type, rarity, tier FROM mining_inventory WHERE user_id = ? AND is_installed = 0", (user_id,)).fetchall()
+
+        # Красивый заголовок инвентаря
+        text = "🎒 **Ваш Инвентарь**\n\n"
+        if not inv:
+            text += "Тут пока пусто. Купите детали в магазине!"
+            mk = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_mine"))
+        else:
+            text += f"У вас **{len(inv)}** свободных деталей.\nНажмите на деталь, чтобы **установить**, **продать** или **улучшить** её."
+            
+            mk = types.InlineKeyboardMarkup(row_width=1)
+            # Кнопки крафта сверху для удобства
+            mk.add(
+                types.InlineKeyboardButton("💎 Крафт (5 Trash -> 1 Iron)", callback_data="craft_trash"),
+                types.InlineKeyboardButton("🔥 Апгрейд (5 Iron -> 1 Core)", callback_data="craft_iron")
+            )
+            
+            for item in inv:
+                rarity_icon = "⚪" if item['rarity'] == "trash" else ("🔵" if item['rarity'] == "iron" else "🟡")
+                t_name = TIERS_CONFIG[item['tier']]['name']
+                btn_text = f"{rarity_icon} {item['part_type'].upper()} ({t_name})"
+                mk.add(types.InlineKeyboardButton(btn_text, callback_data=f"view_item_{item['id']}"))
+            
+            mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_mine"))
+
+        safe_edit_message_text(text, user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+
+    # ПРОСМОТР ДЕТАЛИ (Установить / Продать / Заменить)
+    elif c.data.startswith("view_item_"):
+        item_id = int(c.data.split('_')[2])
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.row_factory = sqlite3.Row
+            item = conn.execute("SELECT * FROM mining_inventory WHERE id = ?", (item_id,)).fetchone()
+
+        if not item:
+            safe_answer_callback(c.id, "Предмет не найден.")
+            return
+
+        tier_info = TIERS_CONFIG[item['tier']]
+        sell_price = round(tier_info['price'] * SELL_RATES[item['rarity']], 2)
+        slot = item['part_type']
+
+        text = (f"🔧 **Деталь:** {slot.upper()}\n"
+                f"📊 Уровень: {tier_info['name']}\n"
+                f"💎 Редкость: {item['rarity'].upper()}\n\n"
+                f"Что сделать?")
+
+        mk = types.InlineKeyboardMarkup(row_width=1)
+        mk.add(
+            types.InlineKeyboardButton("🛠 Установить / Заменить", callback_data=f"install_{item_id}"),
+            types.InlineKeyboardButton(f"💰 Продать за ${sell_price}", callback_data=f"sell_mining_{item_id}"),
+            types.InlineKeyboardButton("🔙 Назад", callback_data="mine_inv")
+        )
+
+        safe_edit_message_text(text, user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+
+    # УСТАНОВКА ДЕТАЛИ
+    elif c.data.startswith("install_"):
+        item_id = int(c.data.split('_')[1])
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.row_factory = sqlite3.Row
+            item = conn.execute("SELECT * FROM mining_inventory WHERE id = ?", (item_id,)).fetchone()
+
+            # Проверяем, что занято в слоте
+            slot = item['part_type']
+            old = conn.execute("SELECT inventory_item_id FROM mining_farm WHERE user_id = ? AND slot_name = ?", (user_id, slot)).fetchone()
+
+            if old:
+                # Снимаем старую (возвращаем в инвентарь is_installed=0)
+                old_id = old['inventory_item_id']
+                conn.execute("UPDATE mining_inventory SET is_installed = 0 WHERE id = ?", (old_id,))
+
+            # Ставим новую
+            conn.execute("UPDATE mining_inventory SET is_installed = 1 WHERE id = ?", (item_id,))
+            conn.execute("INSERT OR REPLACE INTO mining_farm (user_id, slot_name, inventory_item_id, install_date, is_broken) VALUES (?, ?, ?, ?, 0)", 
+                         (user_id, slot, item_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            conn.commit()
+
+        safe_answer_callback(c.id, f"✅ {slot} установлен!")
+        # Возвращаем в меню фермы
+        mining_main_handler(c.message) 
+
+    elif c.data == "back_to_mine":
+        # Перед показом главного меню обновляем буфер
+        update_mining_buffer(user_id)
+        mining_main_handler(c.message)
+
+    elif c.data == "collect_profit":
+        # Сбор прибыли из буфера на основной баланс
+        # 1. Принудительно обновляем буфер
+        current_buffer, max_buf, _ = update_mining_buffer(user_id)
+        
+        if current_buffer < 0.0001:
+            safe_answer_callback(c.id, f"❌ Минимум для сбора: 0.0001\nУ вас: {current_buffer:.6f}", show_alert=True)
+            return
+            
+        # ПРЯМОЕ ЗАЧИСЛЕНИЕ НА БАЛАНС В БД С БЛОКИРОВКОЙ
+        try:
+            with sqlite3.connect(DB_FILE, timeout=20) as conn:
+                cursor = conn.cursor()
+                # Атомарная операция: зачисляем и обнуляем
+                cursor.execute("UPDATE mining_users SET balance_usdt = balance_usdt + buffer_usdt, buffer_usdt = 0.0, last_collect_date = ? WHERE user_id = ?", 
+                             (datetime.now().isoformat(), user_id))
+                
+                if cursor.rowcount > 0:
+                    # Логируем транзакцию
+                    cursor.execute("INSERT INTO crypto_transactions (user_id, amount, currency, status, type, date) VALUES (?, ?, 'USDT', 'completed', 'mining_collect', ?)",
+                                 (user_id, current_buffer, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                    conn.commit()
+                    safe_answer_callback(c.id, f"✅ УСПЕШНО!\nЗачислено: ${current_buffer:.6f} USDT", show_alert=True)
+                else:
+                    conn.rollback()
+                    safe_answer_callback(c.id, "❌ Ошибка: пользователь не найден в базе.", show_alert=True)
+            
+            # Обновляем сообщение фермы (оно покажет новый баланс из БД)
+            mining_main_handler(c.message)
+        except Exception as e:
+            logger.error(f"Collect profit CRITICAL error: {e}")
+            safe_answer_callback(c.id, "❌ Системная ошибка зачисления. Попробуйте еще раз.", show_alert=True)
+
+    # УПРАВЛЕНИЕ ИНВЕНТАРЕМ
+    elif c.data == "mine_inv":
+        # Кнопки Крафтинга
+        mk = types.InlineKeyboardMarkup(row_width=1)
+        mk.add(
+            types.InlineKeyboardButton("🛠 Крафтинг (5 Trash -> 1 Iron)", callback_data="craft_trash"),
+            types.InlineKeyboardButton("⚙️ Апгрейд (5 Iron -> 1 Core)", callback_data="craft_iron")
+        )
+        
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.row_factory = sqlite3.Row
+            inv = conn.execute("SELECT id, part_type, rarity, tier FROM mining_inventory WHERE user_id = ? AND is_installed = 0", (user_id,)).fetchall()
+
+        for item in inv:
+            rarity_icon = "⚪" if item['rarity'] == "trash" else ("🔵" if item['rarity'] == "iron" else "🟡")
+            mk.add(types.InlineKeyboardButton(f"{rarity_icon} {item['part_type']} (T{item['tier']})", callback_data=f"view_item_{item['id']}"))
+            
+        mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_mine"))
+        text = "🎒 **Ваш Инвентарь**\n\nЗдесь хранятся детали, которые не установлены в ферму. Вы можете продать их или использовать для крафта."
+        safe_edit_message_text(text, user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+
+    elif c.data.startswith("craft_"):
+        rarity_source = c.data.split('_')[1] # trash or iron
+        rarity_target = "iron" if rarity_source == "trash" else "core"
+        
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM mining_inventory WHERE user_id = ? AND rarity = ? AND is_installed = 0 LIMIT 5", (user_id, rarity_source))
+            items = cursor.fetchall()
+            
+            if len(items) < 5:
+                safe_answer_callback(c.id, f"❌ Нужно минимум 5 деталей {rarity_source.upper()}", show_alert=True)
+                return
+            
+            # Удаляем 5 деталей
+            ids_to_del = [str(r[0]) for r in items]
+            cursor.execute(f"DELETE FROM mining_inventory WHERE id IN ({','.join(ids_to_del)})")
+            
+            # Шанс 40%
+            if random.random() < 0.40:
+                new_type = random.choice(PC_STRUCTURE[rarity_target])
+                # Тир берем средний или 1
+                cursor.execute("INSERT INTO mining_inventory (user_id, part_type, rarity, tier) VALUES (?, ?, ?, ?)", 
+                             (user_id, new_type, rarity_target, 1))
+                safe_answer_callback(c.id, f"🎉 УСПЕХ! Получена деталь: {new_type.upper()}", show_alert=True)
+            else:
+                safe_answer_callback(c.id, "💨 НЕУДАЧА! Детали были утилизированы, но ничего не вышло.", show_alert=True)
+                
+            conn.commit()
+            # Обновляем инвентарь (просто вызываем c.data == "mine_inv")
+            c.data = "mine_inv"
+            mining_callbacks(c)
+
+    # ПРОДАЖА ДЕТАЛИ (КЭШБЕК)
+    elif c.data.startswith("sell_mining_"):
+        item_id = int(c.data.split('_')[2])
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.row_factory = sqlite3.Row
+            item = conn.execute("SELECT * FROM mining_inventory WHERE id = ?", (item_id,)).fetchone()
+
+            if item:
+                tier_info = TIERS_CONFIG[item['tier']]
+                price = round(tier_info['price'] * SELL_RATES[item['rarity']], 2)
+
+                # Удаляем и начисляем
+                conn.execute("DELETE FROM mining_inventory WHERE id = ?", (item_id,))
+                conn.commit()
+                update_usdt_balance(user_id, price, "Sell Part")
+
+                safe_answer_callback(c.id, f"Продано за ${price}")
+
+        # Обновляем список
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.row_factory = sqlite3.Row
+            inv = conn.execute("SELECT id, part_type, rarity, tier FROM mining_inventory WHERE user_id = ? AND is_installed = 0", (user_id,)).fetchall()
+
+        mk = types.InlineKeyboardMarkup(row_width=1)
+        for item in inv:
+            t_name = TIERS_CONFIG[item['tier']]['name']
+            mk.add(types.InlineKeyboardButton(f"🔧 {item['part_type']} ({t_name})", callback_data=f"view_item_{item['id']}"))
+        mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_mine"))
+        safe_edit_message_text("🎒 **Ваш Инвентарь:**", user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+
+    # МОЯ ФЕРМА (СТАТУС)
+    elif c.data == "mine_farm":
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            # Получаем все детали в ферме
+            cursor.execute("""
+                SELECT mf.slot_name, mi.part_type, mi.rarity, mi.tier, mf.is_broken, mf.inventory_item_id 
+                FROM mining_farm mf
+                JOIN mining_inventory mi ON mf.inventory_item_id = mi.id
+                WHERE mf.user_id = ?
+            """, (user_id,))
+            installed_parts = {row[0]: row for row in cursor.fetchall()}
+
+        text = "🖥 **Управление Фермой**\n\nНажмите на деталь для управления (ремонт, замена, снятие):"
+        mk = types.InlineKeyboardMarkup(row_width=1)
+        
+        all_slots = PC_STRUCTURE["trash"] + PC_STRUCTURE["iron"] + PC_STRUCTURE["core"]
+        
+        for slot in all_slots:
+            if slot in installed_parts:
+                row = installed_parts[slot]
+                status_icon = "🔴" if row[4] else "🟢"
+                rarity_icon = "⚪" if row[2] == "trash" else ("🔵" if row[2] == "iron" else "🟡")
+                btn_text = f"{status_icon} {slot.upper()}: {rarity_icon} T{row[3]}"
+                mk.add(types.InlineKeyboardButton(btn_text, callback_data=f"manage_slot_{slot}"))
+            else:
+                mk.add(types.InlineKeyboardButton(f"🔘 {slot.upper()}: [Пусто]", callback_data=f"install_to_{slot}"))
+        
+        mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_mine"))
+        safe_edit_message_text(text, user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+
+    elif c.data.startswith("manage_slot_"):
+        slot = c.data.split('_')[2]
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT mi.part_type, mi.rarity, mi.tier, mf.is_broken, mf.inventory_item_id, mi.id, mf.restores_count
+                FROM mining_farm mf
+                JOIN mining_inventory mi ON mf.inventory_item_id = mi.id
+                WHERE mf.user_id = ? AND mf.slot_name = ?
+            """, (user_id, slot))
+            row = cursor.fetchone()
+        
+        if not row:
+            safe_answer_callback(c.id, "Деталь не найдена")
+            return
+
+        part_type, rarity, tier, is_broken, inv_id, _, restores = row
+        price_full = TIERS_CONFIG[tier]['price']
+        repair_price = round(price_full * RESTORE_PRICE_RATIO, 2)
+        
+        # Проверка наличия запчастей в инвентаре для авто-ремонта (визуально)
+        with sqlite3.connect(DB_FILE) as conn:
+            spare = conn.execute("SELECT id FROM mining_inventory WHERE user_id = ? AND part_type = ? AND is_installed = 0 LIMIT 1", (user_id, part_type)).fetchone()
+
+        text = (f"🛠 **Управление: {slot.upper()}**\n\n"
+                f"Тип: {part_type}\n"
+                f"Уровень: {tier}\n"
+                f"Редкость: {rarity.upper()}\n"
+                f"Состояние: {'❌ СЛОМАНО' if is_broken else '✅ РАБОТАЕТ'}\n"
+                f"Ремонтов: {restores}/{CORE_LIVES_LIMIT if rarity == 'core' else '∞'}\n\n"
+                f"💰 Ремонт стоит: `${repair_price} USDT`")
+        
+        if spare:
+            text += f"\n📦 **У вас есть запчасть в инвентаре!** Можно заменить бесплатно."
+
+        mk = types.InlineKeyboardMarkup(row_width=1)
+        if is_broken:
+            mk.add(types.InlineKeyboardButton(f"🔧 Починить (${repair_price})", callback_data=f"repair_part_{slot}"))
+        
+        mk.add(
+            types.InlineKeyboardButton("🔄 Заменить из инвентаря", callback_data="mine_inv"),
+            types.InlineKeyboardButton("🎒 Снять в инвентарь", callback_data=f"uninstall_part_{slot}"),
+            types.InlineKeyboardButton("🔙 К ферме", callback_data="mine_farm")
+        )
+        safe_edit_message_text(text, user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+
+    elif c.data.startswith("repair_part_"):
+        slot = c.data.split('_')[2]
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT mi.tier, mf.restores_count, mi.rarity, mf.inventory_item_id
+                FROM mining_farm mf
+                JOIN mining_inventory mi ON mf.inventory_item_id = mi.id
+                WHERE mf.user_id = ? AND mf.slot_name = ?
+            """, (user_id, slot))
+            row = cursor.fetchone()
+            
+            if not row: return
+            tier, restores, rarity, inv_id = row
+            
+            # Проверка лимита ядер
+            if rarity == "core" and restores >= CORE_LIVES_LIMIT:
+                safe_answer_callback(c.id, "❌ Ядро полностью изношено и не подлежит ремонту!", show_alert=True)
+                # Удаляем деталь
+                cursor.execute("DELETE FROM mining_farm WHERE user_id = ? AND slot_name = ?", (user_id, slot))
+                cursor.execute("DELETE FROM mining_inventory WHERE id = ?", (inv_id,))
+                conn.commit()
+                return
+
+            price = round(TIERS_CONFIG[tier]['price'] * RESTORE_PRICE_RATIO, 2)
+            balance = get_usdt_balance(user_id)
+            
+            if balance < price:
+                safe_answer_callback(c.id, f"❌ Нужно ${price} USDT", show_alert=True)
+                return
+            
+            update_usdt_balance(user_id, -price, f"Repair {slot}")
+            cursor.execute("UPDATE mining_farm SET is_broken = 0, restores_count = restores_count + 1 WHERE user_id = ? AND slot_name = ?", (user_id, slot))
+            conn.commit()
+            
+            safe_answer_callback(c.id, "✅ Деталь отремонтирована!")
+            # Возвращаемся в меню слота
+            c.data = f"manage_slot_{slot}"
+            mining_callbacks(c)
+
+    elif c.data.startswith("uninstall_part_"):
+        slot = c.data.split('_')[2]
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT inventory_item_id FROM mining_farm WHERE user_id = ? AND slot_name = ?", (user_id, slot))
+            row = cursor.fetchone()
+            if row:
+                cursor.execute("UPDATE mining_inventory SET is_installed = 0 WHERE id = ?", (row[0],))
+                cursor.execute("DELETE FROM mining_farm WHERE user_id = ? AND slot_name = ?", (user_id, slot))
+                conn.commit()
+                safe_answer_callback(c.id, "🎒 Деталь снята в инвентарь")
+                c.data = "mine_farm"
+                mining_callbacks(c)
+
+    elif c.data == "mine_wallet":
+        balance = get_usdt_balance(user_id)
+        mk = types.InlineKeyboardMarkup()
+        mk.add(types.InlineKeyboardButton("💳 Пополнить (CryptoBot)", callback_data="deposit_usdt"))
+        mk.add(types.InlineKeyboardButton("💸 Вывести", callback_data="withdraw_usdt"))
+        mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_mine"))
+
+        text = (f"💳 **Кошелек USDT**\n\n"
+                f"Баланс: **${balance}**\n"
+                f"Минимальный вывод: ${MIN_WITHDRAWAL}")
+        safe_edit_message_text(text, user_id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+
+    # ПОКУПКА ПАКА НОВИЧКА ($10)
+    elif c.data == "buy_pack_1":
+        price = TIERS_CONFIG[1]['price']
+        balance = get_usdt_balance(user_id)
+
+        if balance < price:
+            safe_answer_callback(c.id, "❌ Недостаточно USDT! Пополните кошелек.", show_alert=True)
+            return
+
+        update_usdt_balance(user_id, -price, "Buy Novice Pack")
+
+        # Выдаем и АВТО-УСТАНАВЛИВАЕМ детали
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            # Список всех типов деталей для полной сборки
+            all_part_types = PC_STRUCTURE["trash"] + PC_STRUCTURE["iron"] + PC_STRUCTURE["core"]
+            
+            for pt in all_part_types:
+                rarity = "trash" if pt in PC_STRUCTURE["trash"] else ("iron" if pt in PC_STRUCTURE["iron"] else "core")
+                
+                # Добавляем в инвентарь
+                cursor.execute("INSERT INTO mining_inventory (user_id, part_type, rarity, tier, is_installed) VALUES (?, ?, ?, ?, 1)", 
+                             (user_id, pt, rarity, 1))
+                item_id = cursor.lastrowid
+                
+                # Устанавливаем в ферму
+                cursor.execute("INSERT OR REPLACE INTO mining_farm (user_id, slot_name, inventory_item_id, install_date) VALUES (?, ?, ?, ?)",
+                             (user_id, pt, item_id, str(datetime.now())))
+            
+            conn.commit()
+
+        safe_answer_callback(c.id, "✅ Пак куплен и установлен!")
+        safe_send_message(user_id, "📦 **Поздравляем!** Вы купили Пак Новичка.\n\n⚙️ **Авто-сборка:** Все детали автоматически установлены в слоты.\n🚀 **Ферма запущена!** Доход пошел.", parse_mode='Markdown')
+
+    # ПОКУПКА КОРОБОК (Гача)
+    elif c.data.startswith("buy_box_"):
+        tier = int(c.data.split('_')[2])
+        info = TIERS_CONFIG[tier]
+        balance = get_usdt_balance(user_id)
+
+        if balance < info['price']:
+            safe_answer_callback(c.id, f"❌ Нужно ${info['price']}", show_alert=True)
+            return
+
+        update_usdt_balance(user_id, -info['price'], f"Buy Box Tier {tier}")
+
+        # Крутим рулетку
+        part_type, rarity = open_box_rng(tier)
+
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.execute("INSERT INTO mining_inventory (user_id, part_type, rarity, tier) VALUES (?, ?, ?, ?)", 
+                         (user_id, part_type, rarity, tier))
+            conn.commit()
+
+        # Анимация или сообщение
+        icon = "⚪" if rarity == "trash" else ("🔵" if rarity == "iron" else "🟡")
+        safe_answer_callback(c.id, f"Выпало: {icon} {part_type.upper()}")
+        safe_send_message(user_id, f"🎁 **Открыта коробка ({info['name']})**\n\nВыпал предмет:\n{icon} **{part_type.capitalize()}**\nРедкость: {rarity.upper()}", parse_mode='Markdown')
+
+
+@bot.message_handler(commands=['stat'])
+@bot.message_handler(func=lambda m: m.text == "📊 Статистика")
+def admin_stat(message):
+    # Проверка админских прав
+    if str(message.chat.id) != ADMIN_ID:
+        logger.warning(f"Unauthorized admin access attempt from {message.chat.id}")
+        return
+
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            total_users = cursor.execute("SELECT COUNT(*) FROM user_news_prefs").fetchone()[0]
+            total_wishlist = cursor.execute("SELECT COUNT(*) FROM wishlist").fetchone()[0]
+            cursor.execute("SELECT store_id, COUNT(*) as c FROM user_stores GROUP BY store_id ORDER BY c DESC LIMIT 3")
+            pop_stores = cursor.fetchall()
+            stores_text = "\n".join([f"• {SUPPORTED_STORES.get(s[0], s[0])}: {s[1]}" for s in pop_stores]) if pop_stores else "Нет данных"
+            total_stars = cursor.execute("SELECT SUM(amount) FROM payments").fetchone()[0] or 0
+            total_refs = cursor.execute("SELECT COUNT(*) FROM user_news_prefs WHERE referrer_id IS NOT NULL").fetchone()[0]
+
+        stat_msg = (
+            f"📊 **Статистика админа**\n\n"
+            f"👤 Всего пользователей: `{total_users}`\n"
+            f"📝 Всего игр в списках: `{total_wishlist}`\n"
+            f"🤝 Всего рефералов: `{total_refs}`\n"
+            f"⭐ Всего получено звезд: `{total_stars}`\n\n"
+            f"🏬 **Топ магазинов:**\n{stores_text}"
+        )
+        safe_send_message(ADMIN_ID, stat_msg, parse_mode='Markdown')
+    except Exception as e:
+        logger.error(f"Admin stat error: {e}")
+        safe_send_message(ADMIN_ID, f"Ошибка статистики: {e}")
+
+# Удалено: Старый Кошелек, Лутбокс и Мой ПК
+
+        if balance <= 0:
+            safe_answer_callback(call.id, "У вас нет средств для вывода.", show_alert=True)
+            return
+
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        
+        preset_amounts = [50, 100, 500, 1000]
+        for amount in preset_amounts:
+            if amount <= balance:
+                markup.add(types.InlineKeyboardButton(f"💸 {amount} Stars", callback_data=f"quick_with_{amount}"))
+        
+        markup.add(types.InlineKeyboardButton("✏️ Другая сумма", callback_data="custom_with_amount"))
+        
+        safe_edit_message_text(
+            f"💸 **Выберите сумму для вывода:**\n\n"
+            f"💰 Ваш баланс: {balance} Stars\n"
+            f"📌 Минимум: 15 Stars\n"
+            f"📌 Комиссия: 10%",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode='Markdown',
+            reply_markup=markup
+        )
+        safe_answer_callback(call.id)
+    except Exception as e:
+        logger.error(f"Withdrawal start error for {user_id}: {e}")
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith('quick_with_'))
+def quick_withdrawal(call):
+    try:
+        user_id = call.from_user.id
+        
+        # 🛡️ АНТИ-ФЛУД: Проверяем, не нажимал ли пользователь слишком быстро
+        if not check_cooldown(user_id, "quick_withdraw"):
+            safe_answer_callback(call.id, "⏳ Подождите 2 секунды перед новой попыткой", show_alert=True)
+            return
+        
+        amount = int(call.data.split('_')[2])
+        
+        with sqlite3.connect(DB_FILE) as conn:
+            cur_bal = conn.execute("SELECT balance FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()[0]
+            
+            if cur_bal < amount:
+                safe_answer_callback(call.id, "❌ Недостаточно средств", show_alert=True)
+                return
+            
+            if amount < MIN_WITHDRAWAL:
+                safe_answer_callback(call.id, f"Минимум: {MIN_WITHDRAWAL} Stars", show_alert=True)
+                return
+            
+            new_bal = cur_bal - amount
+            conn.execute("UPDATE user_news_prefs SET balance = ? WHERE user_id = ?", (new_bal, user_id))
+            conn.commit()
+        
+        username = call.from_user.username
+        user_link = f"@{username}" if username else f"ID: {user_id}"
+        
+        admin_text = (
+            f"💸 **ЗАЯВКА НА ВЫВОД**\n\n"
+            f"👤 Пользователь: {user_link}\n"
+            f"💰 Сумма: **{amount} Stars**\n"
+            f"📅 Дата: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        )
+        
+        try:
+            safe_send_message(ADMIN_ID, admin_text, parse_mode='Markdown')
+        except:
+            pass
+        
+        safe_edit_message_text(
+            f"✅ **Заявка принята!**\n\n"
+            f"💸 На вывод: {amount} Stars\n"
+            f"📋 Статус: Ожидание обработки\n"
+            f"👤 Админ скоро свяжется с вами",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode='Markdown'
+        )
+        safe_answer_callback(call.id, "Заявка отправлена администратору", show_alert=False)
+        logger.info(f"User {user_id} quick withdrawal {amount} Stars")
+    except Exception as e:
+        logger.error(f"Quick withdrawal error: {e}")
+        safe_answer_callback(call.id, "❌ Ошибка при выводе", show_alert=True)
+
+@bot.callback_query_handler(func=lambda c: c.data == "custom_with_amount")
+def custom_withdrawal_amount(call):
+    user_id = call.from_user.id
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            balance = conn.execute("SELECT balance FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()[0]
+        
+        msg = safe_send_message(call.message.chat.id, f"💸 **Введите свою сумму для вывода** (в Stars):\n\n📌 Минимум: {MIN_WITHDRAWAL} Stars\n📌 Максимум: {balance} Stars", parse_mode='Markdown')
+        if msg:
+            bot.register_next_step_handler(msg, process_withdrawal_amount, balance)
+        safe_answer_callback(call.id)
+    except Exception as e:
+        logger.error(f"Custom withdrawal error for {user_id}: {e}")
+
+def process_deposit_amount(message):
+    try:
+        amount_text = message.text.strip()
+        try:
+            amount = float(amount_text)
+        except ValueError:
+            safe_send_message(message.chat.id, "❌ Пожалуйста, введите корректное число.")
+            return
+
+        if amount <= 0:
+            safe_send_message(message.chat.id, "❌ Сумма должна быть больше нуля.")
+            return
+
+        if amount > 10000:
+            safe_send_message(message.chat.id, "❌ Максимум за раз: 10,000 Stars.")
+            return
+
+        user_id = message.chat.id
+        new_bal = 0
+        with sqlite3.connect(DB_FILE) as conn:
+            cur_bal = conn.execute("SELECT balance FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()
+            if cur_bal:
+                new_bal = cur_bal[0] + amount
+                conn.execute("UPDATE user_news_prefs SET balance = ? WHERE user_id = ?", (new_bal, user_id))
+                conn.commit()
+
+        safe_send_message(message.chat.id, f"✅ **Баланс пополнен!**\n\n➕ Добавлено: {amount} Stars\n💰 Новый баланс: {new_bal} Stars", parse_mode='Markdown')
+        logger.info(f"User {user_id} deposited {amount} Stars")
+
+    except Exception as e:
+        logger.error(f"Deposit error for {message.chat.id}: {e}")
+        safe_send_message(message.chat.id, "❌ Ошибка при пополнении. Попробуйте позже.")
+
+def process_custom_deposit_stars(message):
+    process_deposit_amount(message)
+
+# === ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ СООБЩЕНИЙ АДМИНУ ===
+def process_withdrawal_amount(message, max_balance):
+    try:
+        amount_text = message.text
+        if not amount_text.isdigit():
+            safe_send_message(message.chat.id, "❌ Пожалуйста, введите целое число.")
+            return
+
+        amount = int(amount_text)
+
+        if amount <= 0:
+            safe_send_message(message.chat.id, "❌ Сумма должна быть больше нуля.")
+            return
+
+        if amount > max_balance:
+            safe_send_message(message.chat.id, "❌ Недостаточно средств на балансе.")
+            return
+
+        # Вычисляем комиссию (10%)
+        fee = amount * WITHDRAWAL_FEE
+        total_to_debit = amount + fee
+        
+        user_id = message.chat.id
+        with sqlite3.connect(DB_FILE) as conn:
+            cur_bal = conn.execute("SELECT balance FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()[0]
+            if cur_bal < total_to_debit:
+                 safe_send_message(message.chat.id, f"❌ Недостаточно средств!\n\nТребуется: {total_to_debit} Stars (включая комиссию 10%)\nДоступно: {cur_bal} Stars")
+                 return
+
+            new_bal = cur_bal - total_to_debit
+            conn.execute("UPDATE user_news_prefs SET balance = ? WHERE user_id = ?", (new_bal, user_id))
+            conn.commit()
+
+        safe_send_message(message.chat.id, f"✅ **Заявка принята!**\n\n💸 На вывод: {amount} Stars\n💰 Комиссия (10%): {fee:.0f} Stars\n📉 Списано со счета: {total_to_debit:.0f} Stars\n\nОжидайте обработки.", parse_mode='Markdown')
+
+        username = message.from_user.username
+        user_link = f"@{username}" if username else f"ID: {user_id}"
+
+        admin_text = (
+            f"💸 **ЗАЯВКА НА ВЫВОД**\n\n"
+            f"👤 Пользователь: {user_link}\n"
+            f"💰 Сумма к выплате: **{amount} Stars**\n"
+            f"💸 Комиссия (10%): **{fee:.0f} Stars**\n"
+            f"📉 Итого списано: **{total_to_debit:.0f} Stars**\n"
+            f"📅 Дата: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        )
+
+        # --- ДИАГНОСТИКА ОТПРАВКИ ---
+        sent = False
+
+        # 1. Попытка отправить на цифровой ID (надежнее всего)
+        try:
+            safe_send_message(ADMIN_ID, admin_text, parse_mode='Markdown')
+            sent = True
+        except Exception as e:
+            logger.error(f"Error sending to admin ID {ADMIN_ID}: {e}")
+
+        # 2. Попытка отправить на Username (сработает только если есть диалог или это канал)
+        if not sent:
+            try:
+                safe_send_message(ADMIN_USERNAME, admin_text, parse_mode='Markdown')
+            except Exception as e:
+                logger.error(f"Error sending to admin username {ADMIN_USERNAME}: {e}")
+                # Если ничего не помогло, пишем в лог, что админ не начал диалог с ботом
+
+    except Exception as e:
+        safe_send_message(message.chat.id, "Произошла ошибка при обработке.")
+        logger.error(f"Withdrawal processing error: {e}")
+
+# --- ДОБАВЛЕНА КОМАНДА ДЛЯ ПРОВЕРКИ СВЯЗИ С АДМИНОМ ---
+@bot.message_handler(commands=['test_admin'])
+def test_admin_connection(message):
+    try:
+        safe_send_message(ADMIN_ID, "🔔 Тестовое сообщение админу. Если вы это видите, заявки будут приходить!")
+        safe_send_message(message.chat.id, f"✅ Сообщение отправлено на ID {ADMIN_ID}")
+    except Exception as e:
+        safe_send_message(message.chat.id, f"❌ Ошибка отправки админу:\n{e}\n\nСОВЕТ: Зайдите с аккаунта админа в бота и нажмите /start")
+
+# Удалено: Старый Верстак и Мой ПК
+
+# ФИЛЬТР: Игнорируем sell_full_pc
+# Удалено: Старый Кошелек, Лутбокс и Мой ПК
+    key_to_sell = c.data.split('_', 1)[1] 
+
+    try:
+        p_type, p_rarity = key_to_sell.split('_')
+        p_rarity = int(p_rarity)
+
+        candidates = [p for p in PC_PARTS[p_type] if p['rarity'] == p_rarity]
+        price = candidates[0]['price'] if candidates else 0
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            row = cursor.execute("SELECT parts_inventory, balance FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()
+            inventory = safe_json_loads(row[0] if row and row[0] else "{}")
+            balance = row[1] if row else 0
+
+            if inventory.get(key_to_sell, 0) < 1:
+                safe_answer_callback(c.id, "Предмет уже продан!")
+                return
+
+            inventory[key_to_sell] -= 1
+            if inventory[key_to_sell] == 0:
+                del inventory[key_to_sell]
+
+            balance += price
+
+            cursor.execute("UPDATE user_news_prefs SET parts_inventory = ?, balance = ? WHERE user_id = ?", 
+                           (safe_json_dumps(inventory), balance, user_id))
+            conn.commit()
+
+        safe_answer_callback(c.id, f"Продано за {price} Stars!")
+        crafting_menu(c.message)
+    except Exception as e:
+        logger.error(f"Error selling part {key_to_sell} for user {user_id}: {e}")
+        safe_answer_callback(c.id, "Ошибка при продаже!")
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith('precraft_'))
+def pre_craft_selection(c):
+    key = c.data.split('_', 1)[1] 
+    try:
+        p_type, p_rarity = key.split('_')
+        p_rarity = int(p_rarity)
+
+        success_rates = {1: 70, 2: 60, 3: 50, 4: 30}
+        safe_prices = {1: 15, 2: 40, 3: 100, 4: 250}
+
+        rate = success_rates.get(p_rarity, 50)
+        price = safe_prices.get(p_rarity, 50)
+
+        mk = types.InlineKeyboardMarkup()
+        mk.add(types.InlineKeyboardButton(f"🎲 Рискнуть (Шанс {rate}%) — Бесплатно", callback_data=f"docraft_risk_{key}"))
+        mk.add(types.InlineKeyboardButton(f"🛡 100% Шанс — {price} Stars", callback_data=f"docraft_safe_{key}"))
+        mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_bench"))
+
+        safe_edit_message_text(f"🔨 **Крафт: {p_type} (Уровень {p_rarity} -> {p_rarity+1})**\n\nВыберете способ крафта:", 
+                              c.message.chat.id, c.message.message_id, parse_mode='Markdown', reply_markup=mk)
+    except Exception as e:
+        logger.error(f"Pre-craft selection error: {e}")
+        safe_answer_callback(c.id, "Ошибка!")
+
+@bot.callback_query_handler(func=lambda c: c.data == "back_to_bench")
+def back_to_bench(c):
+    safe_delete_message(c.message.chat.id, c.message.message_id)
+    crafting_menu(c.message)
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith('docraft_'))
+def process_craft(c):
+    user_id = c.message.chat.id
+    parts = c.data.split('_')
+    action = parts[1]
+    key_to_craft = f"{parts[2]}_{parts[3]}"
+
+    try:
+        p_type, p_rarity = key_to_craft.split('_')
+        p_rarity = int(p_rarity)
+
+        success_rates = {1: 70, 2: 60, 3: 50, 4: 30}
+        safe_prices = {1: 15, 2: 40, 3: 100, 4: 250}
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            row = cursor.execute("SELECT parts_inventory, pc_data, balance FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()
+            inventory = safe_json_loads(row[0] if row and row[0] else "{}")
+            pc_build = safe_json_loads(row[1] if row and row[1] else "{}")
+            balance = row[2] if row else 0
+
+            if inventory.get(key_to_craft, 0) < 5:
+                safe_answer_callback(c.id, "Нужно 5 предметов!", show_alert=True)
+                return
+
+            is_success = False
+
+            if action == "safe":
+                price = safe_prices.get(p_rarity, 50)
+                if balance < price:
+                    safe_answer_callback(c.id, "Недостаточно Stars!", show_alert=True)
+                    return
+                balance -= price
+                is_success = True
+
+            elif action == "risk":
+                rate = success_rates.get(p_rarity, 50)
+                if random.randint(1, 100) <= rate:
+                    is_success = True
+                else:
+                    is_success = False
+
+            inventory[key_to_craft] -= 5
+            if inventory[key_to_craft] == 0:
+                del inventory[key_to_craft]
+
+            msg_res = ""
+            if is_success:
+                new_rarity = p_rarity + 1
+                candidates = [p for p in PC_PARTS[p_type] if p['rarity'] == new_rarity]
+                if not candidates: candidates = [p for p in PC_PARTS[p_type] if p['rarity'] >= new_rarity]
+                new_part = random.choice(candidates)
+
+                old_part = pc_build.get(p_type, {"score": 0, "name": "Пустой слот"})
+
+                msg_res = f"🔨 **КРАФТ УСПЕШЕН!**\n\nПолучено: **{new_part['name']}**\n"
+
+                if new_part['score'] > old_part['score']:
+                    if old_part['score'] > 0:
+                        old_key = f"{p_type}_{old_part['rarity']}"
+                        inventory[old_key] = inventory.get(old_key, 0) + 1
+                        msg_res += f"✅ **АПГРЕЙД!** Установлена в ПК. Старая ({old_part['name']}) -> в инвентарь."
+                    else:
+                        msg_res += "✅ **Установлена в ПК!**"
+                    pc_build[p_type] = new_part
+                else:
+                    new_key = f"{p_type}_{new_rarity}"
+                    inventory[new_key] = inventory.get(new_key, 0) + 1
+                    msg_res += f"📦 Новая деталь отправлена в инвентарь."
+            else:
+                msg_res = "💥 **НЕУДАЧА...**\n\nДетали сгорели при попытке крафта. Попробуйте использовать страховку."
+
+            cursor.execute("UPDATE user_news_prefs SET parts_inventory = ?, pc_data = ?, balance = ? WHERE user_id = ?", 
+                           (safe_json_dumps(inventory), safe_json_dumps(pc_build), balance, user_id))
+            conn.commit()
+
+        safe_send_message(user_id, msg_res, parse_mode='Markdown')
+        crafting_menu(c.message)
+    except Exception as e:
+        logger.error(f"Crafting error for user {user_id}: {e}")
+        safe_answer_callback(c.id, "Ошибка при крафте!")
+
+
+# Удалено: Лутбокс за звезды (теперь используется Майнинг Ферма за USDT)
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith('buy_box_'))
+def invoice_for_box(c):
+    user_id = c.message.chat.id
+    
+    # 🛡️ АНТИ-ФЛУД: Проверяем, не нажимал ли пользователь слишком быстро
+    if not check_cooldown(user_id, "buy_box"):
+        safe_answer_callback(c.id, "⏳ Подождите 2 секунды перед новой попыткой", show_alert=True)
+        return
+    
+    level = int(c.data.split('_')[2])
+    prices = {1: 100, 2: 200, 3: 300, 4: 400, 5: 500}
+    price = prices.get(level, 100)
+
+    with sqlite3.connect(DB_FILE) as conn:
+        bal = conn.execute("SELECT balance FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()
+        balance = bal[0] if bal else 0
+
+    if balance >= price:
+        new_balance = balance - price
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.execute("UPDATE user_news_prefs SET balance = ? WHERE user_id = ?", (new_balance, user_id))
+        safe_answer_callback(c.id, f"Списано {price} Stars")
+        Thread(target=process_lootbox_animation, args=(user_id, level)).start()
+    else:
+        if CRYPTO_BOT_TOKEN:
+            try:
+                pay_url = create_cryptopay_invoice(user_id, price)
+                if pay_url:
+                    mk = types.InlineKeyboardMarkup()
+                    mk.add(types.InlineKeyboardButton("💳 Оплатить", url=pay_url))
+                    text = f"💎 Счет на {price} Stars готов!\n\nНажмите кнопку для оплаты через CryptoBot"
+                    safe_send_message(user_id, text, parse_mode='Markdown', reply_markup=mk)
+                    safe_answer_callback(c.id, "Счет отправлен на оплату")
+                else:
+                    safe_answer_callback(c.id, "❌ Ошибка API платежей!", show_alert=True)
+            except Exception as e:
+                logger.error(f"Invoice error for user {user_id}: {e}")
+                safe_answer_callback(c.id, "❌ Ошибка выставления счета!", show_alert=True)
+        else:
+            safe_answer_callback(c.id, "❌ Платежная система не настроена!\nДобавь CRYPTO_PAY_API_KEY в Secrets", show_alert=True)
+
+@bot.message_handler(content_types=['successful_payment'])
+def got_payment(message):
+    user_id = message.chat.id
+    payload = message.successful_payment.invoice_payload
+
+    if payload.startswith("box_pay_"):
+        parts = payload.split('_')
+        amount = int(parts[2])
+        level = int(parts[3])
+
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.execute("INSERT INTO payments (user_id, amount, date) VALUES (?, ?, ?)", 
+                         (user_id, amount, time.strftime('%Y-%m-%d %H:%M:%S')))
+
+        safe_send_message(user_id, "🎉 Оплата прошла! Открываем...")
+        Thread(target=process_lootbox_animation, args=(user_id, level)).start()
+        return
+
+    if payload == "user_donation_stars_100":
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.execute("UPDATE user_news_prefs SET is_supporter = 1 WHERE user_id = ?", (user_id,))
+            conn.execute("INSERT INTO payments (user_id, amount, date) VALUES (?, ?, ?)", 
+                         (user_id, 100, time.strftime('%Y-%m-%d %H:%M:%S')))
+        safe_send_message(user_id, "🎉 Спасибо за поддержку звездами!")
+        return
+
+# --- [ОПТИМИЗИРОВАНО] Безопасная анимация лутбокса ---
+def process_lootbox_animation(user_id, level):
+    try:
+        # Используем safe_api_call для защиты от падений
+        msg = safe_send_message(user_id, "📦 **Заказ оформлен...**", parse_mode='Markdown')
+        if not msg:
+            # Если не удалось отправить сообщение, сразу переходим к логике
+            process_loot_logic(user_id, level)
+            return
+
+        frames = ["🚚 **В пути...** 🚛", "🏭 **На складе...** 🏭", "🔧 **Проверка качества...** 🔍", "📦 **Распаковка...** ✂️", "✨ **Готово!**"]
+
+        for frame in frames:
+            time.sleep(0.7)
+            # Если сообщение было удалено юзером, бот не упадет
+            safe_edit_message_text(frame, user_id, msg.message_id, parse_mode='Markdown')
+
+        # Удаляем сервисное сообщение анимации
+        safe_delete_message(user_id, msg.message_id)
+
+        # Запускаем логику выдачи предмета
+        process_loot_logic(user_id, level)
+    except Exception as e:
+        logger.error(f"Critical error in animation for user {user_id}: {e}")
+        # Даже если анимация упала, выдаем предмет
+        process_loot_logic(user_id, level)
+
+# --- [ОПТИМИЗИРОВАНО] Безопасная логика выдачи лутбокса ---
+def process_loot_logic(user_id, level):
+    try:
+        min_rarity_map = {1: 1, 2: 2, 3: 2, 4: 3, 5: 4}
+        min_rarity = min_rarity_map.get(level, 1)
+
+        bonus_chance = {1: 5, 2: 15, 3: 30, 4: 50, 5: 80}
+        chance = bonus_chance.get(level, 0)
+
+        roll = random.randint(1, 100)
+        target_rarity = min_rarity
+        if roll <= chance:
+            target_rarity += 1
+            if target_rarity > 5: target_rarity = 5
+
+        part_type = random.choice(list(PC_PARTS.keys()))
+
+        candidates = [p for p in PC_PARTS[part_type] if p['rarity'] >= target_rarity]
+
+        if not candidates:
+            candidates = [p for p in PC_PARTS[part_type] if p['rarity'] >= min_rarity]
+            if not candidates:
+                 candidates = PC_PARTS[part_type]
+
+        if not candidates:
+            logger.error(f"No candidates for part_type {part_type}")
+            safe_send_message(user_id, "❌ Ошибка при открытии коробки. Попробуйте еще раз.")
+            return
+
+        new_part = random.choice(candidates)
+        part_img = PART_IMAGES.get(part_type, PART_IMAGES['CASE'])
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            row = cursor.execute("SELECT pc_data, balance, parts_inventory FROM user_news_prefs WHERE user_id = ?", (user_id,)).fetchone()
+
+            # Используем безопасную загрузку JSON
+            pc_build = safe_json_loads(row[0] if row and row[0] else "{}")
+            balance = row[1] if row else 0
+            inventory = safe_json_loads(row[2] if row and row[2] else "{}")
+
+            old_part = pc_build.get(part_type, {"score": 0, "name": "Пустой слот", "price": 0})
+
+            type_names = {
+                "CASE": "Корпус", "MONITOR": "Монитор", "MOUSE": "Мышь", 
+                "PAD": "Коврик", "CPU": "Процессор", "GPU": "Видеокарта", 
+                "RAM": "ОЗУ", "DISK": "Диск"
+            }
+            type_ru = type_names.get(part_type, part_type)
+
+            rarity_stars = "⭐" * new_part['rarity']
+            msg_header = f"🎁 **Коробка (Ур. {level}) открыта!**\n\n{rarity_stars}\n🔧 **{type_ru}: {new_part['name']}**\n⚡ Мощность: {new_part['score']}\n💰 Цена: {new_part['price']} Stars\n\n"
+
+            if new_part['score'] > old_part['score']:
+                pc_build[part_type] = new_part
+                action_text = f"✅ **АПГРЕЙД!**\nСтарая деталь ({old_part['name']}) была хуже.\nМощность вашего ПК выросла!"
+
+                if old_part['score'] > 0:
+                    old_key = f"{part_type}_{old_part['rarity']}"
+                    inventory[old_key] = inventory.get(old_key, 0) + 1
+                    action_text += f"\n📦 Старая деталь ({old_part['name']}) отправлена в инвентарь."
+            else:
+                new_key = f"{part_type}_{new_part['rarity']}"
+                inventory[new_key] = inventory.get(new_key, 0) + 1
+                action_text = f"📦 **В инвентарь.**\nТекущая деталь мощнее. Эта отправлена на склад (для крафта)."
+
+            cursor.execute("UPDATE user_news_prefs SET pc_data = ?, parts_inventory = ? WHERE user_id = ?", 
+                           (safe_json_dumps(pc_build), safe_json_dumps(inventory), user_id))
+            conn.commit()
+
+            try:
+                safe_send_message(user_id, part_img, caption=msg_header + action_text, parse_mode='Markdown')
+            except Exception as e:
+                logger.error(f"Error sending photo to {user_id}: {e}")
+                safe_send_message(user_id, msg_header + action_text, parse_mode='Markdown')
+
+    except Exception as e:
+        logger.error(f"Error in loot logic for user {user_id}, level {level}: {e}")
+        safe_send_message(user_id, "❌ Произошла ошибка при открытии коробки. Обратитесь к администратору.")
+
+# Удалено: Старый Мой ПК
+
+# Удалено: Продажа ПК за звезды
+
+@bot.message_handler(func=lambda m: m.text == "➕ Отследить игру")
+def track_game_start(message):
+    msg = safe_send_message(message.chat.id, "🎯 Введите название игры для отслеживания (на английском):")
+    if msg:
+        bot.register_next_step_handler(msg, process_tracking_step)
+
+def process_tracking_step(message):
+    game_name = message.text
+    if game_name in ["⛏️ Майнинг Ферма", "➕ Отследить игру", "📋 Мой шорт лист", "⚙️ Настройки", "🔥 Топ скидок", "⭐ Поддержать проект", "👥 Рефералы", "🔍 Поиск по жанрам", "📢 Реклама", "📊 Статистика", "💬 Сообщество"]:
+        safe_send_message(message.chat.id, "Отменено.")
+        return
+
+    try:
+        name_en = GoogleTranslator(source='auto', target='en').translate(game_name)
+    except Exception as e:
+        logger.error(f"Translation error for '{game_name}': {e}")
+        safe_send_message(message.chat.id, "❌ Ошибка перевода. Попробуйте ввести название на английском.")
+        return
+
+    try:
+        url = f"https://www.cheapshark.com/api/1.0/games?title={name_en}&limit=5"
+        games = requests.get(url, timeout=10).json()
+        if not games:
+            safe_send_message(message.chat.id, "🔍 Игра не найдена. Попробуйте уточнить название.")
+            return
+
+        mk = types.InlineKeyboardMarkup(row_width=1)
+        for game in games:
+            mk.add(types.InlineKeyboardButton(game['external'], callback_data=f"wish_{game['gameID']}"))
+        safe_send_message(message.chat.id, "🎯 **Какую игру добавить?**", parse_mode='Markdown', reply_markup=mk)
+    except Exception as e:
+        logger.error(f"Game search error for '{game_name}': {e}")
+        safe_send_message(message.chat.id, "❌ Ошибка поиска.")
+
+@bot.message_handler(func=lambda m: m.text == "⭐ Поддержать проект")
+def support_info(message):
+    user_id = message.chat.id
+    try:
+        # 🛡️ АНТИ-ФЛУД
+        if not check_cooldown(user_id, "donate"):
+            return
+
+        # Нативные звезды (XTR) без провайдера
+        # Важно: для валюты XTR сумма вLabeledPrice указывается в самих звездах (1 звезда = 1 единица)
+        bot.send_invoice(
+            chat_id=user_id,
+            title="Поддержка Game Broker 🌟",
+            description="Добровольный взнос на развитие проекта. Только Telegram Stars!",
+            provider_token="", # Для Stars оставляем пустым
+            currency="XTR",
+            prices=[
+                types.LabeledPrice(label="Поддержка проекта", amount=100) # 100 звезд
+            ],
+            invoice_payload="support_donation",
+            start_parameter="support"
+        )
+    except Exception as e:
+        logger.error(f"Error sending star invoice: {e}")
+        safe_send_message(user_id, "❌ Ошибка при создании счета. Попробуйте позже.")
+
+# Удалены старые обработчики оплаты (внешние ссылки)
+
+@bot.pre_checkout_query_handler(func=lambda query: True)
+def checkout(pre_checkout_query):
+    safe_api_call(bot.answer_pre_checkout_query, pre_checkout_query.id, ok=True)
+
+@bot.message_handler(func=lambda m: m.text == "👥 Рефералы")
+def referral_menu(m):
+    bot_username = bot.get_me().username
+    ref_link = f"https://t.me/{bot_username}?start={m.chat.id}"
+
+    with sqlite3.connect(DB_FILE) as conn:
+        count = conn.execute("SELECT COUNT(*) FROM user_news_prefs WHERE referrer_id = ?", (m.chat.id,)).fetchone()[0]
+
+    caption = (
+        "👥 **Реферальная программа**\n\n"
+        "Приглашайте друзей и развивайте проект вместе с нами! ✨\n\n"
+        f"📊 Всего приглашено: **{count}**\n\n"
+        "🔗 **Ваша ссылка (нажмите, чтобы скопировать):**\n"
+        f"`{ref_link}`"
+    )
+
+    mk = types.InlineKeyboardMarkup(row_width=1)
+    share_button = types.InlineKeyboardButton(
+        "🚀 Переслать другу", 
+        url=f"https://t.me/share/url?url={quote(ref_link)}&text={quote('Зацени крутого бота для поиска скидок на игры! 🎮')}"
+    )
+    mk.add(share_button)
+
+    safe_send_message(m.chat.id, caption, parse_mode='Markdown', reply_markup=mk)
+
+@bot.message_handler(func=lambda m: m.text == "💬 Сообщество")
+def community_handler(message):
+    channel_url = f"https://t.me/{CHANNEL_ID.replace('@', '')}"
+    caption = "👋 **Добро пожаловать в наше сообщество!**\n\nЗдесь мы публикуем:\n🔥 Горячие скидки\n🎁 Бесплатные раздачи\n📰 Новости игровой индустрии"
+
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("✈️ Перейти в канал", url=channel_url))
+
+    safe_send_message(message.chat.id, caption, parse_mode='Markdown', reply_markup=markup)
+
+@bot.message_handler(commands=['реклама'])
+def ad_command_handler(m):
+    advertiser_info_logic(m.chat.id)
+
+@bot.message_handler(func=lambda m: m.text == "📢 Реклама")
+def ad_button_handler(m):
+    # Двойная проверка админа
+    if str(m.chat.id) != ADMIN_ID:
+        advertiser_info_logic(m.chat.id)
+        return
+
+    msg = safe_send_message(m.chat.id, "⚙️ **Админ-панель**\n\nПришлите пост для рассылки всем. 'Отмена' для выхода.")
+    if msg:
+        bot.register_next_step_handler(msg, process_ad_step)
+
+def advertiser_info_logic(chat_id):
+    ad_text = (
+        "💼 **Реклама в Game Broker**\n\n"
+        "Хотите разместить свое предложение?\n\n"
+        "**Наши преимущества:**\n"
+        "• 🎯 Целевая аудитория геймеров\n"
+        "• 🚀 Прямая рассылка уведомлений\n"
+        "• 📢 Любые форматы\n\n"
+        "Для заказа: [ @chadmin_official ](https://t.me/chadmin_official)"
+    )
+    safe_send_message(chat_id, ad_text, parse_mode='Markdown', disable_web_page_preview=True)
+
+def process_ad_step(m):
+    if m.text and m.text.lower() == "отмена":
+        safe_send_message(m.chat.id, "Отменено.", reply_markup=main_kbrd(m.chat.id))
+        return
+
+    # Еще одна проверка на админа
+    if str(m.chat.id) != ADMIN_ID:
+        logger.warning(f"Unauthorized ad attempt from {m.chat.id}")
+        return
+
+    markup = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton("🚀 ПОДТВЕРДИТЬ РАССЫЛКУ", callback_data="confirm_ad_send"))
+    bot.reply_to(m, "Выслать этот пост всем пользователям?", reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda c: c.data == "confirm_ad_send")
+def confirm_ad_send_callback(c):
+    # Проверка админа
+    if str(c.from_user.id) != ADMIN_ID:
+        logger.warning(f"Unauthorized ad confirmation from {c.from_user.id}")
+        return
+
+    orig_msg = c.message.reply_to_message
+    if not orig_msg:
+        safe_answer_callback(c.id, "Ошибка")
+        return
+
+    safe_edit_message_text("⏳ Рассылка началась...", c.message.chat.id, c.message.message_id)
+
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            users = conn.execute("SELECT user_id FROM user_news_prefs").fetchall()
+
+        count = 0
+        for (uid,) in users:
+            try:
+                bot.copy_message(uid, ADMIN_ID, orig_msg.message_id)
+                count += 1
+                # Небольшая пауза чтобы не спамить слишком быстро
+                time.sleep(0.05)
+            except Exception as e:
+                logger.warning(f"Failed to send ad to {uid}: {e}")
+                continue
+
+        safe_edit_message_text(f"✅ Готово! Получили {count} чел.", c.message.chat.id, c.message.message_id)
+        safe_answer_callback(c.id)
+        logger.info(f"Admin broadcast sent to {count} users")
+    except Exception as e:
+        logger.error(f"Admin broadcast error: {e}")
+        safe_edit_message_text(f"❌ Ошибка рассылки: {e}", c.message.chat.id, c.message.message_id)
+
+@bot.message_handler(func=lambda m: m.text == "🔍 Поиск по жанрам")
+def genre_menu(m):
+    mk = types.InlineKeyboardMarkup(row_width=2)
+    btns = [types.InlineKeyboardButton(name, callback_data=f"genre_{tag}") for tag, name in GENRES.items()]
+    mk.add(*btns)
+    safe_send_message(m.chat.id, "🎯 **Выбери жанр игры:**", parse_mode='Markdown', reply_markup=mk)
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith('genre_'))
+def handle_genre_selection(c):
+    genre_tag = c.data.split('_')[1]
+    safe_answer_callback(c.id, f"Ищу {genre_tag}...")
+    send_genre_deals(c.message.chat.id, genre_tag)
+
+def send_genre_deals(chat_id, genre_tag):
+    try:
+        # Сначала отправляем сообщение о поиске
+        search_msg = safe_send_message(chat_id, f"🔍 Ищу игры в жанре {GENRES.get(genre_tag, genre_tag)}...")
+
+        # Ищем игры по жанру
+        random_page = random.randint(0, 50) # Увеличиваем диапазон страниц для разнообразия
+
+        # Ищем игры со скидками
+        url = f"https://www.cheapshark.com/api/1.0/deals?storeID=1,7,25&pageSize=60&pageNumber={random_page}&sortBy=Recent" # Сортируем по новизне для разнообразия
+
+        try:
+            response = requests.get(url, timeout=15)
+            if response.status_code != 200:
+                if search_msg: safe_delete_message(chat_id, search_msg.message_id)
+                safe_send_message(chat_id, "😔 Сервер скидок временно недоступен.")
+                return
+            all_deals = response.json()
+        except Exception as e:
+            logger.error(f"API request error for genre {genre_tag}: {e}")
+            if search_msg: safe_delete_message(chat_id, search_msg.message_id)
+            safe_send_message(chat_id, "😔 Ошибка при загрузке игр.")
+            return
+
+        if search_msg: safe_delete_message(chat_id, search_msg.message_id)
+
+        if not all_deals:
+            safe_send_message(chat_id, f"😔 Не удалось найти игры в жанре **{GENRES.get(genre_tag, genre_tag)}**", parse_mode='Markdown')
+            return
+
+        # Фильтрация и ДЕДУПЛИКАЦИЯ
+        seen_titles = set()
+        filtered_deals = []
+        for deal in all_deals:
+            title_lower = deal.get('title', '').lower()
+            if (title_lower not in seen_titles and 
+                deal.get('thumb') and 
+                deal.get('salePrice') and 
+                float(deal.get('salePrice', 0)) > 0.5):
+                
+                seen_titles.add(title_lower)
+                if not deal['thumb'].startswith('http'):
+                    deal['thumb'] = 'https://www.cheapshark.com' + deal['thumb']
+                filtered_deals.append(deal)
+
+        if not filtered_deals:
+            safe_send_message(chat_id, "😔 Не найдено подходящих игр.")
+            return
+
+        random.shuffle(filtered_deals)
+        sent = 0
+        for d in filtered_deals[:5]:
+            try:
+                deal_id = d['dealID']
+                store_id = d.get('storeID', '1')
+
+                # Генерируем партнерскую ссылку
+                raw_url = f"https://www.cheapshark.com/redirect?dealID={deal_id}"
+                aff_url = generate_aff_link(raw_url, store_id)
+
+                if not aff_url:
+                    aff_url = raw_url  # Фолбэк на обычную ссылку
+
+                # Создаем клавиатуру
+                mk = types.InlineKeyboardMarkup(row_width=1)
+                buy_btn_text = f"🛒 Купить (${d['salePrice']})"
+                mk.add(types.InlineKeyboardButton(buy_btn_text, url=aff_url))
+
+                # Кнопка GGSEL
+                ggsel_url = get_ggsel_link(d['title'])
+                mk.add(types.InlineKeyboardButton("🟠 Найти на GGSEL", url=ggsel_url))
+
+                # Форматируем цену
+                conv_price = format_price(d['salePrice'], chat_id)
+                price_text = f"${d['salePrice']}"
+                if conv_price: 
+                    price_text += f" ({conv_price})"
+
+                # Добавляем скидку, если есть
+                discount_text = ""
+                if d.get('savings') and float(d['savings']) > 0:
+                    discount = int(float(d['savings']))
+                    discount_text = f"\n🎯 **Скидка: -{discount}%**"
+
+                # Добавляем рейтинг, если есть
+                rating_text = ""
+                if d.get('steamRatingPercent'):
+                    rating_text = f"\n⭐ Рейтинг Steam: {d['steamRatingPercent']}%"
+
+                # Формируем caption
+                caption = f"🎮 **{d['title']}**\n💰 **Цена:** {price_text}{discount_text}{rating_text}"
+
+                # Проверяем изображение
+                thumb_url = d['thumb']
+                if not thumb_url.startswith('http'):
+                    thumb_url = 'https://www.cheapshark.com' + thumb_url
+
+                # Пробуем отправить с изображением
+                try:
+                    safe_send_photo(chat_id, thumb_url, caption=caption, parse_mode='Markdown', reply_markup=mk)
+                except Exception as img_error:
+                    # Если не удалось с изображением, отправляем без него
+                    logger.warning(f"Image error for {d['title']}: {img_error}")
+                    safe_send_message(chat_id, caption, parse_mode='Markdown', reply_markup=mk)
+
+                sent += 1
+
+                # Небольшая пауза между отправками
+                time.sleep(0.5)
+
+            except Exception as e:
+                logger.error(f"Error sending game {d.get('title', 'Unknown')}: {e}")
+                continue
+
+        if sent > 0:
+            # Кнопки навигации
+            nav_mk = types.InlineKeyboardMarkup(row_width=2)
+            nav_mk.add(
+                types.InlineKeyboardButton("🎲 Следующие 5 игр", callback_data=f"genre_{genre_tag}"),
+                types.InlineKeyboardButton("🔄 Сменить жанр", callback_data="back_to_genres")
+            )
+
+            genre_name = GENRES.get(genre_tag, genre_tag)
+            status_text = f"🎯 **Найдено {sent} игр**\n(Жанр: {genre_name})\n\nВыберите действие:"
+
+            safe_send_message(
+                chat_id, 
+                status_text, 
+                parse_mode='Markdown', 
+                reply_markup=nav_mk
+            )
+        else:
+            safe_send_message(chat_id, "😔 Не удалось показать игры. Попробуйте другой жанр.", parse_mode='Markdown')
+
+    except Exception as e:
+        logger.error(f"Genre search error for {genre_tag}: {e}")
+        safe_send_message(chat_id, "❌ Произошла ошибка при поиске игр. Попробуйте еще раз.", parse_mode='Markdown')
+
+@bot.callback_query_handler(func=lambda c: c.data == "back_to_genres")
+def back_to_genres(c):
+    safe_delete_message(c.message.chat.id, c.message.message_id)
+    genre_menu(c.message)
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    ref_id = None
+    args = message.text.split()
+    if len(args) > 1:
+        try:
+            if int(args[1]) != int(message.chat.id): ref_id = int(args[1])
+        except: pass
+    welcome_text = "👋 Привет! Я Game Broker.\n\nНапиши мне название игры (например: **Witcher**), и я найду лучшие цены.\n\nЯ покажу список версий, чтобы ты выбрал правильную игру."
+    with sqlite3.connect(DB_FILE) as conn:
+        if not conn.execute("SELECT 1 FROM user_news_prefs WHERE user_id = ?", (message.chat.id,)).fetchone():
+            conn.execute("INSERT INTO user_news_prefs (user_id, referrer_id) VALUES (?, ?)", (message.chat.id, ref_id))
+            if ref_id:
+                try: 
+                    safe_send_message(ref_id, "🔔 Новый реферал!")
+                except: pass
+            logger.info(f"New user registered: {message.chat.id}, referrer: {ref_id}")
+        else: conn.execute("INSERT OR IGNORE INTO user_news_prefs (user_id) VALUES (?)", (message.chat.id,))
+    safe_send_message(message.chat.id, welcome_text, reply_markup=main_kbrd(message.chat.id))
+
+@bot.message_handler(func=lambda m: m.text == "📋 Мой шорт лист")
+def my_list_cmd(m):
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            items = conn.execute("SELECT game_name FROM wishlist WHERE user_id = ?", (m.chat.id,)).fetchall()
+        if not items: 
+            safe_send_message(m.chat.id, "📭 Шорт лист пуст.")
+            return
+
+        for (g_name,) in items:
+            d = get_game_best_deal(g_name, get_user_stores(m.chat.id))
+            if d:
+                mk = types.InlineKeyboardMarkup(row_width=1)
+                mk.add(types.InlineKeyboardButton(f"🛒 Купить (${d['price']})", url=d['url']))
+                mk.add(types.InlineKeyboardButton("🟠 Найти на GGSEL", url=get_ggsel_link(d['title'])))
+                mk.add(types.InlineKeyboardButton("🗑 Удалить", callback_data=f"del_{d['title'][:15]}"))
+
+                conv_price = format_price(d['price'], m.chat.id)
+                price_text = f"${d['price']}"
+                if conv_price: price_text += f" ({conv_price})"
+
+                try:
+                    safe_send_photo(m.chat.id, d['thumb'], caption=f"🎮 **{d['title']}**\n💰 Цена: **{price_text}**", parse_mode='Markdown', reply_markup=mk)
+                except:
+                    safe_send_message(m.chat.id, f"🎮 **{d['title']}**\n💰 Цена: **{price_text}**\n🛒 [Купить]({d['url']})", parse_mode='Markdown', reply_markup=mk)
+    except Exception as e:
+        logger.error(f"Wishlist error for {m.chat.id}: {e}")
+
+@bot.message_handler(func=lambda m: m.text == "🔥 Топ скидок")
+def hot_deals_cmd(m):
+    try:
+        # Показываем индикатор загрузки
+        load_msg = safe_send_message(m.chat.id, "🔥 Ищу горячие скидки...")
+
+        # Получаем список разрешенных магазинов
+        user_stores = get_user_stores(m.chat.id)
+        # Если магазины не выбраны, используем все поддерживаемые
+        store_ids = ','.join(user_stores) if user_stores else ','.join(SUPPORTED_STORES.keys())
+
+        random_page = random.randint(0, 20)
+        url = f"https://www.cheapshark.com/api/1.0/deals?storeID={store_ids}&upperPrice=50&sortBy=Savings&pageSize=100&pageNumber={random_page}"
+
+        try:
+            response = requests.get(url, timeout=15)
+            if response.status_code != 200:
+                safe_send_message(m.chat.id, "😔 Сервер скидок временно недоступен. Попробуйте позже.")
+                return
+
+            all_deals = response.json()
+        except Exception as e:
+            logger.error(f"Hot deals API error: {e}")
+            safe_send_message(m.chat.id, "😔 Ошибка при загрузке скидок. Попробуйте позже.")
+            return
+
+        if not all_deals:
+            safe_send_message(m.chat.id, "😔 Сейчас нет горячих скидок. Попробуйте позже.")
+            return
+
+        # Фильтрация и ДЕДУПЛИКАЦИЯ
+        seen_titles = set()
+        valid_deals = []
+        for deal in all_deals:
+            title_lower = deal.get('title', '').lower()
+            if (title_lower not in seen_titles and 
+                deal.get('thumb') and 
+                deal.get('salePrice') and 
+                float(deal.get('salePrice', 0)) > 0.5 and
+                float(deal.get('savings', 0)) > 20):
+                
+                seen_titles.add(title_lower)
+                if not deal['thumb'].startswith('http'):
+                    deal['thumb'] = 'https://www.cheapshark.com' + deal['thumb']
+                valid_deals.append(deal)
+
+        if not valid_deals:
+            safe_send_message(m.chat.id, "😔 Сейчас нет игр со скидками. Попробуйте позже.")
+            return
+
+        # Сортируем по размеру скидки
+        valid_deals.sort(key=lambda x: float(x['savings']), reverse=True)
+
+        # Берем топ 5
+        sent = 0
+        for d in valid_deals[:5]:
+            try:
+                deal_id = d['dealID']
+                store_id = d.get('storeID', '1')
+
+                raw_url = f"https://www.cheapshark.com/redirect?dealID={deal_id}"
+                aff_url = generate_aff_link(raw_url, store_id)
+                if not aff_url:
+                    aff_url = raw_url
+
+                mk = types.InlineKeyboardMarkup(row_width=1)
+                mk.add(types.InlineKeyboardButton(f"🛒 Купить (${d['salePrice']})", url=aff_url))
+                mk.add(types.InlineKeyboardButton("🟠 Найти на GGSEL", url=get_ggsel_link(d['title'])))
+
+                conv_price = format_price(d['salePrice'], m.chat.id)
+                price_text = f"${d['salePrice']}"
+                if conv_price: 
+                    price_text += f" ({conv_price})"
+
+                # Информация о скидке
+                discount = int(float(d['savings']))
+                old_price = d.get('normalPrice', 'N/A')
+
+                caption = f"🔥 **{d['title']}**\n💰 **Цена:** {price_text}\n🎯 **Скидка: -{discount}%**\n📉 Было: ${old_price}"
+
+                # Добавляем рейтинг если есть
+                if d.get('steamRatingPercent'):
+                    caption += f"\n⭐ Steam: {d['steamRatingPercent']}%"
+
+                # Отправляем
+                try:
+                    safe_send_photo(m.chat.id, d['thumb'], caption=caption, parse_mode='Markdown', reply_markup=mk)
+                except Exception as img_error:
+                    safe_send_message(m.chat.id, caption, parse_mode='Markdown', reply_markup=mk)
+
+                sent += 1
+                time.sleep(0.5)  # Пауза между сообщениями
+
+            except Exception as e:
+                logger.error(f"Error sending hot deal {d.get('title', 'Unknown')}: {e}")
+                continue
+
+        if sent == 0:
+            safe_send_message(m.chat.id, "😔 Не удалось показать скидки. Попробуйте позже.")
+    except Exception as e:
+        logger.error(f"Hot deals error for {m.chat.id}: {e}")
+        safe_send_message(m.chat.id, "❌ Ошибка при поиске скидок. Попробуйте позже.")
+
+@bot.message_handler(content_types=['text'])
+def handle_plain_search(m):
+    if m.text.startswith('/start'):
+        return
+    if m.text == "⚙️ Настройки":
+        safe_send_message(m.chat.id, "⚙️ **Настройки уведомлений и магазинов:**", 
+                         parse_mode='Markdown', reply_markup=settings_kbrd(m.chat.id))
+        return
+    if m.text == "⭐ Поддержать проект":
+        support_info(m)
+        return
+    if m.text == "📊 Статистика":
+        admin_stat(m)
+        return
+    if m.text in ["➕ Отследить игру", "📋 Мой шорт лист", "🔥 Топ скидок", "⭐ Поддержать проект", "👥 Рефералы", "🔍 Поиск по жанрам", "📢 Реклама", "📊 Статистика", "💬 Сообщество", "🎁 Лутбокс", "🖥 Мой ПК", "🛠 Верстак", "💰 Кошелек", "⛏️ Майнинг Ферма"]:
+        return
+
+    try:
+        name_en = GoogleTranslator(source='auto', target='en').translate(m.text)
+    except Exception as e:
+        logger.error(f"Translation error for search '{m.text}': {e}")
+        safe_send_message(m.chat.id, "❌ Ошибка перевода. Попробуйте ввести название на английском.")
+        return
+
+    try:
+        url = f"https://www.cheapshark.com/api/1.0/games?title={name_en}&limit=20"
+        response = requests.get(url, timeout=10)
+        if response.status_code != 200:
+            safe_send_message(m.chat.id, "❌ Ошибка сервера поиска. Попробуйте позже.")
+            return
+        
+        all_games = response.json()
+        if not all_games:
+            safe_send_message(m.chat.id, "🔍 Ничего не найдено. Попробуйте точное название на английском.")
+            return
+
+        # Дедупликация по названию
+        seen_names = set()
+        unique_games = []
+        for g in all_games:
+            name_lower = g['external'].lower()
+            if name_lower not in seen_names:
+                seen_names.add(name_lower)
+                unique_games.append(g)
+        
+        # Берем топ 5 уникальных
+        games = unique_games[:5]
+
+        mk = types.InlineKeyboardMarkup(row_width=1)
+        for game in games:
+            mk.add(types.InlineKeyboardButton(f"{game['external']}", callback_data=f"find_{game['gameID']}"))
+
+        safe_send_message(m.chat.id, "🔎 **Найдено несколько игр. Выберите нужную:**", reply_markup=mk, parse_mode='Markdown')
+
+    except Exception as e:
+        logger.error(f"Search error for '{m.text}': {e}")
+        safe_send_message(m.chat.id, "❌ Ошибка при поиске.")
+
+# --- [ИСПРАВЛЕНО] Обработчик коллбэков с защитой от SQL инъекций ---
+@bot.callback_query_handler(func=lambda c: True)
+def handle_c(c):
+    try:
+        if c.data.startswith('find_'):
+            game_id = c.data.split('_')[1]
+            safe_delete_message(c.message.chat.id, c.message.message_id) 
+
+            url = f"https://www.cheapshark.com/api/1.0/games?id={game_id}"
+            full_data = requests.get(url, timeout=10).json()
+            info = full_data['info']
+            deals = full_data.get('deals', [])
+
+            if not deals:
+                safe_send_message(c.message.chat.id, "😔 Скидок на эту игру сейчас нет.")
+                return
+
+            best = deals[0]
+            aff_url = generate_aff_link(f"https://www.cheapshark.com/redirect?dealID={best['dealID']}", best['storeID'])
+
+            mk = types.InlineKeyboardMarkup(row_width=1)
+            mk.add(types.InlineKeyboardButton(f"🛒 Купить (${best['price']})", url=aff_url))
+            mk.add(types.InlineKeyboardButton("🟠 Найти на GGSEL", url=get_ggsel_link(info['title'])))
+
+            conv_price = format_price(best['price'], c.message.chat.id)
+            price_text = f"${best['price']}"
+            if conv_price: price_text += f" ({conv_price})"
+
+            safe_send_message(c.message.chat.id, info['thumb'], caption=f"🎮 **{info['title']}**\n💰 Лучшая цена: **{price_text}**\n🏪 Магазин: {SUPPORTED_STORES.get(best['storeID'], 'Unknown')}", parse_mode='Markdown', reply_markup=mk)
+
+        elif c.data.startswith('wish_'):
+            game_id = c.data.split('_')[1]
+            url = f"https://www.cheapshark.com/api/1.0/games?id={game_id}"
+            data = requests.get(url).json()
+            title = data['info']['title']
+            price = float(data['deals'][0]['price']) if data.get('deals') else 0.0
+
+            with sqlite3.connect(DB_FILE) as conn:
+                conn.execute("INSERT OR REPLACE INTO wishlist (user_id, game_name, last_price) VALUES (?, ?, ?)", 
+                             (c.message.chat.id, title, price))
+            safe_send_message(c.message.chat.id, f"✅ **{title}** добавлена в шорт-лист!", parse_mode='Markdown')
+            safe_delete_message(c.message.chat.id, c.message.message_id)
+
+        # --- [ИСПРАВЛЕНО] Защита от SQL инъекций в tgl_ ---
+        elif c.data.startswith('tgl_'):
+            col_name = c.data.replace('tgl_', '')
+            
+            # Сопоставление callback_data с колонками БД
+            col_map = {
+                'news': 'want_news',
+                'free': 'want_freebies'
+            }
+
+            if col_name not in col_map:
+                logger.warning(f"Unknown toggle: {c.data}")
+                safe_answer_callback(c.id, "❌ Ошибка")
+                return
+
+            safe_col = col_map[col_name]
+            with sqlite3.connect(DB_FILE) as conn:
+                conn.execute(
+                    f"UPDATE user_news_prefs SET {safe_col} = 1 - {safe_col} WHERE user_id = ?",
+                    (c.from_user.id,)
+                )
+                conn.commit()
+
+            safe_edit_message_reply_markup(c.message.chat.id, c.message.message_id, reply_markup=settings_kbrd(c.from_user.id))
+            safe_answer_callback(c.id, "✅ Настройки обновлены")
+
+        elif c.data == "change_currency":
+            safe_edit_message_text("💱 **Выберите валюту:**", c.message.chat.id, c.message.message_id, reply_markup=currency_kbrd(), parse_mode='Markdown')
+
+        elif c.data.startswith("set_curr_"):
+            curr = c.data.split('_')[2]
+            with sqlite3.connect(DB_FILE) as conn:
+                conn.execute("UPDATE user_news_prefs SET currency = ? WHERE user_id = ?", (curr, c.from_user.id))
+            safe_edit_message_text(f"✅ Валюта установлена: **{curr}**", c.message.chat.id, c.message.message_id, parse_mode='Markdown')
+            time.sleep(1)
+            safe_edit_message_text("⚙️ **Настройки уведомлений и магазинов:**", c.message.chat.id, c.message.message_id, parse_mode='Markdown', reply_markup=settings_kbrd(c.from_user.id))
+
+        elif c.data == "back_to_settings":
+            safe_edit_message_text("⚙️ **Настройки уведомлений и магазинов:**", c.message.chat.id, c.message.message_id, parse_mode='Markdown', reply_markup=settings_kbrd(c.from_user.id))
+
+        elif c.data == "manage_stores":
+            u_s = get_user_stores(c.from_user.id)
+            mk = types.InlineKeyboardMarkup(row_width=2).add(*[types.InlineKeyboardButton(f"{'✅' if i in u_s else '❌'} {n}", callback_data=f"st_{i}") for i, n in SUPPORTED_STORES.items()])
+            mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_settings")) 
+            safe_edit_message_text("Магазины:", c.message.chat.id, c.message.message_id, reply_markup=mk)
+        elif c.data.startswith('st_'):
+            sid = c.data.split('_')[1]
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT 1 FROM user_stores WHERE user_id = ? AND store_id = ?", (c.from_user.id, sid))
+                if cursor.fetchone(): conn.execute("DELETE FROM user_stores WHERE user_id = ? AND store_id = ?", (c.from_user.id, sid))
+                else: conn.execute("INSERT INTO user_stores (user_id, store_id) VALUES (?, ?)", (c.from_user.id, sid))
+            u_s = get_user_stores(c.from_user.id)
+            mk = types.InlineKeyboardMarkup(row_width=2).add(*[types.InlineKeyboardButton(f"{'✅' if i in u_s else '❌'} {n}", callback_data=f"st_{i}") for i, n in SUPPORTED_STORES.items()])
+            mk.add(types.InlineKeyboardButton("🔙 Назад", callback_data="back_to_settings"))
+            safe_edit_message_reply_markup(c.message.chat.id, c.message.message_id, reply_markup=mk)
+        elif c.data.startswith('del_'):
+            gp = c.data.split('_')[1].lower()
+            with sqlite3.connect(DB_FILE) as conn:
+                conn.execute("DELETE FROM wishlist WHERE user_id = ? AND game_name LIKE ?", (c.from_user.id, gp + '%'))
+            safe_delete_message(c.message.chat.id, c.message.message_id)
+        safe_answer_callback(c.id)
+    except Exception as e:
+        logger.error(f"Callback handler error: {e}")
+
+def price_tracker_loop():
+    while True:
+        try:
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT user_id, game_name, last_price FROM wishlist")
+                items = cursor.fetchall()
+                for uid, g_name, old_price in items:
+                    current_deal = get_game_best_deal(g_name, get_user_stores(uid))
+                    if current_deal:
+                        new_price = float(current_deal['price'])
+                        if new_price < old_price:
+                            store_name = SUPPORTED_STORES.get(current_deal['storeID'], "магазине")
+
+                            conv_price = format_price(new_price, uid)
+                            price_text = f"**${new_price}**"
+                            if conv_price: price_text += f" ({conv_price})"
+
+                            msg_text = (f"📉 **Цена упала!**\n\n"
+                                        f"Игра: **{current_deal['title']}**\n"
+                                        f"Старая цена: `${old_price}`\n"
+                                        f"Новая цена: {price_text}\n"
+                                        f"Где: {store_name}")
+                            mk = types.InlineKeyboardMarkup()
+                            mk.add(types.InlineKeyboardButton("🛒 Купить сейчас", url=current_deal['url']))
+                            mk.add(types.InlineKeyboardButton("🟠 Найти на GGSEL", url=get_ggsel_link(current_deal['title'])))
+
+                            try:
+                                safe_send_message(uid, current_deal['thumb'], caption=msg_text, parse_mode='Markdown', reply_markup=mk)
+                                cursor.execute("UPDATE wishlist SET last_price = ? WHERE user_id = ? AND game_name = ?", (new_price, uid, g_name))
+                            except Exception as e:
+                                logger.warning(f"Failed to send price drop to {uid}: {e}")
+                conn.commit()
+        except Exception as e:
+            logger.error(f"❌ Ошибка трекера цен: {e}")
+        time.sleep(3600)
+
+def auto_sales_scanner():
+    try:
+        url = "https://www.cheapshark.com/api/1.0/deals?storeID=1&metacritic=75&steamRating=80&onSale=1&pageSize=20&sortBy=Savings"
+        deals = requests.get(url, timeout=20).json()
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            sent_count = 0
+
+            for deal in deals:
+                if float(deal['savings']) < 10: continue
+                if float(deal['normalPrice']) < 5: continue
+
+                game_id = deal['gameID']
+
+                cursor.execute("SELECT 1 FROM posted_deals WHERE game_id = ?", (game_id,))
+                if cursor.fetchone(): continue
+
+                aff_url = generate_aff_link(f"https://www.cheapshark.com/redirect?dealID={deal['dealID']}", "1")
+                discount = int(float(deal['savings']))
+
+                caption = (f"🔥 **ГОРЯЧАЯ СКИДКА!**\n\n"
+                           f"🎮 **{deal['title']}**\n"
+                           f"📉 Скидка: **-{discount}%**\n"
+                           f"💰 Цена: **${deal['salePrice']}** (было ${deal['normalPrice']})\n"
+                           f"⭐️ Steam: {deal['steamRatingPercent']}%\n"
+                           f"🏆 Metacritic: {deal['metacriticScore']}")
+
+                mk = types.InlineKeyboardMarkup()
+                mk.add(types.InlineKeyboardButton("🛒 Купить в Steam", url=aff_url))
+                mk.add(types.InlineKeyboardButton("🟠 Найти на GGSEL", url=get_ggsel_link(deal['title'])))
+
+                broadcast_news(deal['title'], aff_url, "sale", deal['thumb'], caption, mk)
+
+                cursor.execute("INSERT OR REPLACE INTO posted_deals (game_id, date_sent) VALUES (?, ?)", (game_id, str(datetime.now())))
+                conn.commit()
+
+                sent_count += 1
+                break 
+
+    except Exception as e:
+        logger.error(f"Sales scanner error: {e}")
+
+def process_rss_loop():
+    while True:
+        try:
+            process_rss(RSS_FREEBIES, "freebie")
+            process_rss(RSS_NEWS, "news")
+            auto_sales_scanner()
+            time.sleep(3600) 
+        except Exception as e:
+            logger.error(f"RSS loop error: {e}")
+            time.sleep(60)
+
+def process_rss(url, type_news):
+    try:
+        feed = feedparser.parse(url)
+        max_check = 5 
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            for entry in feed.entries[:max_check]:
+                cursor.execute("SELECT 1 FROM sent_news WHERE news_id = ?", (entry.link,))
+                if not cursor.fetchone():
+                    img = extract_image(entry)
+                    broadcast_news(entry.title, entry.link, type_news, img)
+                    cursor.execute("INSERT INTO sent_news (news_id) VALUES (?)", (entry.link,))
+            conn.commit()
+    except Exception as e:
+        logger.error(f"❌ Ошибка RSS ({url}): {e}")
+
+# --- 🆕 КОМАНДА КОНВЕРТАЦИИ ВАЛЮТ (Добавлено по запросу) ---
+@bot.message_handler(commands=['convert'])
+def convert_currency_cmd(message):
+    try:
+        parts = message.text.split()
+        if len(parts) != 4:
+            safe_send_message(message.chat.id, "ℹ️ Используйте: /convert <сумма> <из_валюты> <в_валюту>\nПример: `/convert 100 USD RUB`", parse_mode='Markdown')
+            return
+
+        amount = float(parts[1])
+        base = parts[2].upper()
+        target = parts[3].upper()
+
+        rates = get_rates()
+
+        # Конвертация через USD (базовая в API)
+        usd_amount = amount
+        if base != 'USD':
+            if base not in rates:
+                safe_send_message(message.chat.id, f"❌ Неизвестная валюта: {base}")
+                return
+            usd_amount = amount / rates[base]
+
+        final_amount = usd_amount
+        if target != 'USD':
+            if target not in rates:
+                safe_send_message(message.chat.id, f"❌ Неизвестная валюта: {target}")
+                return
+            final_amount = usd_amount * rates[target]
+
+        safe_send_message(message.chat.id, f"💱 **Результат:**\n`{amount} {base}` = `{round(final_amount, 2)} {target}`", parse_mode='Markdown')
+    except ValueError:
+        safe_send_message(message.chat.id, "❌ Введите корректное число.")
+    except Exception as e:
+        logger.error(f"Currency conversion error: {e}")
+        safe_send_message(message.chat.id, f"Ошибка: {e}")
+
+# --- [НОВОЕ] СЕКРЕТНАЯ КОМАНДА АДМИНА (ВЫДАЧА ДЕНЕГ) ---
+@bot.message_handler(commands=['add_money'])
+def admin_add_money(message):
+    # Проверка на админа
+    if str(message.chat.id) != ADMIN_ID:
+        logger.warning(f"Unauthorized add_money attempt from {message.chat.id}")
+        return 
+
+    try:
+        # Разбираем сообщение: /add_money 123456789 10000
+        parts = message.text.split()
+        if len(parts) != 3:
+            safe_send_message(message.chat.id, "⚠️ Формат: `/add_money <ID_ЮЗЕРА> <СУММА>`", parse_mode='Markdown')
+            return
+
+        target_id = int(parts[1])
+        amount = float(parts[2])
+
+        # Используем твою функцию обновления баланса
+        update_usdt_balance(target_id, amount, "Admin Grant")
+
+        safe_send_message(message.chat.id, f"✅ Успешно!\n👤 Юзер: `{target_id}`\n💰 Начислено: **${amount} USDT**", parse_mode='Markdown')
+
+        # Уведомляем юзера (по желанию)
+        try:
+            safe_send_message(target_id, f"🎁 **Бонус от администратора!**\nВаш баланс пополнен на **${amount} USDT**", parse_mode='Markdown')
+        except: pass
+
+    except ValueError:
+        safe_send_message(message.chat.id, "❌ Ошибка. ID и Сумма должны быть числами.")
+    except Exception as e:
+        logger.error(f"Admin add_money error: {e}")
+        safe_send_message(message.chat.id, f"❌ Ошибка: {e}")
+
+def run_scheduler():
+    while True:
+        schedule.run_pending()
+        time.sleep(60)
+
+# Запуск планировщика в отдельном потоке
+schedule.every(1).hours.do(lambda: process_rss(RSS_NEWS, "news"))
+schedule.every(1).hours.do(lambda: process_rss(RSS_FREEBIES, "freebie"))
+Thread(target=run_scheduler, daemon=True).start()
+
+if __name__ == "__main__":
+    logger.info("🚀 Бот запускается...")
+
+    # Запускаем Flask (сервер) прямо здесь, чтобы он слушал вебхуки
+    # Указываем порт 8080, который Replit выводит наружу
+    from flask import Flask, request
+    app = Flask(__name__)
+
+    @app.route('/')
+    def home():
+        return "Бот Game Broker активен!", 200
+
+    @app.route('/cryptobot-webhook', methods=['POST'])
+    def cryptobot_webhook():
+        data = request.json
+        if data and data.get('status') == 'paid':
+            try:
+                uid = int(data.get('payload'))
+                amount = float(data.get('amount'))
+                inv_id = data.get('invoice_id')
+                with sqlite3.connect(DB_FILE) as conn:
+                    exists = conn.execute("SELECT 1 FROM crypto_transactions WHERE reason = ?", (f"Inv_{inv_id}",)).fetchone()
+                    if not exists:
+                        update_usdt_balance(uid, amount, f"Inv_{inv_id}")
+                        safe_send_message(uid, f"✅ **Оплата получена!**\nНачислено: **{amount} USDT**")
+            except Exception as e:
+                logger.error(f"Webhook error: {e}")
+        return "OK", 200
+
+    # Запускаем сервер в отдельном потоке
+    Thread(target=lambda: app.run(host='0.0.0.0', port=5000)).start()
+
+    # Твои старые фоновые задачи
+    Thread(target=process_rss_loop, daemon=True).start()
+    Thread(target=price_tracker_loop, daemon=True).start()
+
+    # Запуск самого бота
+    bot.infinity_polling(timeout=90, long_polling_timeout=40, skip_pending=True)

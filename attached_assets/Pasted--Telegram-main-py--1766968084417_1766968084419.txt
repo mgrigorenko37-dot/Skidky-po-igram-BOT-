@@ -1,0 +1,106 @@
+У меня есть код Telegram-бота. Пожалуйста, внеси следующие исправления в файл main.py, чтобы починить логику, не ломая остальной функционал.
+
+ИСПРАВЛЕНИЕ 1: Починить сбор прибыли (Timezone Fix)
+Замени функцию update_mining_buffer на эту версию (используем UTC, чтобы не было ошибок с часовыми поясами):
+
+def update_mining_buffer(user_id):
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            row = cursor.execute("SELECT buffer_usdt, last_collect_date FROM mining_users WHERE user_id = ?", (user_id,)).fetchone()
+            
+            if not row:
+                cursor.execute("INSERT INTO mining_users (user_id, reg_date, balance_usdt, buffer_usdt) VALUES (?, ?, 0.0, 0.0)", 
+                             (user_id, datetime.utcnow().strftime('%Y-%m-%d')))
+                conn.commit()
+                return 0.0, 0.0, 0
+            
+            buffer, last_date = row
+            now = datetime.utcnow()
+            income_per_day = calculate_farm_income(user_id)
+            
+            # Лимит = доход за 2 дня
+            max_buffer = round(income_per_day * 2, 6)
+            if max_buffer < 0.001: max_buffer = 0.001
+            
+            if not last_date:
+                cursor.execute("UPDATE mining_users SET last_collect_date = ? WHERE user_id = ?", (now.isoformat(), user_id))
+                conn.commit()
+                return buffer, max_buffer, 0
+                
+            try:
+                last_dt = datetime.fromisoformat(last_date)
+            except:
+                last_dt = now
+
+            # Считаем разницу в секундах
+            seconds_passed = (now - last_dt).total_seconds()
+            if seconds_passed < 0: seconds_passed = 0
+            
+            income_per_second = income_per_day / 86400.0
+            new_accrual = seconds_passed * income_per_second
+            
+            final_buffer = min(buffer + new_accrual, max_buffer)
+            
+            cursor.execute("UPDATE mining_users SET buffer_usdt = ?, last_collect_date = ? WHERE user_id = ?", 
+                          (final_buffer, now.isoformat(), user_id))
+            conn.commit()
+            
+            percent = int((final_buffer / max_buffer * 100)) if max_buffer > 0 else 0
+            if percent > 100: percent = 100
+            
+            return round(final_buffer, 6), max_buffer, percent
+    except Exception as e:
+        logger.error(f"Buffer error: {e}")
+        return 0, 0, 0
+
+
+ИСПРАВЛЕНИЕ 2: Авто-установка лучшей детали из коробки
+В функции buy_box_rng (или той, что обрабатывает buy_box_), добавь логику сравнения. Если выпавшая деталь лучше установленной — ставь её сразу.
+Вот правильный кусок кода для вставки внутрь обработчика buy_box:
+
+    # ... (после получения part_type и rarity)
+    # Считаем "силу" новой детали
+    rarity_score = {"trash": 1, "iron": 2, "core": 3}
+    new_power = tier * 10 + rarity_score.get(rarity, 0)
+    
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        # Ищем старую деталь в этом слоте
+        cursor.execute("SELECT mf.inventory_item_id, mi.tier, mi.rarity FROM mining_farm mf JOIN mining_inventory mi ON mf.inventory_item_id = mi.id WHERE mf.user_id = ? AND mf.slot_name = ?", (user_id, part_type))
+        old_part = cursor.fetchone()
+        
+        auto_installed = False
+        if old_part:
+            old_power = old_part[1] * 10 + rarity_score.get(old_part[2], 0)
+            if new_power > old_power:
+                # Новая лучше! Снимаем старую
+                cursor.execute("UPDATE mining_inventory SET is_installed = 0 WHERE id = ?", (old_part[0],))
+                # Добавляем новую сразу как установленную
+                cursor.execute("INSERT INTO mining_inventory (user_id, part_type, rarity, tier, is_installed) VALUES (?, ?, ?, ?, 1)", (user_id, part_type, rarity, tier))
+                new_id = cursor.lastrowid
+                cursor.execute("UPDATE mining_farm SET inventory_item_id = ?, install_date = ?, is_broken = 0 WHERE user_id = ? AND slot_name = ?", (new_id, str(datetime.now()), user_id, part_type))
+                auto_installed = True
+        else:
+            # Слота вообще не было, ставим новую
+            cursor.execute("INSERT INTO mining_inventory (user_id, part_type, rarity, tier, is_installed) VALUES (?, ?, ?, ?, 1)", (user_id, part_type, rarity, tier))
+            new_id = cursor.lastrowid
+            cursor.execute("INSERT INTO mining_farm (user_id, slot_name, inventory_item_id, install_date) VALUES (?, ?, ?, ?)", (user_id, part_type, new_id, str(datetime.now())))
+            auto_installed = True
+            
+        if not auto_installed:
+            # Если новая хуже, просто кладем в инвентарь
+            cursor.execute("INSERT INTO mining_inventory (user_id, part_type, rarity, tier, is_installed) VALUES (?, ?, ?, ?, 0)", (user_id, part_type, rarity, tier))
+        
+        conn.commit()
+
+
+ИСПРАВЛЕНИЕ 3: Кнопка продажи в инвентаре
+В функции view_item_ (просмотр предмета) убедись, что добавляется кнопка продажи:
+price = round(TIERS_CONFIG[item['tier']]['price'] * SELL_RATES[item['rarity']], 2)
+mk.add(types.InlineKeyboardButton(f"💰 Продать (+${price})", callback_data=f"sell_mining_{item_id}"))
+
+ИСПРАВЛЕНИЕ 4: Расчет дохода
+В функции calculate_farm_income убедись, что используется формула:
+Income = Base_Tier_Income * Part_Ratio * Aging_Factor
+Где Aging_Factor = 1.0 - (restores_count * 0.1). Минимальный фактор = 0.1.
