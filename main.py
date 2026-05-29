@@ -471,24 +471,36 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, _shutdown)
     signal.signal(signal.SIGINT, _shutdown)
 
-    # Сбрасываем вебхук и ждём, пока старая сессия Telegram закроется
-    logger.info("Сброс вебхука и ожидание закрытия старых сессий...")
-    for attempt in range(5):
+    # Принудительно закрываем старую сессию через прямые вызовы Telegram API
+    logger.info("Закрываем старые сессии Telegram...")
+    base_url = f"https://api.telegram.org/bot{config.BOT_TOKEN}"
+    for attempt in range(3):
         try:
-            bot.remove_webhook()
+            r = requests.post(f"{base_url}/deleteWebhook",
+                              json={"drop_pending_updates": True}, timeout=8)
+            logger.info(f"deleteWebhook: {r.json().get('description','ok')}")
             break
         except Exception as e:
-            logger.warning(f"remove_webhook attempt {attempt+1}: {e}")
-            time.sleep(3)
+            logger.warning(f"deleteWebhook attempt {attempt+1}: {e}")
+            time.sleep(2)
 
-    time.sleep(2)  # небольшая пауза чтобы Telegram закрыл старое соединение
+    # Закрываем открытое getUpdates-соединение на стороне Telegram
+    try:
+        r = requests.post(f"{base_url}/close", timeout=8)
+        logger.info(f"close: {r.json().get('description','ok')}")
+    except Exception:
+        pass
+
+    # Ждём, пока Telegram полностью освободит соединение (long-poll таймаут = 30с)
+    logger.info("Ожидание освобождения сессии (35 сек)...")
+    time.sleep(35)
 
     print("🚀 Бот запущен!")
     while True:
         try:
             bot.infinity_polling(
                 timeout=30,
-                long_polling_timeout=30,
+                long_polling_timeout=25,
                 skip_pending=True,
                 restart_on_change=False,
                 logger_level=logging.WARNING
@@ -497,12 +509,19 @@ if __name__ == "__main__":
             err = str(e)
             logger.error(f"Bot Polling Error: {e}")
             if "409" in err or "Conflict" in err:
-                logger.warning("Конфликт сессий (409) — сбрасываем соединение и повторяем через 10 сек...")
+                logger.warning("Конфликт сессий (409) — ждём полного закрытия (35 сек)...")
                 try:
-                    bot.remove_webhook()
+                    requests.post(
+                        f"https://api.telegram.org/bot{config.BOT_TOKEN}/close",
+                        timeout=5
+                    )
                 except Exception:
                     pass
-                time.sleep(10)
+                try:
+                    bot.remove_webhook(drop_pending_updates=True)
+                except Exception:
+                    pass
+                time.sleep(35)
             elif "502" in err or "503" in err or "504" in err:
                 logger.warning("Telegram временно недоступен — повтор через 15 сек...")
                 time.sleep(15)
