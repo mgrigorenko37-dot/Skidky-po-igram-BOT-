@@ -566,6 +566,27 @@ const LS = {
   ach:     () => LS.get('ach')    || [],
 };
 
+/* ═══════════ CURRENCY CONVERSION ═══════════ */
+const RATES = {
+  USD:1, RUB:100, KZT:520, BYN:3.3, UAH:42, UZS:12800,
+  KGS:87, AMD:390, AZN:1.7, TJS:11, EUR:0.93, GBP:0.79
+};
+const SIGNS = {
+  USD:'$', RUB:'₽', KZT:'₸', BYN:'Br', UAH:'₴', UZS:"so'm",
+  KGS:'с', AMD:'֏', AZN:'₼', TJS:'som', EUR:'€', GBP:'£'
+};
+function fmtPrice(usd) {
+  const v = parseFloat(usd);
+  if (isNaN(v)) return '';
+  if (v === 0) return 'FREE';
+  const cur = LS.prefs().currency || 'USD';
+  const rate = RATES[cur] || 1;
+  const sign = SIGNS[cur] || cur + ' ';
+  const converted = v * rate;
+  const str = converted >= 100 ? Math.round(converted).toLocaleString('ru-RU') : converted.toFixed(2);
+  return cur === 'USD' || cur === 'EUR' || cur === 'GBP' ? sign + str : str + ' ' + sign;
+}
+
 function pushRecent(name) {
   let r = LS.recent().filter(x=>x!==name);
   r.unshift(name); LS.set('recent', r.slice(0,8));
@@ -661,7 +682,7 @@ async function doSearch(q) {
     document.getElementById('srch-cnt').textContent = data.length + ' игр';
     document.getElementById('s-res').innerHTML = data.map(g => {
       const n = parseFloat(g.cheapest);
-      const pl = isNaN(n)||n===0 ? 'FREE' : '$'+n.toFixed(2);
+      const pl = isNaN(n)||n===0 ? 'FREE' : fmtPrice(n);
       const pc = isNaN(n)||n===0 ? 'pt pt-f' : 'pt pt-g';
       const added = wishSet.has(g.title);
       return `<div class="gr" onclick="openGame('${ea(g.id)}','${ea(g.title)}')">
@@ -736,8 +757,8 @@ function renderDeals() {
         <div class="di">
           <div class="dt">${esc(d.title)}</div>
           <div class="dp">
-            <span class="sale">$${parseFloat(d.sale_price).toFixed(2)}</span>
-            <span class="orig">$${parseFloat(d.normal_price).toFixed(2)}</span>
+            <span class="sale">${fmtPrice(d.sale_price)}</span>
+            <span class="orig">${fmtPrice(d.normal_price)}</span>
             <span class="disc">−${d.savings}%</span>
           </div>
           <div class="dmeta">
@@ -803,7 +824,7 @@ async function loadFree() {
             <div class="fs">
               ${d.metacritic>0?`<span class="bdg bdg-g" style="font-size:10px;padding:2px 7px">🏅 ${d.metacritic}</span>`:''}
               ${d.steam_rating_pct>0?`<span class="bdg bdg-gr" style="font-size:10px;padding:2px 7px">${d.steam_rating_pct}%</span>`:''}
-              ${parseFloat(d.normal_price)>0?`<span style="font-size:11px;color:var(--hint)">Цена: $${parseFloat(d.normal_price).toFixed(2)}</span>`:''}
+              ${parseFloat(d.normal_price)>0?`<span style="font-size:11px;color:var(--hint)">Цена: ${fmtPrice(d.normal_price)}</span>`:''}
               <span class="pt pt-f" style="font-size:10px;padding:3px 7px">FREE</span>
             </div>
             ${d.steam_rating_pct>0?`<div class="rating-bar"><div class="rating-fill" style="width:${d.steam_rating_pct}%"></div></div>`:''}
@@ -843,7 +864,7 @@ async function openGame(id, title) {
       <div class="m-tags">
         ${d.metacritic>0?`<span class="bdg bdg-g">🏅 Metacritic ${d.metacritic}</span>`:''}
         ${d.steam_rating_pct>0?`<span class="bdg bdg-gr">${rateStars(d.steam_rating_pct)} ${d.steam_rating_pct}%</span>`:''}
-        ${d.cheapest_price?`<span class="bdg bdg-p">🏷 Мин: $${d.cheapest_price}</span>`:''}
+        ${d.cheapest_price?`<span class="bdg bdg-p">🏷 Мин: ${fmtPrice(d.cheapest_price)}</span>`:''}
       </div>
       <button class="m-add ${added?'on':''}" id="m-add-btn" onclick="addW('${ea(title)}',this)">
         ${added?'✓ В шорт-листе':'+ Добавить в шорт-лист'}
@@ -853,8 +874,8 @@ async function openGame(id, title) {
         <div class="deal-row">
           <div class="dr-store">${esc(dd.store)}</div>
           <div class="dr-prices">
-            <span class="dr-sale">${parseFloat(dd.sale_price)===0?'FREE':'$'+parseFloat(dd.sale_price).toFixed(2)}</span>
-            ${dd.savings>0?`<span class="dr-orig">$${parseFloat(dd.normal_price).toFixed(2)}</span><span class="dr-disc">−${dd.savings}%</span>`:''}
+            <span class="dr-sale">${fmtPrice(dd.sale_price)}</span>
+            ${dd.savings>0?`<span class="dr-orig">${fmtPrice(dd.normal_price)}</span><span class="dr-disc">−${dd.savings}%</span>`:''}
           </div>
           <button class="dr-btn" onclick="openUrl('${ea(dd.deal_url)}')">Купить</button>
         </div>`).join(''):'<div class="em" style="padding:20px"><div class="em-icon">🔍</div><h3>Цены не найдены</h3></div>'}`;
@@ -894,7 +915,7 @@ function renderWish(items) {
       <div class="wico">${icons[i%icons.length]}</div>
       <div class="wtext">
         <div class="wn">${esc(item.name)}</div>
-        <div class="wp">${item.last_price?'Последняя: $'+item.last_price:'Ожидает отслеживания'}</div>
+        <div class="wp">${item.last_price?'Последняя: '+fmtPrice(item.last_price):'Ожидает отслеживания'}</div>
       </div>
       <div class="wi-act">
         <button class="icon-btn ib-s" onclick="qs('${ea(item.name)}');tab('search')">🔎</button>
@@ -1128,6 +1149,11 @@ async function setCurrency(c) {
   const p=LS.prefs(); p.currency=c; LS.setPrefs(p);
   toast(`💱 ${c}`);
   if (userId) { try { await fetch(`/api/settings/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currency:c})}); } catch {} }
+  // Re-render any already-loaded content so prices update immediately
+  if (loaded.deals) { renderDeals(); }
+  if (loaded.free)  { loaded.free=false; loadFree(); }
+  if (loaded.wish)  { loaded.wish=false; loadWish(); }
+  if (si.value.trim().length>=2) doSearch(si.value.trim());
 }
 
 /* ─── Referral ─── */
