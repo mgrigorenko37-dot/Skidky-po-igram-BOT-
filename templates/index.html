@@ -68,15 +68,24 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 /* CARDS */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 
-/* SEARCH BOX */
-.sbox{position:relative;margin-bottom:12px}
-.sbox input{width:100%;padding:13px 42px 13px 44px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:15px;outline:none;transition:border-color .2s,background .2s}
-.sbox input:focus{border-color:var(--accent);background:rgba(124,111,255,.05)}
-.sbox input::placeholder{color:var(--hint)}
-.sbox .sico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
-.sbox .sclr{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:var(--hint);font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center}
+/* SEARCH BOX — gb-search style */
+.gb-search-wrap{margin-bottom:10px}
+.gb-search{display:flex;align-items:center;gap:10px;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:10px 14px;transition:border-color .15s}
+.gb-search:focus-within{border-color:var(--accent)}
+.gb-search .s-ico{color:var(--hint);font-size:18px;flex-shrink:0;pointer-events:none}
+.gb-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;min-width:0;font-family:inherit}
+.gb-search input::placeholder{color:var(--hint)}
+.gb-search .sclr{background:transparent;border:none;color:var(--hint);font-size:14px;cursor:pointer;padding:0 2px;flex-shrink:0;display:none;line-height:1}
+.gb-search .s-adj{color:var(--accent);font-size:18px;flex-shrink:0;cursor:pointer}
 
-/* CHIPS */
+/* TAGS (gb-tag style) */
+.gb-tags{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;margin-bottom:12px;scrollbar-width:none}
+.gb-tags::-webkit-scrollbar{display:none}
+.gb-tag{display:flex;align-items:center;gap:5px;padding:5px 12px;background:var(--card);border:0.5px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;color:var(--text);transition:all .15s;flex-shrink:0}
+.gb-tag:active,.gb-tag:hover{border-color:var(--accent);color:var(--accent)}
+.gb-tag.active{background:rgba(124,90,247,.12);border-color:var(--accent);color:var(--accent)}
+
+/* CHIPS (kept for deals page filters) */
 .scroll-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
 .scroll-row::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--rx);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;color:var(--text)}
@@ -345,25 +354,27 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <!-- ══════ SEARCH / HOME ══════ -->
 <div class="page active" id="p-search">
   <!-- Search box -->
-  <div class="sbox" style="margin-bottom:10px">
-    <span class="sico"><i class="ti ti-search" style="font-size:17px"></i></span>
-    <input id="si" placeholder="Найди свою игру…" autocomplete="off" autocorrect="off" spellcheck="false">
-    <button class="sclr" id="sx" onclick="clearSrch()">✕</button>
-    <i class="ti ti-adjustments-horizontal" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:18px;pointer-events:none" id="s-filter-ico"></i>
+  <div class="gb-search-wrap">
+    <div class="gb-search">
+      <i class="ti ti-search s-ico"></i>
+      <input id="si" placeholder="Найди свою игру…" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="sclr" id="sx" onclick="clearSrch()">✕</button>
+      <i class="ti ti-adjustments-horizontal s-adj" id="s-filter-ico"></i>
+    </div>
   </div>
 
   <!-- HOME FEED (shown when search is empty) -->
   <div id="s-hint">
     <!-- Tags -->
-    <div class="scroll-row" style="margin-bottom:12px">
-      <div class="chip on" onclick="tab('deals')"><i class="ti ti-flame" style="font-size:12px;margin-right:3px"></i>Топ скидок</div>
-      <div class="chip" onclick="qs('GTA V')">GTA V</div>
-      <div class="chip" onclick="qs('Cyberpunk 2077')">Cyberpunk</div>
-      <div class="chip" onclick="qs('Elden Ring')">Elden Ring</div>
-      <div class="chip" onclick="qs('Witcher 3')">Witcher 3</div>
-      <div class="chip" onclick="qs('Red Dead Redemption 2')">RDR2</div>
-      <div class="chip" onclick="qs('Baldurs Gate 3')">BG3</div>
-      <div class="chip" onclick="qs('Hogwarts Legacy')">Hogwarts</div>
+    <div class="gb-tags">
+      <div class="gb-tag active" onclick="tab('deals')"><i class="ti ti-flame" style="font-size:12px"></i>Топ скидок</div>
+      <div class="gb-tag" onclick="qs('GTA V')">GTA V</div>
+      <div class="gb-tag" onclick="qs('Cyberpunk 2077')">Cyberpunk</div>
+      <div class="gb-tag" onclick="qs('Elden Ring')">Elden Ring</div>
+      <div class="gb-tag" onclick="qs('Witcher 3')">Witcher 3</div>
+      <div class="gb-tag" onclick="qs('Red Dead Redemption 2')">RDR2</div>
+      <div class="gb-tag" onclick="qs('Baldurs Gate 3')">BG3</div>
+      <div class="gb-tag" onclick="qs('Hogwarts Legacy')">Hogwarts</div>
     </div>
 
     <!-- Stats -->
