@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Уровни Сборщика ПК</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .card {
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .level-emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center mb-4">🏆 Уровни Мастерства</h1>
+
+    <div class="row justify-content-center">
+        {% for name, data in levels.items() %}
+        <div class="col-md-4 col-sm-6">
+            <div class="card h-100 border-{{ data.color }}">
+                <div class="card-header bg-{{ data.color }} text-white text-center fw-bold">
+                    {{ name }}
+                </div>
+                <div class="card-body text-center">
+                    <div class="level-emoji">{{ data.emoji }}</div>
+                    <p class="card-text text-muted">{{ data.description }}</p>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="badge bg-secondary">📦 {{ data.boxes }} коробок</span>
+                        <span class="badge bg-success">💰 ${{ data.price }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>
