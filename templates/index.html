@@ -275,13 +275,40 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 #toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-90px);padding:11px 20px;border-radius:var(--rx);font-size:13px;font-weight:800;z-index:9999;transition:transform .3s cubic-bezier(.34,1.4,.64,1);white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5);pointer-events:none;max-width:calc(100vw - 40px);background:var(--accent);color:#fff}
 #toast.show{transform:translateX(-50%) translateY(0)}
 
-/* ── STATS ROW (search page) ── */
-.gb-stats-row{display:flex;gap:10px;margin:12px 0 16px}
-.gb-stat-card{flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:11px 8px;text-align:center}
-.gb-stat-num{font-size:19px;font-weight:700;line-height:1}
+/* ── STATS ROW ── */
+.gb-stats-row{display:flex;gap:8px;margin:10px 0 14px}
+.gb-stat-card{flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:11px 6px;text-align:center}
+.gb-stat-num{font-size:18px;font-weight:700;line-height:1}
 .gb-stat-label{font-size:10px;color:var(--hint);margin-top:3px;font-weight:500}
 
-/* ── DEAL CARDS refined ── */
+/* ── FEATURED BANNER ── */
+.gb-featured{background:var(--card);border:0.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.gb-featured-banner{height:96px;background:#12102a;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.gb-banner-glow{position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(124,90,247,.22);filter:blur(44px);top:-80px;left:50%;transform:translateX(-50%)}
+.gb-banner-glow2{position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(240,90,126,.16);filter:blur(36px);bottom:-60px;right:10px}
+.gb-banner-content{position:relative;z-index:1;text-align:center}
+.gb-banner-title{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.gb-banner-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px}
+.gb-featured-body{padding:11px 13px;display:flex;align-items:center;justify-content:space-between}
+.gb-featured-stores{display:flex;gap:6px;flex-wrap:wrap}
+.gb-store-pill{padding:4px 10px;border-radius:20px;font-size:11px;border:0.5px solid var(--border);color:var(--hint);background:var(--bg2);font-weight:600}
+.gb-store-pill.best{border-color:var(--accent);color:var(--accent);background:rgba(124,90,247,.1)}
+.gb-featured-price{font-size:17px;font-weight:700;color:var(--accent)}
+.gb-featured-disc{font-size:10px;color:var(--hint);text-align:right;margin-top:1px}
+
+/* ── HOME DEAL CARDS (emoji thumb style) ── */
+.gb-deal-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;padding:11px 13px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;margin-bottom:8px}
+.gb-deal-card:active{border-color:var(--accent);opacity:.88}
+.gb-game-thumb{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.gb-game-info{flex:1;min-width:0}
+.gb-game-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gb-game-meta{font-size:11px;color:var(--hint);margin-top:2px}
+.gb-game-price{text-align:right;flex-shrink:0}
+.gb-price-now{font-size:15px;font-weight:700;color:var(--green)}
+.gb-price-old{font-size:11px;color:var(--hint);text-decoration:line-through}
+.gb-discount-badge{display:inline-block;background:rgba(29,233,164,.12);color:var(--green);border:0.5px solid rgba(29,233,164,.25);border-radius:6px;padding:1px 6px;font-size:10px;font-weight:700;margin-top:2px}
+
+/* ── DEAL CARDS refined (deals page) ── */
 .dc{margin-bottom:8px;cursor:pointer;border-radius:var(--r);overflow:hidden;background:var(--card);border:0.5px solid var(--border);transition:border-color .15s}
 .dc:hover,.dc:active{border-color:var(--accent);opacity:.92}
 .dc-inner{display:flex;gap:12px;padding:12px 13px;align-items:center}
@@ -293,6 +320,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .dc .orig{font-size:11px;color:var(--hint);text-decoration:line-through}
 .dc .disc{background:rgba(255,71,87,.18);color:var(--red);font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;border:1px solid rgba(255,71,87,.3)}
 .dc .dmeta{font-size:11px;color:var(--hint);display:flex;align-items:center;gap:8px}
+
+/* ── WATERMARK ── */
+#gb-watermark{text-align:center;padding:6px 0 2px;font-size:11px;color:var(--hint);letter-spacing:.03em;flex-shrink:0;background:var(--bg2)}
 </style>
 </head>
 <body>
@@ -312,18 +342,31 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 <div id="content">
 
-<!-- ══════ SEARCH ══════ -->
+<!-- ══════ SEARCH / HOME ══════ -->
 <div class="page active" id="p-search">
-  <div class="ph" style="margin-bottom:10px">
-    <span class="bdg bdg-p" id="srch-cnt" style="display:none"></span>
-  </div>
-  <div class="sbox">
-    <span class="sico"><i class="ti ti-search" style="font-size:18px"></i></span>
+  <!-- Search box -->
+  <div class="sbox" style="margin-bottom:10px">
+    <span class="sico"><i class="ti ti-search" style="font-size:17px"></i></span>
     <input id="si" placeholder="Найди свою игру…" autocomplete="off" autocorrect="off" spellcheck="false">
     <button class="sclr" id="sx" onclick="clearSrch()">✕</button>
+    <i class="ti ti-adjustments-horizontal" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:18px;pointer-events:none" id="s-filter-ico"></i>
   </div>
+
+  <!-- HOME FEED (shown when search is empty) -->
   <div id="s-hint">
-    <!-- Stats row -->
+    <!-- Tags -->
+    <div class="scroll-row" style="margin-bottom:12px">
+      <div class="chip on" onclick="tab('deals')"><i class="ti ti-flame" style="font-size:12px;margin-right:3px"></i>Топ скидок</div>
+      <div class="chip" onclick="qs('GTA V')">GTA V</div>
+      <div class="chip" onclick="qs('Cyberpunk 2077')">Cyberpunk</div>
+      <div class="chip" onclick="qs('Elden Ring')">Elden Ring</div>
+      <div class="chip" onclick="qs('Witcher 3')">Witcher 3</div>
+      <div class="chip" onclick="qs('Red Dead Redemption 2')">RDR2</div>
+      <div class="chip" onclick="qs('Baldurs Gate 3')">BG3</div>
+      <div class="chip" onclick="qs('Hogwarts Legacy')">Hogwarts</div>
+    </div>
+
+    <!-- Stats -->
     <div class="gb-stats-row">
       <div class="gb-stat-card">
         <div class="gb-stat-num" style="color:var(--accent)">35+</div>
@@ -338,26 +381,32 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
         <div class="gb-stat-label">Игр</div>
       </div>
     </div>
-    <div class="slabel">Популярные</div>
-    <div class="scroll-row">
-      <div class="chip" onclick="qs('GTA V')"><i class="ti ti-car" style="font-size:12px"></i> GTA V</div>
-      <div class="chip" onclick="qs('Cyberpunk 2077')">🤖 Cyberpunk</div>
-      <div class="chip" onclick="qs('Elden Ring')">⚔️ Elden Ring</div>
-      <div class="chip" onclick="qs('Witcher 3')">🧙 Witcher 3</div>
-      <div class="chip" onclick="qs('Red Dead Redemption 2')">🤠 RDR2</div>
-      <div class="chip" onclick="qs('Spider-Man')">🕷 Spider-Man</div>
-      <div class="chip" onclick="qs('Baldurs Gate 3')">🎲 BG3</div>
-      <div class="chip" onclick="qs('Hogwarts Legacy')">🪄 Hogwarts</div>
+
+    <!-- Featured deal -->
+    <div id="home-featured" style="display:none"></div>
+
+    <!-- Hot deals -->
+    <div id="home-deals-wrap" style="display:none">
+      <div class="slabel">Горячие предложения</div>
+      <div id="home-deals-list"></div>
+      <button class="lmore" onclick="tab('deals')" style="margin-top:4px">Все скидки <i class="ti ti-arrow-right" style="font-size:13px"></i></button>
     </div>
-    <div id="recent-search-section" style="display:none">
-      <div class="slabel" style="margin-top:4px">Недавние поиски</div>
+
+    <!-- Loading state for home feed -->
+    <div id="home-feed-load" class="em" style="padding:30px 20px"><div class="spin"></div></div>
+
+    <!-- Recent searches (shown after first search) -->
+    <div id="recent-search-section" style="display:none;margin-top:4px">
+      <div class="slabel">Недавние поиски</div>
       <div class="card" id="recent-search-list"></div>
     </div>
-    <div class="em" style="padding:40px 20px" id="search-tip"><div class="em-icon">🕹</div><h3>Найди свою игру</h3><p>Сравниваем цены в 35+ магазинах — Steam, GOG, Epic и других.</p></div>
   </div>
+
+  <!-- Search results states -->
   <div id="s-load" style="display:none" class="em"><div class="spin"></div></div>
   <div class="card" id="s-res" style="display:none"></div>
   <div id="s-empty" style="display:none" class="em"><div class="em-icon">😢</div><h3>Ничего не найдено</h3><p>Попробуй написать название на английском или проверь правописание</p></div>
+  <span class="bdg bdg-p" id="srch-cnt" style="display:none;margin-top:8px"></span>
 </div>
 
 <!-- ══════ DEALS ══════ -->
@@ -590,6 +639,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <button class="nb"     id="nb-wish"    onclick="tab('wish')"><span class="ni"><i class="ti ti-bookmark"></i></span>Список</button>
   <button class="nb"     id="nb-profile" onclick="tab('profile')"><span class="ni"><i class="ti ti-user-circle"></i></span>Я</button>
 </nav>
+<div id="gb-watermark">@GameBroker_bot</div>
 </div>
 
 <!-- MODAL -->
@@ -731,6 +781,8 @@ function showS(s) {
   document.getElementById('s-res').style.display   = s==='res'  ? 'block' : 'none';
   document.getElementById('s-empty').style.display = s==='empty'? 'flex'  : 'none';
   document.getElementById('srch-cnt').style.display= s==='res'  ? 'inline-flex':'none';
+  const fi = document.getElementById('s-filter-ico');
+  if (fi) fi.style.display = s==='hint' ? 'block' : 'none';
   if (s==='hint') renderRecentSearch();
 }
 async function doSearch(q) {
@@ -763,14 +815,85 @@ function renderRecentSearch() {
   const arr = LS.recent();
   const sec = document.getElementById('recent-search-section');
   const list = document.getElementById('recent-search-list');
-  const tip  = document.getElementById('search-tip');
-  if (!arr.length) { sec.style.display='none'; tip.style.display='flex'; return; }
-  sec.style.display='block'; tip.style.display='none';
+  if (!arr.length) { sec.style.display='none'; return; }
+  sec.style.display='block';
   list.innerHTML = arr.map(s=>`<div class="gr" onclick="qs('${ea(s)}')" style="border:none">
     <div style="width:36px;height:36px;border-radius:9px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🕐</div>
     <div class="gi"><div class="gt">${esc(s)}</div></div>
     <span style="font-size:16px;color:var(--hint)">›</span>
   </div>`).join('<div class="divider"></div>');
+}
+
+/* ═══════════════════════════════════════
+   HOME FEED (Featured + Hot Deals)
+═══════════════════════════════════════ */
+const THUMB_COLORS = [
+  'rgba(124,90,247,.18)','rgba(240,90,126,.15)','rgba(29,233,164,.13)',
+  'rgba(255,167,0,.14)','rgba(79,195,247,.14)','rgba(255,71,87,.13)'
+];
+const THUMB_EMOJIS = ['🎮','⚔️','🧙','🔫','🚀','🏎','🎯','👾','🐉','🤖','🕹','🎲'];
+
+async function loadHomeFeed() {
+  const feedLoad = document.getElementById('home-feed-load');
+  const featEl   = document.getElementById('home-featured');
+  const dealsWrap= document.getElementById('home-deals-wrap');
+  const dealsList= document.getElementById('home-deals-list');
+  if (feedLoad) feedLoad.style.display='flex';
+  try {
+    const r = await fetch('/api/deals?page=0&sort=Savings&min_savings=50&max_price=60&aaa=1');
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) { if(feedLoad)feedLoad.style.display='none'; return; }
+    if (feedLoad) feedLoad.style.display='none';
+
+    // Featured banner — top deal
+    const top = data[0];
+    if (featEl) {
+      featEl.innerHTML = `
+        <div class="gb-featured" onclick="openUrl('${ea(top.deal_url)}')" style="cursor:pointer">
+          <div class="gb-featured-banner">
+            <div class="gb-banner-glow"></div>
+            <div class="gb-banner-glow2"></div>
+            <div class="gb-banner-content">
+              <div class="gb-banner-title">${esc(top.title)}</div>
+              <div class="gb-banner-sub">Лучшая цена дня · ${esc(top.store||'')}</div>
+            </div>
+          </div>
+          <div class="gb-featured-body">
+            <div class="gb-featured-stores">
+              <div class="gb-store-pill best">${esc(top.store||'Best')}</div>
+              <div class="gb-store-pill">Steam</div>
+              <div class="gb-store-pill">GOG</div>
+            </div>
+            <div>
+              <div class="gb-featured-price">${fmtPrice(top.sale_price)}</div>
+              <div class="gb-featured-disc">−${top.savings}%</div>
+            </div>
+          </div>
+        </div>`;
+      featEl.style.display='block';
+    }
+
+    // Hot deals — next 5 cards
+    const hot = data.slice(1, 6);
+    if (hot.length && dealsWrap && dealsList) {
+      dealsList.innerHTML = hot.map((d,i)=>`
+        <div class="gb-deal-card" onclick="openUrl('${ea(d.deal_url)}')">
+          <div class="gb-game-thumb" style="background:${THUMB_COLORS[i%THUMB_COLORS.length]}">${THUMB_EMOJIS[i%THUMB_EMOJIS.length]}</div>
+          <div class="gb-game-info">
+            <div class="gb-game-name">${esc(d.title)}</div>
+            <div class="gb-game-meta">${esc(d.store||'')} · ${d.metacritic>0?'🏅 '+d.metacritic:'Game'}</div>
+          </div>
+          <div class="gb-game-price">
+            <div class="gb-price-now">${fmtPrice(d.sale_price)}</div>
+            <div class="gb-price-old">${fmtPrice(d.normal_price)}</div>
+            <div class="gb-discount-badge">−${d.savings}%</div>
+          </div>
+        </div>`).join('');
+      dealsWrap.style.display='block';
+    }
+  } catch(e) {
+    if (feedLoad) feedLoad.style.display='none';
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1250,6 +1373,9 @@ function buildAchievements() {
     </div>`;
   }).join('');
 }
+
+/* ── Auto-load home feed on start ── */
+loadHomeFeed();
 </script>
 </body>
 </html>
