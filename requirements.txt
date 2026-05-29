@@ -4,3 +4,8 @@ beautifulsoup4
 feedparser
 deep-translator
 urllib3
+email_validator
+flask
+flask-sqlalchemy
+gunicorn
+psycopg2-binary
