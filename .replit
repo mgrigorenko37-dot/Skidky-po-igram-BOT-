@@ -27,13 +27,13 @@ args = "Telegram Bot"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "uv run python app.py"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "uv run gunicorn --bind 0.0.0.0:5000 --workers 2 app:app"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Telegram Bot"
