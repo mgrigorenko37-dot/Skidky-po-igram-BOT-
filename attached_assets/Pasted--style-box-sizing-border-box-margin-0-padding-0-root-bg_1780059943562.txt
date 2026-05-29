@@ -1,0 +1,355 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0f14; --surface: #14171f; --card: #1a1d27;
+  --border: #2a2d3a; --accent: #7c5af7; --accent2: #f05a7e;
+  --text: #e8e8f0; --muted: #6b6e80; --green: #1de9a4;
+  --amber: #f5a623; --red: #ff4d6a;
+}
+.app { background: var(--bg); font-family: var(--font-sans); color: var(--text); max-width: 400px; margin: 0 auto; border-radius: 20px; border: 0.5px solid var(--border); overflow: hidden; }
+.topbar { background: var(--surface); padding: 16px 18px 12px; border-bottom: 0.5px solid var(--border); }
+.topbar-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.topbar-title { font-size: 20px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.notif-badge { background: var(--red); color: white; border-radius: 20px; font-size: 11px; font-weight: 500; padding: 2px 7px; }
+.timer-row { display: flex; align-items: center; gap: 6px; background: var(--card); border: 0.5px solid var(--border); border-radius: 10px; padding: 7px 12px; }
+.timer-label { font-size: 11px; color: var(--muted); }
+.timer-val { font-size: 13px; font-weight: 500; color: var(--amber); letter-spacing: 0.04em; }
+.timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-left: auto; }
+.sort-row { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.sort-row::-webkit-scrollbar { display: none; }
+.sort-pill { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; font-size: 12px; white-space: nowrap; cursor: pointer; border: 0.5px solid var(--border); background: var(--card); color: var(--muted); transition: all 0.15s; }
+.sort-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(124,90,247,0.1); }
+.sort-pill.fire.active { border-color: var(--accent2); color: var(--accent2); background: rgba(240,90,126,0.1); }
+.genre-row { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; padding: 10px 18px; border-bottom: 0.5px solid var(--border); }
+.genre-row::-webkit-scrollbar { display: none; }
+.genre-pill { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 20px; font-size: 12px; white-space: nowrap; cursor: pointer; border: 0.5px solid var(--border); background: var(--card); color: var(--muted); }
+.genre-pill.active { border-color: var(--green); color: var(--green); background: rgba(29,233,164,0.08); }
+.price-filter { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 0.5px solid var(--border); }
+.price-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.price-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; position: relative; cursor: pointer; }
+.price-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 60%; }
+.price-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); position: absolute; top: -5px; right: 0; border: 2px solid var(--bg); }
+.price-vals { display: flex; gap: 4px; align-items: center; }
+.price-num { font-size: 12px; font-weight: 500; color: var(--text); background: var(--card); border: 0.5px solid var(--border); border-radius: 6px; padding: 3px 7px; min-width: 36px; text-align: center; }
+.ok-btn { font-size: 12px; font-weight: 500; color: var(--accent); background: rgba(124,90,247,0.1); border: 0.5px solid var(--accent); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+.stats-row { display: flex; gap: 1px; border-bottom: 0.5px solid var(--border); }
+.stat-item { flex: 1; padding: 8px 12px; text-align: center; background: var(--surface); }
+.stat-item:not(:last-child) { border-right: 0.5px solid var(--border); }
+.stat-n { font-size: 15px; font-weight: 500; }
+.stat-l { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.deals-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.deal { background: var(--card); border: 0.5px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; cursor: pointer; transition: border-color 0.15s; position: relative; }
+.deal:hover { border-color: var(--accent); }
+.deal.hot { border-color: rgba(240,90,126,0.4); }
+.deal-thumb { width: 80px; height: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.deal-body { flex: 1; padding: 10px 10px 8px; min-width: 0; }
+.deal-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.deal-store { font-size: 10px; color: var(--muted); margin-top: 1px; display: flex; align-items: center; gap: 4px; }
+.deal-price-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.deal-price-now { font-size: 15px; font-weight: 500; color: var(--green); }
+.deal-price-old { font-size: 11px; color: var(--muted); text-decoration: line-through; }
+.deal-badge { font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 5px; }
+.badge-red { background: rgba(255,77,106,0.15); color: var(--red); }
+.badge-fire { background: rgba(240,90,126,0.15); color: var(--accent2); }
+.badge-new { background: rgba(124,90,247,0.15); color: var(--accent); }
+.deal-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.deal-stars { display: flex; align-items: center; gap: 2px; }
+.deal-stars i { font-size: 11px; color: var(--amber); }
+.deal-rating { font-size: 10px; color: var(--muted); }
+.wishlist-btn { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); cursor: pointer; }
+.wishlist-btn.active { color: var(--accent2); border-color: var(--accent2); }
+.hot-label { position: absolute; top: 8px; left: 8px; background: rgba(240,90,126,0.15); color: var(--accent2); border-radius: 5px; font-size: 9px; font-weight: 500; padding: 2px 5px; display: flex; align-items: center; gap: 3px; }
+.load-more { margin: 0 16px 14px; background: var(--card); border: 0.5px solid var(--border); border-radius: 12px; padding: 11px; text-align: center; font-size: 13px; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.load-more:hover { border-color: var(--accent); color: var(--accent); }
+.bottom-nav { background: var(--surface); border-top: 0.5px solid var(--border); padding: 10px 20px 14px; display: flex; justify-content: space-around; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--muted); font-size: 10px; cursor: pointer; }
+.nav-item.active { color: var(--accent2); }
+.nav-item i { font-size: 20px; }
+.wm { text-align: center; padding: 8px; font-size: 11px; color: var(--muted); background: var(--bg); }
+.section-head { display: flex; align-items: center; justify-content: space-between; padding: 0 18px 6px; }
+.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+.section-count { font-size: 11px; color: var(--muted); }
+</style>
+
+<h2 class="sr-only">Game Broker — экран раздела скидки с фильтрами, сортировкой и карточками игр</h2>
+
+<div style="padding: 1rem 0;">
+<div class="app">
+
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="topbar-title">
+        <i class="ti ti-flame" style="font-size:22px; color: var(--accent2);" aria-hidden="true"></i>
+        Скидки
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="notif-badge">14</span>
+        <div style="width:32px;height:32px;background:var(--card);border:0.5px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);">
+          <i class="ti ti-bell" style="font-size:16px" aria-hidden="true"></i>
+        </div>
+      </div>
+    </div>
+    <div class="timer-row">
+      <i class="ti ti-clock" style="font-size:14px; color:var(--amber);" aria-hidden="true"></i>
+      <span class="timer-label">Акция заканчивается:</span>
+      <span class="timer-val" id="timer">11:47:23</span>
+      <span class="timer-dot"></span>
+    </div>
+  </div>
+
+  <div style="padding: 10px 18px 8px; background: var(--surface); border-bottom: 0.5px solid var(--border);">
+    <div class="sort-row">
+      <div class="sort-pill fire active"><i class="ti ti-flame" style="font-size:12px" aria-hidden="true"></i> Горячие</div>
+      <div class="sort-pill"><i class="ti ti-rosette-discount" style="font-size:12px" aria-hidden="true"></i> По скидке</div>
+      <div class="sort-pill"><i class="ti ti-currency-dollar" style="font-size:12px" aria-hidden="true"></i> По цене</div>
+      <div class="sort-pill"><i class="ti ti-star" style="font-size:12px" aria-hidden="true"></i> Рейтинг</div>
+      <div class="sort-pill"><i class="ti ti-clock" style="font-size:12px" aria-hidden="true"></i> Новые</div>
+    </div>
+  </div>
+
+  <div class="genre-row">
+    <div class="genre-pill active"><i class="ti ti-planet" style="font-size:12px" aria-hidden="true"></i> Все</div>
+    <div class="genre-pill"><i class="ti ti-sword" style="font-size:12px" aria-hidden="true"></i> Экшен</div>
+    <div class="genre-pill"><i class="ti ti-wand" style="font-size:12px" aria-hidden="true"></i> РПГ</div>
+    <div class="genre-pill"><i class="ti ti-ghost" style="font-size:12px" aria-hidden="true"></i> Хоррор</div>
+    <div class="genre-pill"><i class="ti ti-car" style="font-size:12px" aria-hidden="true"></i> Гонки</div>
+    <div class="genre-pill"><i class="ti ti-chess" style="font-size:12px" aria-hidden="true"></i> Стратегия</div>
+  </div>
+
+  <div class="price-filter">
+    <span class="price-label">Цена $</span>
+    <div class="price-vals">
+      <span class="price-num">0</span>
+      <span style="font-size:11px; color:var(--muted);">—</span>
+      <span class="price-num">60</span>
+    </div>
+    <div class="price-track">
+      <div class="price-fill"></div>
+      <div class="price-thumb"></div>
+    </div>
+    <div class="ok-btn">OK</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-n" style="color:var(--accent2);">347</div>
+      <div class="stat-l">Скидок</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n" style="color:var(--red);">-96%</div>
+      <div class="stat-l">Максимум</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n" style="color:var(--green);">$0.41</div>
+      <div class="stat-l">Минимум</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n" style="color:var(--amber);">-63%</div>
+      <div class="stat-l">Средняя</div>
+    </div>
+  </div>
+
+  <div class="deals-list">
+    <div class="section-head">
+      <span class="section-title">Огонь дня</span>
+      <span class="section-count">347 игр</span>
+    </div>
+
+    <div class="deal hot">
+      <div class="deal-thumb" style="background: rgba(240,90,126,0.08);">
+        <i class="ti ti-robot" style="font-size:30px; color: var(--accent2);" aria-hidden="true"></i>
+      </div>
+      <div class="deal-body">
+        <div class="hot-label"><i class="ti ti-flame" style="font-size:9px" aria-hidden="true"></i> Хит дня</div>
+        <div class="deal-name" style="margin-top:14px;">Cyber Avenger</div>
+        <div class="deal-store">
+          <i class="ti ti-circle-check" style="font-size:10px; color:var(--green);" aria-hidden="true"></i>
+          Steam · Экшен
+        </div>
+        <div class="deal-price-row">
+          <span class="deal-price-now">$0.71</span>
+          <span class="deal-price-old">$17.99</span>
+          <span class="deal-badge badge-red">-96%</span>
+        </div>
+        <div class="deal-meta-row">
+          <div class="deal-stars">
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star-half" aria-hidden="true"></i>
+          </div>
+          <span class="deal-rating">85% · 12K отзывов</span>
+        </div>
+      </div>
+      <div class="wishlist-btn active" aria-label="В список желаний">
+        <i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div class="deal">
+      <div class="deal-thumb" style="background: rgba(124,90,247,0.08);">
+        <i class="ti ti-skull" style="font-size:30px; color: var(--accent);" aria-hidden="true"></i>
+      </div>
+      <div class="deal-body">
+        <div class="deal-name">Daedalic Armageddon Bundle</div>
+        <div class="deal-store">
+          <i class="ti ti-circle-check" style="font-size:10px; color:var(--green);" aria-hidden="true"></i>
+          GOG · Приключения
+        </div>
+        <div class="deal-price-row">
+          <span class="deal-price-now">$3.95</span>
+          <span class="deal-price-old">$99.99</span>
+          <span class="deal-badge badge-red">-96%</span>
+          <span class="deal-badge badge-new">Бандл</span>
+        </div>
+        <div class="deal-meta-row">
+          <div class="deal-stars">
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star-half" aria-hidden="true"></i>
+          </div>
+          <span class="deal-rating">85% · 5.2K отзывов</span>
+        </div>
+      </div>
+      <div class="wishlist-btn" aria-label="В список желаний">
+        <i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div class="deal">
+      <div class="deal-thumb" style="background: rgba(29,233,164,0.08);">
+        <i class="ti ti-castle" style="font-size:30px; color: var(--green);" aria-hidden="true"></i>
+      </div>
+      <div class="deal-body">
+        <div class="deal-name">Helheim Hassle</div>
+        <div class="deal-store">
+          <i class="ti ti-circle-check" style="font-size:10px; color:var(--green);" aria-hidden="true"></i>
+          Epic · Платформер
+        </div>
+        <div class="deal-price-row">
+          <span class="deal-price-now">$0.79</span>
+          <span class="deal-price-old">$19.99</span>
+          <span class="deal-badge badge-red">-96%</span>
+        </div>
+        <div class="deal-meta-row">
+          <div class="deal-stars">
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+          </div>
+          <span class="deal-rating">91% · 71 отзыв</span>
+        </div>
+      </div>
+      <div class="wishlist-btn" aria-label="В список желаний">
+        <i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div class="deal">
+      <div class="deal-thumb" style="background: rgba(245,166,35,0.08);">
+        <i class="ti ti-planet" style="font-size:30px; color: var(--amber);" aria-hidden="true"></i>
+      </div>
+      <div class="deal-body">
+        <div class="deal-name">Elden Ring</div>
+        <div class="deal-store">
+          <i class="ti ti-circle-check" style="font-size:10px; color:var(--green);" aria-hidden="true"></i>
+          GMG · РПГ / FromSoftware
+        </div>
+        <div class="deal-price-row">
+          <span class="deal-price-now">$11.99</span>
+          <span class="deal-price-old">$59.99</span>
+          <span class="deal-badge badge-fire">-80%</span>
+        </div>
+        <div class="deal-meta-row">
+          <div class="deal-stars">
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star" aria-hidden="true"></i>
+            <i class="ti ti-star-half" aria-hidden="true"></i>
+          </div>
+          <span class="deal-rating">96% · 280K отзывов</span>
+        </div>
+      </div>
+      <div class="wishlist-btn" aria-label="В список желаний">
+        <i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="load-more">
+    <i class="ti ti-loader" style="font-size:14px;" aria-hidden="true"></i>
+    Загрузить ещё · 343 скидки
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <span>Поиск</span>
+    </div>
+    <div class="nav-item active">
+      <i class="ti ti-flame" aria-hidden="true"></i>
+      <span>Скидки</span>
+    </div>
+    <div class="nav-item">
+      <i class="ti ti-gift" aria-hidden="true"></i>
+      <span>Халява</span>
+    </div>
+    <div class="nav-item">
+      <i class="ti ti-bookmark" aria-hidden="true"></i>
+      <span>Список</span>
+    </div>
+    <div class="nav-item">
+      <i class="ti ti-user-circle" aria-hidden="true"></i>
+      <span>Я</span>
+    </div>
+  </div>
+
+  <div class="wm">@GameBroker_bot</div>
+</div>
+</div>
+
+<script>
+function pad(n){return String(n).padStart(2,'0');}
+let secs = 11*3600+47*60+23;
+function tick(){
+  if(secs<=0)secs=86399;
+  secs--;
+  const h=Math.floor(secs/3600);
+  const m=Math.floor((secs%3600)/60);
+  const s=secs%60;
+  const el=document.getElementById('timer');
+  if(el) el.textContent=pad(h)+':'+pad(m)+':'+pad(s);
+}
+setInterval(tick,1000);
+
+document.querySelectorAll('.sort-pill').forEach(p=>{
+  p.addEventListener('click',function(){
+    document.querySelectorAll('.sort-pill').forEach(x=>{
+      x.classList.remove('active','fire');
+    });
+    this.classList.add('active');
+    if(this.textContent.includes('Горяч')) this.classList.add('fire');
+  });
+});
+
+document.querySelectorAll('.genre-pill').forEach(p=>{
+  p.addEventListener('click',function(){
+    document.querySelectorAll('.genre-pill').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.wishlist-btn').forEach(btn=>{
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    this.classList.toggle('active');
+  });
+});
+</script>

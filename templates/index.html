@@ -257,6 +257,57 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .lmore{width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--hint);font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;transition:background .15s}
 .lmore:active{background:var(--card)}
 .divider{height:1px;background:var(--border)}
+/* ══ DEALS V2 ══ */
+#p-deals{padding:0 0 calc(var(--nav) + var(--safe) + 8px) !important}
+.d2-topbar{background:var(--bg2);padding:14px 16px 10px;border-bottom:0.5px solid var(--border)}
+.d2-topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.d2-topbar-title{font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px}
+.d2-notif{background:var(--red);color:#fff;border-radius:20px;font-size:11px;font-weight:700;padding:2px 9px}
+.d2-timer-row{display:flex;align-items:center;gap:6px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:7px 12px}
+.d2-timer-label{font-size:11px;color:var(--hint)}
+.d2-timer-val{font-size:13px;font-weight:600;color:var(--gold);letter-spacing:.04em}
+.d2-timer-dot{width:6px;height:6px;border-radius:50%;background:var(--green);margin-left:auto;animation:d2pulse 2s infinite}
+@keyframes d2pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.d2-sort-wrap{background:var(--bg2);padding:10px 16px 8px;border-bottom:0.5px solid var(--border)}
+.d2-sort-row{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.d2-sort-row::-webkit-scrollbar{display:none}
+.d2-sort-pill{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;border:0.5px solid var(--border);background:var(--card);color:var(--hint);transition:all .15s;flex-shrink:0}
+.d2-sort-pill.on{border-color:var(--accent);color:var(--accent);background:rgba(124,90,247,.1)}
+.d2-sort-pill.on.d2-fire{border-color:var(--a2);color:var(--a2);background:rgba(240,90,126,.1)}
+.d2-genre-row{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:10px 16px;border-bottom:0.5px solid var(--border)}
+.d2-genre-row::-webkit-scrollbar{display:none}
+.d2-genre-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:12px;white-space:nowrap;cursor:pointer;border:0.5px solid var(--border);background:var(--card);color:var(--hint);transition:all .15s;flex-shrink:0}
+.d2-genre-pill.on{border-color:var(--green);color:var(--green);background:rgba(29,233,164,.08)}
+.d2-stats-row{display:flex;border-bottom:0.5px solid var(--border)}
+.d2-stat-item{flex:1;padding:8px 6px;text-align:center;background:var(--bg2)}
+.d2-stat-item:not(:last-child){border-right:0.5px solid var(--border)}
+.d2-stat-n{font-size:14px;font-weight:600}
+.d2-stat-l{font-size:10px;color:var(--hint);margin-top:1px}
+.d2-deals-list{padding:10px 14px;display:flex;flex-direction:column;gap:9px}
+.d2-deal{background:var(--card);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;display:flex;cursor:pointer;transition:border-color .15s;position:relative}
+.d2-deal:active{opacity:.86}
+.d2-deal.hot{border-color:rgba(240,90,126,.45)}
+.d2-deal-thumb{width:80px;height:80px;flex-shrink:0;position:relative;overflow:hidden}
+.d2-deal-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.d2-deal-body{flex:1;padding:10px 10px 8px;min-width:0;padding-right:34px}
+.d2-deal-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d2-deal-name.mt14{margin-top:14px}
+.d2-deal-store{font-size:10px;color:var(--hint);margin-top:2px;display:flex;align-items:center;gap:4px}
+.d2-deal-price-row{display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap}
+.d2-deal-price-now{font-size:15px;font-weight:600;color:var(--green)}
+.d2-deal-price-old{font-size:11px;color:var(--hint);text-decoration:line-through}
+.d2-deal-badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;white-space:nowrap}
+.d2-badge-red{background:rgba(255,71,87,.15);color:var(--red)}
+.d2-badge-fire{background:rgba(240,90,126,.15);color:var(--a2)}
+.d2-badge-new{background:rgba(124,90,247,.15);color:var(--accent)}
+.d2-deal-meta-row{display:flex;align-items:center;gap:5px;margin-top:4px}
+.d2-deal-stars{display:flex;align-items:center;gap:1px}
+.d2-deal-rating{font-size:10px;color:var(--hint)}
+.d2-wishlist-btn{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.05);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--hint);cursor:pointer;transition:all .15s;flex-shrink:0}
+.d2-wishlist-btn.active{color:var(--a2);border-color:var(--a2);background:rgba(240,90,126,.1)}
+.d2-hot-label{position:absolute;top:8px;left:8px;background:rgba(240,90,126,.15);color:var(--a2);border-radius:5px;font-size:9px;font-weight:700;padding:2px 5px;display:flex;align-items:center;gap:3px;z-index:1}
+.d2-load-more{margin:0 14px 14px;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:11px;text-align:center;font-size:13px;color:var(--hint);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 28px);transition:all .15s}
+.d2-load-more:active{border-color:var(--accent);color:var(--accent)}
 .add-row{display:flex;gap:8px;margin-bottom:14px}
 .add-row input{flex:1;padding:12px 13px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
 .add-row input:focus{border-color:var(--accent)}
@@ -434,50 +485,116 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 <!-- ══════ DEALS ══════ -->
 <div class="page" id="p-deals">
-  <div class="ph">
-    <h1>🔥 Скидки</h1>
-    <span class="bdg bdg-r" id="deals-cnt">—</span>
+
+  <!-- Topbar -->
+  <div class="d2-topbar">
+    <div class="d2-topbar-row">
+      <div class="d2-topbar-title">
+        <i class="ti ti-flame" style="color:var(--a2)"></i>
+        Скидки
+      </div>
+      <span class="d2-notif" id="deals-cnt">—</span>
+    </div>
+    <div class="d2-timer-row">
+      <i class="ti ti-clock" style="font-size:14px;color:var(--gold);flex-shrink:0"></i>
+      <span class="d2-timer-label">Акция заканчивается:</span>
+      <span class="d2-timer-val" id="d2-timer">--:--:--</span>
+      <span class="d2-timer-dot"></span>
+    </div>
   </div>
 
-  <!-- AAA Banner -->
-  <div id="aaa-banner" style="display:none;margin-bottom:12px;background:linear-gradient(135deg,rgba(255,215,64,.12),rgba(255,171,0,.08));border:1px solid rgba(255,215,64,.3);border-radius:var(--r);padding:11px 14px;display:none;align-items:center;gap:10px">
-    <span style="font-size:22px">🏆</span>
-    <div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--gold)">Только ААА игры</div><div style="font-size:11px;color:var(--hint);margin-top:1px">Metacritic 75+ · цена от $15 · без мусора</div></div>
-    <button onclick="toggleAAA()" style="background:rgba(255,215,64,.15);border:1px solid rgba(255,215,64,.3);border-radius:var(--rs);color:var(--gold);font-size:11px;font-weight:800;padding:5px 10px;cursor:pointer">✕ Сбросить</button>
+  <!-- Sort pills -->
+  <div class="d2-sort-wrap">
+    <div class="d2-sort-row" id="d2-sort-row">
+      <div class="d2-sort-pill d2-fire on" data-sort="Savings" onclick="d2SetSort(this,'Savings',true)">
+        <i class="ti ti-flame" style="font-size:12px"></i> Горячие
+      </div>
+      <div class="d2-sort-pill" data-sort="Savings" onclick="d2SetSort(this,'Savings',false)">
+        <i class="ti ti-rosette-discount" style="font-size:12px"></i> По скидке
+      </div>
+      <div class="d2-sort-pill" data-sort="Price" onclick="d2SetSort(this,'Price',false)">
+        <i class="ti ti-currency-dollar" style="font-size:12px"></i> По цене
+      </div>
+      <div class="d2-sort-pill" data-sort="Reviews" onclick="d2SetSort(this,'Reviews',false)">
+        <i class="ti ti-star" style="font-size:12px"></i> Рейтинг
+      </div>
+      <div class="d2-sort-pill" data-sort="recent" onclick="d2SetSort(this,'recent',false)">
+        <i class="ti ti-clock" style="font-size:12px"></i> Новые
+      </div>
+    </div>
   </div>
 
-  <div class="scroll-row" id="sort-row">
-    <div class="chip aaa-on" id="chip-aaa" onclick="toggleAAA()">🏆 Только ААА</div>
-    <div class="chip" data-sort="Savings" onclick="setSort(this,'Savings')">💰 По скидке</div>
-    <div class="chip" data-sort="Reviews" onclick="setSort(this,'Reviews')">⭐ Рейтинг</div>
-    <div class="chip" data-sort="Price"   onclick="setSort(this,'Price')">🏷 Цена</div>
-    <div class="chip" data-sort="recent"  onclick="setSort(this,'recent')">🆕 Новые</div>
-    <div class="chip" id="sv50" onclick="toggleSv(50)">−50%+</div>
-    <div class="chip" id="sv75" onclick="toggleSv(75)">−75%+</div>
-    <div class="chip" id="sv90" onclick="toggleSv(90)">−90%+</div>
+  <!-- Genre pills -->
+  <div class="d2-genre-row" id="d2-genre-row">
+    <div class="d2-genre-pill on" data-g="" onclick="d2SetGenre(this,'')">
+      <i class="ti ti-planet" style="font-size:12px"></i> Все
+    </div>
+    <div class="d2-genre-pill" data-g="action" onclick="d2SetGenre(this,'action')">
+      <i class="ti ti-sword" style="font-size:12px"></i> Экшен
+    </div>
+    <div class="d2-genre-pill" data-g="rpg" onclick="d2SetGenre(this,'rpg')">
+      <i class="ti ti-wand" style="font-size:12px"></i> РПГ
+    </div>
+    <div class="d2-genre-pill" data-g="horror" onclick="d2SetGenre(this,'horror')">
+      <i class="ti ti-ghost" style="font-size:12px"></i> Хоррор
+    </div>
+    <div class="d2-genre-pill" data-g="racing" onclick="d2SetGenre(this,'racing')">
+      <i class="ti ti-car" style="font-size:12px"></i> Гонки
+    </div>
+    <div class="d2-genre-pill" data-g="strategy" onclick="d2SetGenre(this,'strategy')">
+      <i class="ti ti-chess" style="font-size:12px"></i> Стратегия
+    </div>
+    <div class="d2-genre-pill" data-g="adventure" onclick="d2SetGenre(this,'adventure')">
+      <i class="ti ti-map" style="font-size:12px"></i> Приключения
+    </div>
+    <div class="d2-genre-pill" data-g="shooter" onclick="d2SetGenre(this,'shooter')">
+      <i class="ti ti-target" style="font-size:12px"></i> Шутеры
+    </div>
+    <div class="d2-genre-pill" data-g="simulator" onclick="d2SetGenre(this,'simulator')">
+      <i class="ti ti-steering-wheel" style="font-size:12px"></i> Симуляторы
+    </div>
   </div>
-  <div class="scroll-row" id="genre-row">
-    <div class="chip on" data-g="" onclick="setGenre(this,'')">🌍 Все жанры</div>
-    <div class="chip" data-g="action"    onclick="setGenre(this,'action')">⚔️ Экшен</div>
-    <div class="chip" data-g="rpg"       onclick="setGenre(this,'rpg')">🧙 РПГ</div>
-    <div class="chip" data-g="strategy"  onclick="setGenre(this,'strategy')">🧠 Стратегии</div>
-    <div class="chip" data-g="shooter"   onclick="setGenre(this,'shooter')">🔫 Шутеры</div>
-    <div class="chip" data-g="adventure" onclick="setGenre(this,'adventure')">🗺 Приключения</div>
-    <div class="chip" data-g="horror"    onclick="setGenre(this,'horror')">👻 Хоррор</div>
-    <div class="chip" data-g="simulator" onclick="setGenre(this,'simulator')">🚜 Симуляторы</div>
-    <div class="chip" data-g="racing"    onclick="setGenre(this,'racing')">🏎 Гонки</div>
-    <div class="chip" data-g="sport"     onclick="setGenre(this,'sport')">⚽ Спорт</div>
-  </div>
-  <div class="price-range">
+
+  <!-- Price filter -->
+  <div class="price-range" style="border-radius:0;border-left:none;border-right:none;border-top:none;margin:0">
     <label>Цена $</label>
     <input type="number" id="price-min" placeholder="0" min="0" max="999" value="0">
     <span class="sep">—</span>
     <input type="number" id="price-max" placeholder="60" min="0" max="999" value="60">
     <button class="apply-btn" onclick="applyPriceFilter()">OK</button>
   </div>
+
+  <!-- Stats row -->
+  <div class="d2-stats-row" id="d2-stats-row" style="display:none">
+    <div class="d2-stat-item">
+      <div class="d2-stat-n" id="d2-stat-count" style="color:var(--a2)">—</div>
+      <div class="d2-stat-l">Скидок</div>
+    </div>
+    <div class="d2-stat-item">
+      <div class="d2-stat-n" id="d2-stat-max" style="color:var(--red)">—</div>
+      <div class="d2-stat-l">Максимум</div>
+    </div>
+    <div class="d2-stat-item">
+      <div class="d2-stat-n" id="d2-stat-min" style="color:var(--green)">—</div>
+      <div class="d2-stat-l">Мин. цена</div>
+    </div>
+    <div class="d2-stat-item">
+      <div class="d2-stat-n" id="d2-stat-avg" style="color:var(--gold)">—</div>
+      <div class="d2-stat-l">Средняя</div>
+    </div>
+  </div>
+
+  <!-- Loading -->
   <div id="d-load" class="em"><div class="spin"></div></div>
-  <div id="d-list" style="display:none"></div>
-  <button class="lmore" id="d-more" style="display:none" onclick="moreDeals()">Загрузить ещё ↓</button>
+
+  <!-- Deals list -->
+  <div id="d-list" class="d2-deals-list" style="display:none"></div>
+
+  <!-- Load more -->
+  <button class="d2-load-more" id="d-more" style="display:none" onclick="moreDeals()">
+    <i class="ti ti-refresh" style="font-size:14px"></i>
+    <span id="d-more-txt">Загрузить ещё</span>
+  </button>
 </div>
 
 <!-- ══════ FREE ══════ -->
@@ -742,11 +859,14 @@ function tab(t) {
   document.getElementById('p-'+t).classList.add('active');
   document.getElementById('nb-'+t).classList.add('on');
   curTab = t;
+  location.hash = t;
   if (t==='deals'   && !loaded.deals)   loadDeals();
   if (t==='free'    && !loaded.free)    loadFree();
   if (t==='wish'    && !loaded.wish)    loadWish();
   if (t==='profile' && !loaded.profile) loadProfile();
 }
+/* init from hash */
+(function(){const h=(location.hash||'').replace('#','');if(['deals','free','wish','profile'].includes(h)){curTab='search';tab(h);}})();
 
 /* ═══════════ TOAST ═══════════ */
 let tt;
@@ -920,16 +1040,55 @@ async function loadHomeFeed() {
 }
 
 /* ═══════════════════════════════════════
-   DEALS
+   DEALS V2
 ═══════════════════════════════════════ */
 let dPage=0, dSort='Savings', dMinSv=0, dGenre='', dAllDeals=[];
-let dMinPrice=0, dMaxPrice=60, dAAA=true;
+let dMinPrice=0, dMaxPrice=60, dAAA=false, dFireMode=true;
+
+/* ── Timer countdown to midnight ── */
+(function d2Timer(){
+  function tick(){
+    const now=new Date(), end=new Date(now); end.setHours(24,0,0,0);
+    let s=Math.floor((end-now)/1000);
+    const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=s%60;
+    const el=document.getElementById('d2-timer');
+    if(el) el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+  }
+  tick(); setInterval(tick,1000);
+})();
+
+/* ── Stars HTML from rating % ── */
+function d2Stars(pct){
+  const full=Math.floor(pct/20), half=((pct%20)>=10)?1:0;
+  let h='';
+  for(let i=0;i<5;i++){
+    if(i<full) h+=`<i class="ti ti-star" style="font-size:11px;color:var(--gold)"></i>`;
+    else if(i===full&&half) h+=`<i class="ti ti-star-half" style="font-size:11px;color:var(--gold)"></i>`;
+    else h+=`<i class="ti ti-star" style="font-size:11px;color:rgba(255,255,255,.15)"></i>`;
+  }
+  return h;
+}
+
+/* ── Update stats bar ── */
+function d2UpdateStats(list){
+  const el=document.getElementById('d2-stats-row');
+  if(!list.length){el.style.display='none';return;}
+  el.style.display='flex';
+  const maxSv=Math.max(...list.map(d=>d.savings||0));
+  const minPx=Math.min(...list.map(d=>parseFloat(d.sale_price)||999));
+  const avgSv=Math.round(list.reduce((s,d)=>s+(d.savings||0),0)/list.length);
+  document.getElementById('d2-stat-count').textContent=list.length;
+  document.getElementById('d2-stat-max').textContent='-'+maxSv+'%';
+  document.getElementById('d2-stat-min').textContent='$'+(minPx<999?minPx.toFixed(2):'—');
+  document.getElementById('d2-stat-avg').textContent='-'+avgSv+'%';
+}
 
 async function loadDeals(append=false) {
   if (!append) {
     document.getElementById('d-load').style.display='flex';
     document.getElementById('d-list').style.display='none';
     document.getElementById('d-more').style.display='none';
+    document.getElementById('d2-stats-row').style.display='none';
     dAllDeals=[];
   }
   try {
@@ -942,69 +1101,118 @@ async function loadDeals(append=false) {
     if (!append) dAllDeals=data; else dAllDeals=[...dAllDeals,...data];
     renderDeals();
     document.getElementById('d-load').style.display='none';
-    document.getElementById('d-list').style.display='block';
-    document.getElementById('d-more').style.display=data.length>=25?'block':'none';
+    document.getElementById('d-list').style.display='';
+    if(data.length>=25){
+      document.getElementById('d-more').style.display='flex';
+      document.getElementById('d-more-txt').textContent='Загрузить ещё · '+data.length+' скидок';
+    }
     loaded.deals=true;
     unlockAch('deals');
   } catch {
-    document.getElementById('d-load').innerHTML='<div class="em"><div class="em-icon">⚠️</div><h3>Ошибка</h3></div>';
+    document.getElementById('d-load').innerHTML='<div class="em"><div class="em-icon">⚠️</div><h3>Ошибка загрузки</h3></div>';
   }
 }
+
 function renderDeals() {
   const kws = dGenre ? GENRE_KW[dGenre]||[] : null;
   const list = kws ? dAllDeals.filter(d=>kws.some(k=>d.title.toLowerCase().includes(k))) : dAllDeals;
   document.getElementById('deals-cnt').textContent = list.length||'—';
+  d2UpdateStats(list);
   if (!list.length) {
     document.getElementById('d-list').innerHTML='<div class="em" style="padding:30px"><div class="em-icon">🤔</div><h3>Ничего нет</h3><p>По этим параметрам сейчас нет скидок</p></div>';
     return;
   }
-  document.getElementById('d-list').innerHTML = list.map(d=>`
-    <div class="card dc" onclick="openUrl('${ea(d.deal_url)}')">
-      <div class="dc-inner">
-        <img src="${esc(d.thumb)}" loading="lazy" onerror="this.style.opacity=.2">
-        <div class="di">
-          <div class="dt">${esc(d.title)}</div>
-          <div class="dp">
-            <span class="sale">${fmtPrice(d.sale_price)}</span>
-            <span class="orig">${fmtPrice(d.normal_price)}</span>
-            <span class="disc">−${d.savings}%</span>
-          </div>
-          <div class="dmeta">
-            ${d.metacritic>0?`<span>🏅 ${d.metacritic}</span>`:''}
-            ${d.steam_rating_pct>0?`<span>${rateStars(d.steam_rating_pct)} ${d.steam_rating_pct}%</span>`:''}
-          </div>
-        </div>
+  document.getElementById('d-list').innerHTML = list.map((d,idx)=>{
+    const isHot = idx===0 && (d.savings||0)>=75;
+    const isBundle = /bundle|pack|collection|trilogy|edition/i.test(d.title);
+    const sv = d.savings||0;
+    const badgeClass = sv>=90 ? 'd2-badge-red' : 'd2-badge-fire';
+    const thumbBg = sv>=90 ? 'rgba(240,90,126,.12)' : sv>=70 ? 'rgba(124,90,247,.1)' : 'rgba(29,233,164,.08)';
+    const inWish = wishSet.has(d.title);
+    return `<div class="d2-deal${isHot?' hot':''}" onclick="openGame('${ea(d.id)}','${ea(d.title)}')">
+      <div class="d2-deal-thumb" style="background:${thumbBg}">
+        <img src="${esc(d.thumb)}" loading="lazy" onerror="this.style.display='none'">
       </div>
-    </div>`).join('');
+      <div class="d2-deal-body">
+        ${isHot?'<div class="d2-hot-label"><i class="ti ti-flame" style="font-size:9px"></i> Хит дня</div>':''}
+        <div class="d2-deal-name${isHot?' mt14':''}">${esc(d.title)}</div>
+        <div class="d2-deal-store">
+          <i class="ti ti-circle-check" style="font-size:10px;color:var(--green)"></i>
+          ${d.steam_rating||'В продаже'}
+        </div>
+        <div class="d2-deal-price-row">
+          <span class="d2-deal-price-now">${fmtPrice(d.sale_price)}</span>
+          <span class="d2-deal-price-old">${fmtPrice(d.normal_price)}</span>
+          <span class="d2-deal-badge ${badgeClass}">-${sv}%</span>
+          ${isBundle?'<span class="d2-deal-badge d2-badge-new">Бандл</span>':''}
+          ${d.metacritic>0?`<span class="d2-deal-badge" style="background:rgba(255,215,64,.12);color:var(--gold)">MC ${d.metacritic}</span>`:''}
+        </div>
+        ${d.steam_rating_pct>0?`<div class="d2-deal-meta-row">
+          <div class="d2-deal-stars">${d2Stars(d.steam_rating_pct)}</div>
+          <span class="d2-deal-rating">${d.steam_rating_pct}% · отзывы</span>
+        </div>`:''}
+      </div>
+      <button class="d2-wishlist-btn${inWish?' active':''}"
+        onclick="event.stopPropagation();d2ToggleWish(this,'${ea(d.title)}')" aria-label="В список желаний">
+        <i class="ti ti-heart" style="font-size:13px"></i>
+      </button>
+    </div>`;
+  }).join('');
 }
-function moreDeals() { const b=document.getElementById('d-more'); b.textContent='Загружаем…'; dPage++; loadDeals(true).then(()=>b.textContent='Загрузить ещё ↓'); }
-function setSort(el, sort) {
-  document.querySelectorAll('#sort-row .chip[data-sort]').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on'); dSort=sort; dPage=0; loaded.deals=false; loadDeals();
+
+async function d2ToggleWish(btn, name) {
+  if (wishSet.has(name)) {
+    if (userId) { try { await fetch(`/api/wishlist/${userId}/${encodeURIComponent(name)}`,{method:'DELETE'}); } catch {} }
+    else { LS.setWish(LS.wish().filter(x=>x.name!==name)); }
+    wishSet.delete(name);
+    btn.classList.remove('active');
+    toast('Удалено из списка');
+    loaded.wish=false;
+  } else {
+    await addW(name, null);
+    btn.classList.add('active');
+  }
 }
+
+function moreDeals() {
+  const b=document.getElementById('d-more');
+  b.querySelector('#d-more-txt').textContent='Загружаем…';
+  dPage++;
+  loadDeals(true);
+}
+
+function d2SetSort(el, sort, fire) {
+  document.querySelectorAll('#d2-sort-row .d2-sort-pill').forEach(c=>c.classList.remove('on','d2-fire'));
+  el.classList.add('on');
+  if(fire) el.classList.add('d2-fire');
+  dFireMode=!!fire; dSort=sort; dPage=0; loaded.deals=false; loadDeals();
+}
+
+function setSort(el, sort) { d2SetSort(el, sort, false); }
+
 function toggleSv(pct) {
-  const ids={50:'sv50',75:'sv75',90:'sv90'};
-  if (dMinSv===pct) { dMinSv=0; document.getElementById(ids[pct]).classList.remove('on'); }
-  else { Object.values(ids).forEach(id=>document.getElementById(id).classList.remove('on')); dMinSv=pct; document.getElementById(ids[pct]).classList.add('on'); }
+  if (dMinSv===pct) { dMinSv=0; }
+  else { dMinSv=pct; }
   dPage=0; loaded.deals=false; loadDeals();
 }
-function setGenre(el,genre) {
-  document.querySelectorAll('#genre-row .chip').forEach(c=>c.classList.remove('on'));
+
+function d2SetGenre(el,genre) {
+  document.querySelectorAll('#d2-genre-row .d2-genre-pill').forEach(c=>c.classList.remove('on'));
   el.classList.add('on'); dGenre=genre;
   if (dAllDeals.length) renderDeals(); else loadDeals();
 }
+
+function setGenre(el,genre) { d2SetGenre(el,genre); }
+
 function applyPriceFilter() {
   const mn = parseFloat(document.getElementById('price-min').value)||0;
   const mx = parseFloat(document.getElementById('price-max').value)||60;
   dMinPrice=mn; dMaxPrice=mx; dPage=0; loaded.deals=false; loadDeals();
   toast(`💰 Цена $${mn}–$${mx}`);
 }
+
 function toggleAAA() {
   dAAA = !dAAA;
-  const chip = document.getElementById('chip-aaa');
-  const banner = document.getElementById('aaa-banner');
-  chip.classList.toggle('aaa-on', dAAA);
-  banner.style.display = dAAA ? 'flex' : 'none';
   dPage=0; loaded.deals=false; loadDeals();
   toast(dAAA ? '🏆 Только ААА игры' : '🌍 Все игры');
 }
