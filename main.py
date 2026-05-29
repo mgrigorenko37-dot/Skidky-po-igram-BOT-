@@ -3,6 +3,7 @@ import threading
 import logging
 import sqlite3
 import sys
+import signal
 import requests
 import json
 from datetime import datetime, timedelta
@@ -458,14 +459,52 @@ if __name__ == "__main__":
     except Exception as e:
         logger.warning(f"Не удалось установить команды бота: {e}")
 
+    # Чистый выход по SIGTERM (Replit останавливает процесс этим сигналом)
+    def _shutdown(signum, frame):
+        logger.info("Получен сигнал завершения — останавливаем polling...")
+        try:
+            bot.stop_polling()
+        except Exception:
+            pass
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, _shutdown)
+    signal.signal(signal.SIGINT, _shutdown)
+
+    # Сбрасываем вебхук и ждём, пока старая сессия Telegram закроется
+    logger.info("Сброс вебхука и ожидание закрытия старых сессий...")
+    for attempt in range(5):
+        try:
+            bot.remove_webhook()
+            break
+        except Exception as e:
+            logger.warning(f"remove_webhook attempt {attempt+1}: {e}")
+            time.sleep(3)
+
+    time.sleep(2)  # небольшая пауза чтобы Telegram закрыл старое соединение
+
     print("🚀 Бот запущен!")
     while True:
         try:
-            bot.infinity_polling(timeout=60, long_polling_timeout=60)
+            bot.infinity_polling(
+                timeout=30,
+                long_polling_timeout=30,
+                skip_pending=True,
+                restart_on_change=False,
+                logger_level=logging.WARNING
+            )
         except Exception as e:
+            err = str(e)
             logger.error(f"Bot Polling Error: {e}")
-            if "409" in str(e) or "Conflict" in str(e):
-                logger.warning("Конфликт сессий (409) — ожидание 30 секунд...")
-                time.sleep(30)
+            if "409" in err or "Conflict" in err:
+                logger.warning("Конфликт сессий (409) — сбрасываем соединение и повторяем через 10 сек...")
+                try:
+                    bot.remove_webhook()
+                except Exception:
+                    pass
+                time.sleep(10)
+            elif "502" in err or "503" in err or "504" in err:
+                logger.warning("Telegram временно недоступен — повтор через 15 сек...")
+                time.sleep(15)
             else:
                 time.sleep(5)
