@@ -85,6 +85,14 @@ def init_db():
                     cursor.execute("ALTER TABLE ad_campaign ADD COLUMN views INTEGER DEFAULT 0")
                 except: pass
 
+            # wishlist target_price migration
+            cursor.execute("PRAGMA table_info(wishlist)")
+            wish_cols = [col[1] for col in cursor.fetchall()]
+            if "target_price" not in wish_cols:
+                try:
+                    cursor.execute("ALTER TABLE wishlist ADD COLUMN target_price REAL")
+                except Exception: pass
+
             # 🔥 ИСПРАВЛЕННЫЙ БЛОК МИГРАЦИИ
             cursor.execute("PRAGMA table_info(mining_users)")
             user_cols = [col[1] for col in cursor.fetchall()]

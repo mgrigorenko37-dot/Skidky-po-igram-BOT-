@@ -4,6 +4,7 @@ import requests
 import json
 import os
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 import config
 import database
 
@@ -145,9 +146,43 @@ def api_wishlist_get(user_id):
     try:
         with sqlite3.connect(config.DB_FILE) as conn:
             rows = conn.execute(
-                "SELECT game_name, last_price FROM wishlist WHERE user_id=? ORDER BY rowid DESC",
+                "SELECT game_name, last_price, target_price FROM wishlist WHERE user_id=? ORDER BY rowid DESC",
                 (user_id,)).fetchall()
-        return jsonify([{'name': r[0], 'last_price': r[1]} for r in rows])
+        items = [{'name': r[0], 'last_price': r[1], 'target_price': r[2]} for r in rows]
+
+        def enrich(item):
+            name = item['name']
+            try:
+                r1 = requests.get('https://www.cheapshark.com/api/1.0/deals',
+                    params={'title': name, 'sortBy': 'Price', 'pageSize': 5}, timeout=4)
+                deals = r1.json() if r1.ok else []
+            except Exception:
+                deals = []
+            try:
+                r2 = requests.get('https://www.cheapshark.com/api/1.0/games',
+                    params={'title': name, 'limit': 1}, timeout=4)
+                games = r2.json() if r2.ok else []
+            except Exception:
+                games = []
+            if deals:
+                best = deals[0]
+                item['sale_price'] = float(best.get('salePrice', 0))
+                item['normal_price'] = float(best.get('normalPrice', 0))
+                item['savings_pct'] = float(best.get('savings', 0))
+                item['store_id'] = str(best.get('storeID', ''))
+                item['deal_id'] = best.get('dealID', '')
+                item['is_on_sale'] = item['sale_price'] < item['normal_price'] - 0.01
+            if games:
+                atp = games[0].get('cheapestPriceEver') or {}
+                ps = atp.get('price')
+                item['all_time_low'] = float(ps) if ps else None
+            return item
+
+        if items:
+            with ThreadPoolExecutor(max_workers=min(8, len(items))) as ex:
+                items = list(ex.map(enrich, items))
+
+        return jsonify(items)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -167,6 +202,22 @@ def api_wishlist_add(user_id):
                 return jsonify({'error': 'limit', 'limit': limit, 'vip': bool(vip)}), 400
             conn.execute("INSERT OR IGNORE INTO wishlist (user_id,game_name,last_price) VALUES(?,?,?)",
                          (user_id, name, None))
+            conn.commit()
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/wishlist/<int:user_id>/alert', methods=['POST'])
+def api_wishlist_alert(user_id):
+    data = request.get_json(silent=True) or {}
+    name = data.get('name', '').strip()
+    target_price = data.get('target_price')
+    if not name:
+        return jsonify({'error': 'no name'}), 400
+    try:
+        with sqlite3.connect(config.DB_FILE) as conn:
+            conn.execute('UPDATE wishlist SET target_price=? WHERE user_id=? AND game_name=?',
+                         (target_price, user_id, name))
             conn.commit()
         return jsonify({'ok': True})
     except Exception as e:

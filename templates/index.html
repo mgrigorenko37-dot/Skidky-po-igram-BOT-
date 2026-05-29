@@ -128,14 +128,72 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .rating-bar{height:3px;border-radius:2px;background:var(--border);margin-top:6px;overflow:hidden}
 .rating-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--green))}
 
-/* WISHLIST */
-.wi{display:flex;align-items:center;gap:10px;padding:12px 13px}
-.wi+.wi{border-top:1px solid var(--border)}
-.wico{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,rgba(124,111,255,.2),rgba(255,107,157,.15));display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.wtext{flex:1;min-width:0}
-.wn{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wp{font-size:11px;color:var(--hint);margin-top:2px}
-.wi-act{display:flex;gap:6px;flex-shrink:0}
+/* WISHLIST V2 */
+#p-wish{padding:0 0 calc(var(--nav) + var(--safe) + 8px) !important}
+.wl2-topbar{background:var(--bg2);padding:14px 16px 12px;border-bottom:0.5px solid var(--border)}
+.wl2-topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.wl2-title{font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px}
+.wl2-hdr-btns{display:flex;gap:7px}
+.wl2-hdr-btn{width:32px;height:32px;background:var(--card);border:0.5px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--hint)}
+.wl2-search-row{display:flex;gap:8px}
+.wl2-search-box{flex:1;display:flex;align-items:center;gap:8px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:8px 12px}
+.wl2-search-box input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:100%;font-family:inherit}
+.wl2-add-btn{width:38px;height:38px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#fff;font-size:20px;border:none}
+.wl2-savings{margin:12px 16px 0;background:var(--card);border:0.5px solid rgba(29,233,164,.25);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.wl2-sav-left{display:flex;align-items:center;gap:8px}
+.wl2-sav-icon{width:32px;height:32px;background:rgba(29,233,164,.1);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.wl2-sav-label{font-size:11px;color:var(--hint)}
+.wl2-sav-val{font-size:15px;font-weight:500;color:var(--green)}
+.wl2-sav-right{text-align:right}
+.wl2-sav-rl{font-size:10px;color:var(--hint)}
+.wl2-sav-rv{font-size:13px;font-weight:500;color:var(--accent)}
+.wl2-tabs-row{display:flex;border-bottom:0.5px solid var(--border);background:var(--bg2);margin-top:12px}
+.wl2-tab{flex:1;padding:10px 0;text-align:center;font-size:12px;color:var(--hint);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.wl2-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.wl2-tab-badge{font-size:10px;border-radius:10px;padding:1px 6px;margin-left:2px}
+.wl2-sort-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 16px 8px;background:var(--bg2);border-bottom:0.5px solid var(--border)}
+.wl2-sort-row::-webkit-scrollbar{display:none}
+.wl2-sort-pill{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;white-space:nowrap;cursor:pointer;border:0.5px solid var(--border);background:var(--card);color:var(--hint);flex-shrink:0;transition:all .15s}
+.wl2-sort-pill.active{border-color:var(--accent);color:var(--accent);background:rgba(124,90,247,.08)}
+.wl2-list-section{padding:10px 16px;display:flex;flex-direction:column;gap:9px}
+.wl2-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.wl2-card:active{opacity:.88}
+.wl2-card.on-sale{border-color:rgba(29,233,164,.4)}
+.wl2-card.alert-set{border-color:rgba(124,90,247,.35)}
+.wl2-top{display:flex;align-items:stretch}
+.wl2-thumb{width:78px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.wl2-body{flex:1;padding:9px 10px 8px;min-width:0}
+.wl2-tag-row{display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap}
+.wl2-tag{font-size:9px;font-weight:500;padding:2px 6px;border-radius:4px;display:inline-flex;align-items:center;gap:3px}
+.wl2-tag-sale{background:rgba(29,233,164,.12);color:var(--green)}
+.wl2-tag-alert{background:rgba(124,90,247,.12);color:var(--accent)}
+.wl2-tag-record{background:rgba(77,166,255,.12);color:var(--blue)}
+.wl2-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl2-platform{font-size:10px;color:var(--hint);margin-top:1px;display:flex;align-items:center;gap:4px}
+.wl2-price-row{display:flex;align-items:center;gap:6px;margin-top:5px}
+.wl2-price-now{font-size:14px;font-weight:500;color:var(--green)}
+.wl2-price-was{font-size:11px;color:var(--hint);text-decoration:line-through}
+.wl2-price-normal{font-size:14px;font-weight:500;color:var(--text)}
+.wl2-disc-badge{font-size:10px;font-weight:500;padding:2px 5px;border-radius:4px;background:rgba(255,77,106,.12);color:var(--red)}
+.wl2-actions{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8px}
+.wl2-act-btn{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.04);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--hint);cursor:pointer}
+.wl2-heart-on{color:var(--a2);border-color:var(--a2);background:rgba(240,90,126,.08)}
+.wl2-bell-on{color:var(--accent);border-color:var(--accent);background:rgba(124,90,247,.08)}
+.wl2-price-bar{height:3px;background:var(--border)}
+.wl2-price-fill{height:100%;background:var(--green);transition:width .3s}
+.wl2-footer{border-top:0.5px solid var(--border);padding:6px 10px;display:flex;align-items:center;justify-content:space-between}
+.wl2-hist{font-size:10px;color:var(--hint);display:flex;align-items:center;gap:3px}
+.wl2-hist-low{font-size:10px;color:var(--green)}
+.wl2-buy-link{font-size:11px;color:var(--green);font-weight:500;cursor:pointer}
+.wl2-alert-form{background:rgba(124,90,247,.06);border-top:0.5px solid rgba(124,90,247,.2);padding:8px 10px;display:flex;align-items:center;gap:8px}
+.wl2-alert-label{font-size:11px;color:var(--hint);white-space:nowrap}
+.wl2-alert-input{flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:7px;padding:5px 8px;color:var(--text);font-size:12px;outline:none;min-width:0}
+.wl2-alert-input:focus{border-color:var(--accent)}
+.wl2-alert-ok{font-size:11px;font-weight:500;padding:5px 10px;border-radius:7px;border:0.5px solid var(--accent);background:rgba(124,90,247,.1);color:var(--accent);cursor:pointer;white-space:nowrap}
+.wl2-empty-more{margin:4px 16px 14px;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:11px;text-align:center;font-size:12px;color:var(--hint);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.wl2-empty-more:active{border-color:var(--accent);color:var(--accent)}
+
+/* legacy wishlist classes kept for compat */
 .icon-btn{width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
 .icon-btn:active{transform:scale(.88)}
 .ib-s{background:rgba(124,111,255,.12);color:var(--accent)}
@@ -749,30 +807,101 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   </div>
 </div>
 
-<!-- ══════ WISHLIST ══════ -->
+<!-- ══════ WISHLIST V2 ══════ -->
 <div class="page" id="p-wish">
-  <div class="ph">
-    <h1>📋 Список</h1>
-    <span class="bdg bdg-p" id="wish-cnt">0</span>
+
+  <!-- Topbar: title + search + add -->
+  <div class="wl2-topbar">
+    <div class="wl2-topbar-row">
+      <div class="wl2-title">
+        <i class="ti ti-bookmark" style="font-size:22px;color:var(--accent)"></i>
+        Список
+        <span class="bdg bdg-p" id="wish-cnt" style="font-size:11px;padding:2px 8px">0</span>
+      </div>
+      <div class="wl2-hdr-btns">
+        <div class="wl2-hdr-btn" title="Найти в поиске" onclick="tab('search')">
+          <i class="ti ti-search" style="font-size:15px"></i>
+        </div>
+        <div class="wl2-hdr-btn" title="Сортировка" onclick="wlToggleSortRow()">
+          <i class="ti ti-adjustments-horizontal" style="font-size:15px"></i>
+        </div>
+      </div>
+    </div>
+    <div class="wl2-search-row">
+      <div class="wl2-search-box">
+        <i class="ti ti-plus-circle" style="font-size:15px;color:var(--hint)"></i>
+        <input id="wi" placeholder="Добавить игру вручную…" autocomplete="off"
+          onkeydown="if(event.key==='Enter')addWishManual()">
+      </div>
+      <button class="wl2-add-btn" onclick="addWishManual()">+</button>
+    </div>
   </div>
-  <div class="add-row">
-    <input id="wi" placeholder="Добавить игру вручную…" autocomplete="off">
-    <button onclick="addWishManual()">+</button>
+
+  <!-- Savings banner -->
+  <div class="wl2-savings" id="wl2-savings" style="display:none">
+    <div class="wl2-sav-left">
+      <div class="wl2-sav-icon">
+        <i class="ti ti-pig-money" style="font-size:16px;color:var(--green)"></i>
+      </div>
+      <div>
+        <div class="wl2-sav-label">Если купить сейчас</div>
+        <div class="wl2-sav-val" id="wl2-sav-val">—</div>
+      </div>
+    </div>
+    <div class="wl2-sav-right">
+      <div class="wl2-sav-rl">Всего в списке</div>
+      <div class="wl2-sav-rv" id="wl2-sav-rv">—</div>
+    </div>
   </div>
+
+  <!-- Tabs -->
+  <div class="wl2-tabs-row" id="wl2-tabs-row">
+    <div class="wl2-tab active" onclick="wlSetTab(this,'all')">
+      Все <span class="wl2-tab-badge" id="wl2-cnt-all" style="background:rgba(124,90,247,.15);color:var(--accent)">0</span>
+    </div>
+    <div class="wl2-tab" onclick="wlSetTab(this,'sale')">
+      На скидке <span class="wl2-tab-badge" id="wl2-cnt-sale" style="background:rgba(29,233,164,.12);color:var(--green)">0</span>
+    </div>
+    <div class="wl2-tab" onclick="wlSetTab(this,'alert')">
+      С алертом <span class="wl2-tab-badge" id="wl2-cnt-alert" style="background:rgba(124,90,247,.12);color:var(--accent)">0</span>
+    </div>
+  </div>
+
+  <!-- Sort pills (hidden by default) -->
+  <div class="wl2-sort-row" id="wl2-sort-row">
+    <div class="wl2-sort-pill active" onclick="wlSetSort(this,'disc')"><i class="ti ti-arrow-down" style="font-size:10px"></i> По скидке</div>
+    <div class="wl2-sort-pill" onclick="wlSetSort(this,'recent')"><i class="ti ti-clock" style="font-size:10px"></i> Недавние</div>
+    <div class="wl2-sort-pill" onclick="wlSetSort(this,'price')"><i class="ti ti-currency-dollar" style="font-size:10px"></i> Цена</div>
+    <div class="wl2-sort-pill" onclick="wlSetSort(this,'alert')"><i class="ti ti-bell" style="font-size:10px"></i> С алертом</div>
+  </div>
+
+  <!-- Loader -->
   <div id="w-load" class="em" style="display:none"><div class="spin"></div></div>
+
+  <!-- Cards -->
   <div id="w-content"></div>
+
+  <!-- Empty state -->
   <div id="w-empty" class="em" style="display:none">
     <div class="em-icon">📭</div><h3>Список пуст</h3>
     <p>Добавляй игры — бот пришлёт уведомление когда цена упадёт</p>
     <button class="btn-full" style="max-width:220px;margin-top:8px" onclick="tab('search')">🔎 Найти игру</button>
   </div>
-  <div id="w-limit" style="display:none;margin-top:12px">
+
+  <!-- Limit block -->
+  <div id="w-limit" style="display:none;margin:12px 16px">
     <div class="card" style="padding:14px;text-align:center">
       <div style="font-size:22px;margin-bottom:6px">🔒</div>
       <div style="font-size:13px;font-weight:700;margin-bottom:4px">Лимит 5 игр</div>
       <p style="font-size:12px;color:var(--hint)">VIP даёт безлимитный список до 100 игр</p>
       <button class="btn-full" style="max-width:200px;margin:10px auto 0;background:linear-gradient(135deg,var(--gold),#ffab00);color:#000;font-size:12px" onclick="tab('profile')">⭐ Купить VIP</button>
     </div>
+  </div>
+
+  <!-- Add more -->
+  <div class="wl2-empty-more" id="wl2-add-more" style="display:none" onclick="tab('search')">
+    <i class="ti ti-plus" style="font-size:14px"></i>
+    Добавить ещё игры в список
   </div>
 </div>
 
@@ -1569,41 +1698,204 @@ document.getElementById('mhandle').addEventListener('touchstart',e=>{msY=e.touch
 document.getElementById('mhandle').addEventListener('touchmove', e=>{if(e.touches[0].clientY-msY>70)closeModal();},{passive:true});
 
 /* ═══════════════════════════════════════
-   WISHLIST  — localStorage fallback
+   WISHLIST V2
 ═══════════════════════════════════════ */
+let wlTab  = 'all';
+let wlSort = 'disc';
+let wlData = [];
+
 async function loadWish() {
   document.getElementById('w-load').style.display='flex';
   document.getElementById('w-content').innerHTML='';
   document.getElementById('w-empty').style.display='none';
+  document.getElementById('wl2-add-more').style.display='none';
   let items=[];
   if (userId) {
     try { const r=await fetch(`/api/wishlist/${userId}`); items=await r.json(); } catch { items=LS.wish(); }
   } else { items=LS.wish(); }
   document.getElementById('w-load').style.display='none';
+  if (!Array.isArray(items)) items=[];
+  items.forEach((item,i)=>{ item._idx=i; });
   wishSet=new Set(items.map(i=>i.name));
-  renderWish(items); loaded.wish=true;
-  document.getElementById('ps-wish').textContent=items.length;
-  document.getElementById('wish-cnt').textContent=items.length;
-  if (items.length>=5) unlockAch('wish5');
+  wlData=items;
+  loaded.wish=true;
+
+  const cnt=items.length;
+  document.getElementById('ps-wish').textContent=cnt;
+  document.getElementById('wish-cnt').textContent=cnt;
+  document.getElementById('wl2-cnt-all').textContent=cnt;
+
+  const onSale=items.filter(i=>i.is_on_sale);
+  const withAlert=items.filter(i=>i.target_price);
+  document.getElementById('wl2-cnt-sale').textContent=onSale.length;
+  document.getElementById('wl2-cnt-alert').textContent=withAlert.length;
+
+  /* savings banner */
+  const savings=onSale.reduce((s,i)=>s+(i.normal_price-i.sale_price),0);
+  const totalCost=items.reduce((s,i)=>s+(i.is_on_sale?i.sale_price:(i.normal_price||0)),0);
+  if (cnt) {
+    document.getElementById('wl2-savings').style.display='flex';
+    document.getElementById('wl2-sav-val').textContent=
+      savings>0 ? `экономия $${savings.toFixed(2)}` : 'нет активных скидок';
+    document.getElementById('wl2-sav-rv').textContent=
+      `${cnt} игр · $${Math.round(totalCost)||'—'}`;
+  }
+
+  renderWish(items);
+  if (cnt>=5) unlockAch('wish5');
 }
+
+function wlSetTab(el, tab) {
+  document.querySelectorAll('#wl2-tabs-row .wl2-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  wlTab=tab;
+  renderWish(wlData);
+}
+
+function wlSetSort(el, sort) {
+  document.querySelectorAll('#wl2-sort-row .wl2-sort-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  wlSort=sort;
+  renderWish(wlData);
+}
+
+function wlToggleSortRow() {
+  const r=document.getElementById('wl2-sort-row');
+  r.style.display=r.style.display==='none'?'flex':'none';
+}
+
+const WL2_ICONS=['🎮','🕹','👾','🗡','🔫','🧙','🏎','⚔️','🎯','🚀','🐉','🤖'];
+const WL2_BG=['rgba(29,233,164,.07)','rgba(77,166,255,.07)','rgba(124,90,247,.07)','rgba(245,166,35,.07)','rgba(240,90,126,.07)'];
+const WL2_COL=['var(--green)','var(--blue)','var(--accent)','var(--orange)','var(--a2)'];
+const WL2_SNAMES={'1':'Steam','7':'GOG','25':'Epic','8':'EA App','13':'Ubisoft'};
+const WL2_SICONS={'1':'ti-brand-steam','7':'ti-building-store','25':'ti-device-gamepad','8':'ti-device-gamepad-2','13':'ti-building'};
+
 function renderWish(items) {
   document.getElementById('w-limit').style.display=(items.length>=5&&!userId)?'block':'none';
   if (!items.length) { document.getElementById('w-empty').style.display='flex'; return; }
-  const icons=['🎮','🕹','👾','🗡','🔫','🧙','🏎','⚔️','🎯','🚀','🐉','🤖'];
-  document.getElementById('w-content').innerHTML=`<div class="card">${
-    items.map((item,i)=>`<div class="wi">
-      <div class="wico">${icons[i%icons.length]}</div>
-      <div class="wtext">
-        <div class="wn">${esc(item.name)}</div>
-        <div class="wp">${item.last_price?'Последняя: '+fmtPrice(item.last_price):'Ожидает отслеживания'}</div>
-      </div>
-      <div class="wi-act">
-        <button class="icon-btn ib-s" onclick="qs('${ea(item.name)}');tab('search')">🔎</button>
-        <button class="icon-btn ib-d" onclick="delWish('${ea(item.name)}')">✕</button>
-      </div>
-    </div>`).join('<div class="divider"></div>')
-  }</div>`;
+
+  let filtered=[...items];
+  if (wlTab==='sale')  filtered=filtered.filter(i=>i.is_on_sale);
+  if (wlTab==='alert') filtered=filtered.filter(i=>i.target_price);
+
+  if (wlSort==='disc')   filtered.sort((a,b)=>(b.savings_pct||0)-(a.savings_pct||0));
+  if (wlSort==='recent') filtered.sort((a,b)=>(a._idx||0)-(b._idx||0));
+  if (wlSort==='price')  filtered.sort((a,b)=>(a.sale_price||a.normal_price||99)-(b.sale_price||b.normal_price||99));
+  if (wlSort==='alert')  filtered.sort((a,b)=>((b.target_price?1:0)-(a.target_price?1:0)));
+
+  if (!filtered.length) {
+    document.getElementById('w-content').innerHTML='<div class="em" style="padding:24px"><div class="em-icon">📭</div><h3>Пусто</h3><p>По этому фильтру игр нет</p></div>';
+    document.getElementById('wl2-add-more').style.display='none';
+    return;
+  }
+
+  document.getElementById('w-content').innerHTML=
+    '<div class="wl2-list-section">'+filtered.map((item,i)=>{
+      const disc=Math.round(item.savings_pct||0);
+      const isOnSale=item.is_on_sale;
+      const hasAlert=!!item.target_price;
+      const isRecord=item.all_time_low&&item.sale_price&&item.sale_price<=item.all_time_low*1.02;
+      const bg=WL2_BG[i%WL2_BG.length];
+      const col=WL2_COL[i%WL2_COL.length];
+      const icon=WL2_ICONS[i%WL2_ICONS.length];
+      const sn=WL2_SNAMES[item.store_id]||'Store';
+      const si=WL2_SICONS[item.store_id]||'ti-building-store';
+      const discW=Math.min(100,disc);
+      const cardCls='wl2-card'+(isOnSale?' on-sale':(hasAlert?' alert-set':''));
+      const safeName=ea(item.name);
+      const safeIdx='wli'+i;
+
+      return `<div class="${cardCls}" id="${safeIdx}">
+        <div class="wl2-top">
+          <div class="wl2-thumb" style="background:${bg}">
+            <span style="font-size:28px;color:${col}">${icon}</span>
+          </div>
+          <div class="wl2-body">
+            <div class="wl2-tag-row">
+              ${isOnSale?`<span class="wl2-tag wl2-tag-sale"><i class="ti ti-flame" style="font-size:9px"></i> Скидка сейчас</span>`:''}
+              ${isRecord?`<span class="wl2-tag wl2-tag-record">Рекорд</span>`:''}
+              ${(hasAlert&&!isOnSale)?`<span class="wl2-tag wl2-tag-alert"><i class="ti ti-bell" style="font-size:9px"></i> Алерт при $${item.target_price}</span>`:''}
+              ${(!isOnSale&&!hasAlert&&!isRecord)?`<span style="font-size:10px;color:var(--hint)">Нет скидки</span>`:''}
+            </div>
+            <div class="wl2-name">${esc(item.name)}</div>
+            <div class="wl2-platform"><i class="ti ${si}" style="font-size:10px"></i> ${sn}</div>
+            <div class="wl2-price-row">
+              ${isOnSale
+                ?`<span class="wl2-price-now">$${item.sale_price.toFixed(2)}</span>
+                  <span class="wl2-price-was">$${item.normal_price.toFixed(2)}</span>
+                  <span class="wl2-disc-badge">-${disc}%</span>`
+                :`<span class="wl2-price-normal">${item.normal_price?'$'+item.normal_price.toFixed(2):(item.last_price?fmtPrice(item.last_price):'—')}</span>
+                  <span style="font-size:11px;color:var(--hint);margin-left:4px">нет скидки</span>`}
+            </div>
+          </div>
+          <div class="wl2-actions">
+            <button class="wl2-act-btn wl2-heart-on"
+              onclick="event.stopPropagation();delWish('${safeName}')"
+              title="Удалить"><i class="ti ti-heart" style="font-size:13px"></i></button>
+            <button class="wl2-act-btn${hasAlert?' wl2-bell-on':''}"
+              onclick="event.stopPropagation();wlToggleBell('${safeIdx}')"
+              title="Алерт цены"><i class="ti ti-bell" style="font-size:13px"></i></button>
+          </div>
+        </div>
+        <div class="wl2-price-bar"><div class="wl2-price-fill" style="width:${discW}%"></div></div>
+        <div class="wl2-footer">
+          <span class="wl2-hist">
+            <i class="ti ti-history" style="font-size:11px"></i> Мин.:
+            <span class="wl2-hist-low">${item.all_time_low?'$'+item.all_time_low.toFixed(2):'—'}</span>
+            ${isRecord?' — сейчас!':''}
+          </span>
+          ${(isOnSale&&item.deal_id)
+            ?`<span class="wl2-buy-link"
+                onclick="event.stopPropagation();openUrl('https://www.cheapshark.com/redirect?dealID=${ea(item.deal_id)}')">
+                Купить →</span>`
+            :`<span style="font-size:11px;color:var(--hint)">Ждём скидку</span>`}
+        </div>
+        <div class="wl2-alert-form" id="alf-${safeIdx}" style="display:none">
+          <i class="ti ti-bell" style="font-size:13px;color:var(--accent)"></i>
+          <span class="wl2-alert-label">Уведомить при $</span>
+          <input class="wl2-alert-input" id="ali-${safeIdx}" type="number" step="0.01"
+            placeholder="0.00" value="${item.target_price||''}">
+          <button class="wl2-alert-ok"
+            onclick="event.stopPropagation();wlSaveAlert('${safeIdx}','${safeName}')">Сохранить</button>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+
+  document.getElementById('wl2-add-more').style.display='flex';
 }
+
+function wlToggleBell(idx) {
+  const f=document.getElementById('alf-'+idx);
+  if (f) f.style.display=f.style.display==='none'?'flex':'none';
+}
+
+async function wlSaveAlert(idx, name) {
+  const inp=document.getElementById('ali-'+idx);
+  if (!inp) return;
+  const price=parseFloat(inp.value)||null;
+
+  const item=wlData.find(i=>i.name===name);
+  if (item) item.target_price=price;
+
+  if (userId) {
+    try {
+      await fetch(`/api/wishlist/${userId}/alert`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,target_price:price})
+      });
+    } catch {}
+  } else {
+    const w=LS.wish();
+    const wi=w.find(i=>i.name===name);
+    if (wi){wi.target_price=price;LS.setWish(w);}
+  }
+
+  toast(price?`🔔 Алерт при $${price.toFixed(2)}`:'🔕 Алерт снят','var(--accent)',true);
+  const f=document.getElementById('alf-'+idx);
+  if (f) f.style.display='none';
+  renderWish(wlData);
+}
+
 async function addWishManual() {
   const inp=document.getElementById('wi');
   const name=inp.value.trim();
