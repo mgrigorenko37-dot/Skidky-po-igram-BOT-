@@ -6,6 +6,7 @@ import logging
 import threading
 import feedparser
 import re
+import hashlib
 from bs4 import BeautifulSoup
 from telebot import types
 from deep_translator import GoogleTranslator
@@ -266,12 +267,18 @@ def fetch_and_post_updates(bot, manual_check=False, admin_id=None):
                     with sqlite3.connect(config.DB_FILE) as conn:
                         for entry in entries:
                             nid = entry.get('id', entry.link)
+                            # Title-based hash as secondary dedup key
+                            raw_title = (entry.title or '').replace("&nbsp;", " ").replace("&#8217;", "'").strip()
+                            title_hash = 'th_' + hashlib.md5(raw_title.lower().encode()).hexdigest()
 
                             cursor = conn.cursor()
-                            cursor.execute("SELECT 1 FROM sent_news WHERE news_id = ?", (nid,))
+                            cursor.execute(
+                                "SELECT 1 FROM sent_news WHERE news_id = ? OR news_id = ?",
+                                (nid, title_hash)
+                            )
                             if cursor.fetchone(): continue
 
-                            title = clean_md(entry.title.replace("&nbsp;", " ").replace("&#8217;", "'"))
+                            title = clean_md(raw_title)
                             link = entry.link
 
                             img, raw_summary = extract_image_and_text(entry)
@@ -306,6 +313,7 @@ def fetch_and_post_updates(bot, manual_check=False, admin_id=None):
                                 utils.safe_send_message(config.CHANNEL_ID, text, parse_mode='Markdown', reply_markup=mk)
 
                             conn.execute("INSERT OR IGNORE INTO sent_news (news_id) VALUES (?)", (nid,))
+                            conn.execute("INSERT OR IGNORE INTO sent_news (news_id) VALUES (?)", (title_hash,))
                             conn.commit()
                             new_count += 1
                             time.sleep(3) 
@@ -365,7 +373,7 @@ def check_wishlist_prices(bot):
             best_deal = data['deals'][0] 
             savings = float(best_deal['savings'])
 
-            if savings >= 20:
+            if savings >= 40:
                 for user_id in user_ids:
                     cache_key = f"{user_id}_{game_id}"
                     last_sent = ALERT_COOLDOWN.get(cache_key, 0)

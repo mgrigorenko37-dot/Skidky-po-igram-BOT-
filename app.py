@@ -58,20 +58,73 @@ def api_stats():
     except Exception:
         return jsonify({'stores': 35, 'max_savings': 89, 'games': 15000})
 
+# ── SEARCH ABBREVIATIONS ─────────────────
+_ABBREVS = {
+    'gta v': 'grand theft auto v',   'gta 5': 'grand theft auto v',
+    'gta4':  'grand theft auto iv',  'gta 4': 'grand theft auto iv',
+    'gta3':  'grand theft auto iii', 'gta 3': 'grand theft auto iii',
+    'gta sa': 'grand theft auto san andreas', 'gta san andreas': 'grand theft auto san andreas',
+    'rdr2':  'red dead redemption 2','rdr':   'red dead redemption',
+    'cod':   'call of duty',         'bf':    'battlefield',
+    'csgo':  'counter-strike',       'cs2':   'counter-strike 2',
+    'cs go': 'counter-strike',       'tf2':   'team fortress 2',
+    'tlou':  'the last of us',       'nfs':   'need for speed',
+    'ac':    "assassin's creed",     'ds':    'dark souls',
+    'ff':    'final fantasy',        'mgs':   'metal gear',
+    'nier':  'nier automata',        'bg3':   "baldur's gate 3",
+    'bg 3':  "baldur's gate 3",      'witcher 3': 'the witcher 3',
+    'skyrim': 'the elder scrolls v', 'oblivion': 'the elder scrolls iv',
+    'morrowind': 'the elder scrolls iii',
+}
+
+def _expand_query(q):
+    """Expand abbreviations in search query."""
+    low = q.lower().strip()
+    return _ABBREVS.get(low, q)
+
+def _search_score(title, q):
+    """Relevance: 0=exact, 1=starts with, 2=word match, 3=contains."""
+    t = title.lower(); ql = q.lower()
+    if t == ql: return 0
+    if t.startswith(ql): return 1
+    if any(w == ql for w in t.split()): return 2
+    if ql in t: return 3
+    return 4
+
 @app.route('/api/search')
 def api_search():
     q = request.args.get('q', '').strip()
     if not q or len(q) < 2:
         return jsonify({'error': 'too_short'}), 400
     try:
+        expanded = _expand_query(q)
         r = requests.get('https://www.cheapshark.com/api/1.0/games',
-                         params={'title': q, 'limit': 20}, timeout=8)
+                         params={'title': expanded, 'limit': 30}, timeout=8)
+        raw = r.json()
+        # Deduplicate by normalized title (keep cheapest price)
+        seen = {}
+        for g in raw:
+            key = (g.get('external', '') or '').lower().strip()
+            if not key: continue
+            if key not in seen:
+                seen[key] = g
+            else:
+                # Keep the one with lower cheapest price
+                try:
+                    if float(g.get('cheapest', 9999)) < float(seen[key].get('cheapest', 9999)):
+                        seen[key] = g
+                except Exception:
+                    pass
+        # Sort by relevance score
+        results = sorted(seen.values(), key=lambda g: _search_score(g.get('external', ''), expanded))
         return jsonify([{
-            'id': g.get('gameID'), 'title': g.get('external', ''),
-            'thumb': g.get('thumb', ''), 'cheapest': g.get('cheapest', 'N/A'),
-            'deal_id': g.get('cheapestDealID', ''),
+            'id':       g.get('gameID'),
+            'title':    g.get('external', ''),
+            'thumb':    g.get('thumb', ''),
+            'cheapest': g.get('cheapest', 'N/A'),
+            'deal_id':  g.get('cheapestDealID', ''),
             'deal_url': f"https://www.cheapshark.com/redirect?dealID={g.get('cheapestDealID','')}"
-        } for g in r.json()[:15]])
+        } for g in results[:20]])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -114,6 +167,16 @@ def _is_quality_game(d):
     return True
 
 
+def _fetch_deals_page(params, store=''):
+    """Fetch one page of deals from CheapShark and return raw list."""
+    p = dict(params)
+    if store: p['storeID'] = store
+    try:
+        r = requests.get('https://www.cheapshark.com/api/1.0/deals', params=p, timeout=8)
+        return r.json() if r.ok else []
+    except Exception:
+        return []
+
 @app.route('/api/deals')
 def api_deals():
     page   = int(request.args.get('page', 0))
@@ -123,19 +186,30 @@ def api_deals():
     sort   = request.args.get('sort', 'Savings')
     store  = request.args.get('store', '')
     min_mc = int(request.args.get('min_meta', 0))
-    # aaa=1 means extra-strict: MC >= 80 (blockbuster tier)
     aaa    = request.args.get('aaa', '0') == '1'
     try:
-        params = {
-            'upperPrice': max_px, 'sortBy': sort,
-            'pageSize': 100, 'pageNumber': page,
+        base_params = {
+            'upperPrice': max_px, 'pageSize': 100, 'pageNumber': page,
             'lowerPrice': max(float(min_px or 0), 0.01)
         }
-        if store: params['storeID'] = store
-        r = requests.get('https://www.cheapshark.com/api/1.0/deals', params=params, timeout=8)
+        # Fetch from TWO sort orders in parallel to get a wider pool
+        with ThreadPoolExecutor(max_workers=2) as ex:
+            f1 = ex.submit(_fetch_deals_page, {**base_params, 'sortBy': 'Savings'}, store)
+            f2 = ex.submit(_fetch_deals_page, {**base_params, 'sortBy': 'DealRating'}, store)
+            raw1, raw2 = f1.result(), f2.result()
+
+        # Merge and deduplicate by dealID
+        seen_ids = set()
+        merged = []
+        for d in raw1 + raw2:
+            did = d.get('dealID', '')
+            if did and did not in seen_ids:
+                seen_ids.add(did)
+                merged.append(d)
+
         smap = get_stores_map()
         results = []
-        for d in r.json():
+        for d in merged:
             sv = float(d.get('savings', 0) or 0)
             mc = int(d.get('metacriticScore', 0) or 0)
             np = float(d.get('normalPrice', 0) or 0)
@@ -143,11 +217,8 @@ def api_deals():
 
             if sv < min_sv: continue
             if mc < min_mc: continue
-
-            # Always apply base quality filter
             if not _is_quality_game(d): continue
 
-            # Extra-strict AAA mode: blockbuster titles only
             if aaa:
                 if mc > 0 and mc < 80: continue
                 if mc == 0 and rt < 85: continue
@@ -168,6 +239,8 @@ def api_deals():
                 'steam_rating_pct': rt,
                 'deal_url': f"https://www.cheapshark.com/redirect?dealID={d.get('dealID','')}"
             })
+        # Sort by savings descending
+        results.sort(key=lambda x: x['savings'], reverse=True)
         return jsonify(results)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -323,6 +396,42 @@ def api_wishlist_delete(user_id, game_name):
     try:
         with sqlite3.connect(config.DB_FILE) as conn:
             conn.execute("DELETE FROM wishlist WHERE user_id=? AND game_name=?", (user_id, game_name))
+            conn.commit()
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ── USER AUTO-REGISTER (WebApp init) ─────
+@app.route('/api/user/register', methods=['POST'])
+def api_user_register():
+    """Called when WebApp opens — ensures user exists in DB with Telegram profile info."""
+    data = request.get_json(force=True) or {}
+    user_id    = data.get('user_id')
+    first_name = (data.get('first_name') or '').strip()[:64]
+    last_name  = (data.get('last_name')  or '').strip()[:64]
+    username   = (data.get('username')   or '').strip()[:64]
+    if not user_id:
+        return jsonify({'error': 'no_user_id'}), 400
+    try:
+        with sqlite3.connect(config.DB_FILE) as conn:
+            # Add columns if missing (migration safety)
+            for col, typedef in [('first_name', 'TEXT'), ('last_name', 'TEXT'), ('username', 'TEXT')]:
+                try:
+                    conn.execute(f"ALTER TABLE users ADD COLUMN {col} {typedef}")
+                except Exception:
+                    pass
+            # Insert user if not exists
+            conn.execute(
+                "INSERT OR IGNORE INTO users (user_id, reg_date) VALUES (?, datetime('now'))",
+                (user_id,)
+            )
+            # Update profile fields
+            conn.execute(
+                "UPDATE users SET first_name=?, last_name=?, username=? WHERE user_id=?",
+                (first_name, last_name, username, user_id)
+            )
+            # Ensure user_news_prefs row exists
+            conn.execute("INSERT OR IGNORE INTO user_news_prefs (user_id) VALUES (?)", (user_id,))
             conn.commit()
         return jsonify({'ok': True})
     except Exception as e:

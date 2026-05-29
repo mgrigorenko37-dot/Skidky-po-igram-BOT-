@@ -1198,7 +1198,7 @@ const CHANNEL   = 'GameBroker_Official';
 /* ═══════════ CACHE VERSION BUSTER ═══════════ */
 (function(){
   const CV = 'gb_cache_v';
-  const CURRENT = '4'; // bump this to wipe all feed/deal caches
+  const CURRENT = '5'; // bump this to wipe all feed/deal caches
   try {
     if (localStorage.getItem(CV) !== CURRENT) {
       Object.keys(localStorage)
@@ -1879,10 +1879,10 @@ async function openGame(id, title) {
     const gameTitle = d.title || title;
     const added = wishSet.has(gameTitle);
 
-    // Лучший URL изображения — Steam header (460×215) или steam capsule
+    // Лучший URL изображения — Steam capsule 616×353 (HD) или fallback
     const steamId = d.steam_app_id || '';
     const heroUrl = steamId
-      ? `https://cdn.akamai.steamstatic.com/steam/apps/${steamId}/header.jpg`
+      ? `https://cdn.akamai.steamstatic.com/steam/apps/${steamId}/capsule_616x353.jpg`
       : (d.thumb || '');
 
     // Ценовые бары — max цена для нормализации
@@ -2389,10 +2389,12 @@ async function setCurrency(c) {
   if (userId) { try { await fetch(`/api/settings/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currency:c})}); } catch {} }
   // Force-reset all tabs so they reload with the new currency
   loaded.deals=false; loaded.free=false; loaded.wish=false;
-  if (curTab==='deals')   loadDeals();
-  else if (curTab==='free')  loadFree();
-  else if (curTab==='wish')  loadWish();
-  else if (curTab==='search' && si.value.trim().length>=2) doSearch(si.value.trim());
+  if (curTab==='deals')        loadDeals();
+  else if (curTab==='free')    loadFree();
+  else if (curTab==='wish')    loadWish();
+  // Re-render search results regardless of active tab (prices update in background)
+  const _si = document.getElementById('si');
+  if (_si && _si.value.trim().length >= 2) doSearch(_si.value.trim());
 }
 
 /* ─── Referral ─── */
@@ -2447,6 +2449,23 @@ document.querySelectorAll('.pr-ntab').forEach(function(ntab){
     if(page) page.classList.add('active');
   });
 });
+
+/* ── Auto-register user in DB when WebApp opens ── */
+(function(){
+  if (!userId) return;
+  try {
+    fetch('/api/user/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        user_id:    userId,
+        first_name: userFirst,
+        last_name:  userLast,
+        username:   userName
+      })
+    }).catch(()=>{});
+  } catch(e) {}
+})();
 
 /* ── Auto-load home feed on start ── */
 loadHomeFeed();
