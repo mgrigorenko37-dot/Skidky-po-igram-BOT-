@@ -1,0 +1,369 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d0f14;--surface:#14171f;--card:#1a1d27;--border:#2a2d3a;
+  --accent:#7c5af7;--accent2:#f05a7e;--text:#e8e8f0;--muted:#6b6e80;
+  --green:#1de9a4;--amber:#f5a623;--red:#ff4d6a;--blue:#4da6ff;
+}
+.app{background:var(--bg);font-family:var(--font-sans);color:var(--text);max-width:400px;margin:0 auto;border-radius:20px;border:0.5px solid var(--border);overflow:hidden;}
+.topbar{background:var(--surface);padding:16px 18px 14px;border-bottom:0.5px solid var(--border);}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.topbar-title{font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;}
+.notif-badge{background:var(--green);color:#04342C;border-radius:20px;font-size:11px;font-weight:500;padding:2px 7px;}
+.countdown-row{display:flex;gap:6px;}
+.cd-block{flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:7px 0;text-align:center;}
+.cd-num{font-size:18px;font-weight:500;color:var(--green);}
+.cd-label{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em;}
+.cd-sep{font-size:20px;font-weight:500;color:var(--muted);display:flex;align-items:center;padding-bottom:10px;}
+.quality-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:10px;}
+.quality-info{}
+.quality-title{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;}
+.quality-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.toggle{width:40px;height:22px;background:var(--accent);border-radius:11px;flex-shrink:0;position:relative;cursor:pointer;}
+.toggle-dot{width:16px;height:16px;background:white;border-radius:50%;position:absolute;top:3px;right:3px;transition:right 0.15s;}
+.toggle.off{background:var(--border);}
+.toggle.off .toggle-dot{right:auto;left:3px;}
+.platform-row{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.platform-row::-webkit-scrollbar{display:none;}
+.plat-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:12px;white-space:nowrap;cursor:pointer;border:0.5px solid var(--border);background:var(--card);color:var(--muted);transition:all 0.15s;}
+.plat-pill.active{border-color:var(--green);color:var(--green);background:rgba(29,233,164,0.08);}
+.stats-row{display:flex;gap:1px;border-bottom:0.5px solid var(--border);border-top:0.5px solid var(--border);}
+.stat-item{flex:1;padding:8px 4px;text-align:center;background:var(--surface);}
+.stat-item:not(:last-child){border-right:0.5px solid var(--border);}
+.stat-n{font-size:14px;font-weight:500;}
+.stat-l{font-size:9px;color:var(--muted);margin-top:1px;}
+.section-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;}
+.section-link{font-size:11px;color:var(--accent);cursor:pointer;}
+.games-list{padding:0 16px;display:flex;flex-direction:column;gap:10px;}
+.game-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color 0.15s;}
+.game-card:hover{border-color:var(--green);}
+.game-card.featured{border-color:rgba(29,233,164,0.35);}
+.gc-top{display:flex;gap:0;}
+.gc-thumb{width:90px;height:90px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:34px;}
+.gc-info{flex:1;padding:10px 10px 8px;min-width:0;}
+.gc-platform{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px;margin-bottom:3px;}
+.gc-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gc-genre{font-size:11px;color:var(--muted);margin-top:1px;}
+.gc-price-row{display:flex;align-items:center;gap:6px;margin-top:6px;}
+.gc-was{font-size:11px;color:var(--muted);text-decoration:line-through;}
+.free-badge{font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;background:rgba(29,233,164,0.15);color:var(--green);border:0.5px solid rgba(29,233,164,0.3);}
+.score-pill{font-size:10px;font-weight:500;padding:2px 6px;border-radius:5px;}
+.score-green{background:rgba(29,233,164,0.15);color:var(--green);}
+.score-amber{background:rgba(245,166,35,0.15);color:var(--amber);}
+.gc-footer{border-top:0.5px solid var(--border);padding:7px 10px;display:flex;align-items:center;justify-content:space-between;}
+.gc-expire{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.gc-expire.urgent{color:var(--red);}
+.gc-expire.soon{color:var(--amber);}
+.gc-actions{display:flex;gap:6px;}
+.btn-small{font-size:11px;padding:4px 10px;border-radius:7px;border:0.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;}
+.btn-get{font-size:11px;font-weight:500;padding:4px 12px;border-radius:7px;border:0.5px solid var(--green);background:rgba(29,233,164,0.1);color:var(--green);cursor:pointer;}
+.progress-bar{height:3px;background:var(--border);margin:0;}
+.progress-fill{height:100%;border-radius:0;background:var(--green);}
+.wishlist-btn{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.05);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;flex-shrink:0;}
+.wishlist-btn.active{color:var(--accent2);border-color:var(--accent2);}
+.featured-label{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:500;padding:2px 6px;border-radius:5px;background:rgba(29,233,164,0.12);color:var(--green);margin-bottom:3px;}
+.came-section{padding:0 16px 10px;}
+.came-card{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;opacity:0.6;}
+.came-thumb{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,0.04);}
+.came-info{flex:1;min-width:0;}
+.came-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.came-meta{font-size:10px;color:var(--muted);margin-top:1px;}
+.came-was{font-size:12px;color:var(--muted);text-decoration:line-through;}
+.bottom-nav{background:var(--surface);border-top:0.5px solid var(--border);padding:10px 20px 14px;display:flex;justify-content:space-around;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:10px;cursor:pointer;}
+.nav-item.active{color:var(--green);}
+.nav-item i{font-size:20px;}
+.wm{text-align:center;padding:8px;font-size:11px;color:var(--muted);background:var(--bg);}
+</style>
+
+<h2 class="sr-only">Game Broker — раздел Халява: бесплатные игры с таймером и фильтрами</h2>
+
+<div style="padding:1rem 0;">
+<div class="app">
+
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="topbar-title">
+        <i class="ti ti-gift" style="font-size:22px;color:var(--green);" aria-hidden="true"></i>
+        Халява
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="notif-badge">4</span>
+        <div style="width:32px;height:32px;background:var(--card);border:0.5px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);">
+          <i class="ti ti-bell" style="font-size:16px;" aria-hidden="true"></i>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:5px;">
+      <i class="ti ti-clock" style="font-size:12px;color:var(--amber);" aria-hidden="true"></i>
+      До следующей раздачи Epic Games:
+    </div>
+    <div class="countdown-row">
+      <div class="cd-block"><div class="cd-num" id="cd-h">02</div><div class="cd-label">часа</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num" id="cd-m">34</div><div class="cd-label">мин</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num" id="cd-s">17</div><div class="cd-label">сек</div></div>
+    </div>
+  </div>
+
+  <div style="padding:10px 16px 8px;background:var(--surface);border-bottom:0.5px solid var(--border);">
+    <div class="quality-row" style="margin-bottom:8px;">
+      <div class="quality-info">
+        <div class="quality-title">
+          <i class="ti ti-star" style="font-size:14px;color:var(--amber);" aria-hidden="true"></i>
+          Только качественные
+        </div>
+        <div class="quality-sub">Metacritic 65+ или Steam 70% · цена от $5</div>
+      </div>
+      <div class="toggle" id="quality-toggle">
+        <div class="toggle-dot"></div>
+      </div>
+    </div>
+    <div class="platform-row">
+      <div class="plat-pill active"><i class="ti ti-planet" style="font-size:12px;" aria-hidden="true"></i> Все</div>
+      <div class="plat-pill"><i class="ti ti-brand-steam" style="font-size:12px;" aria-hidden="true"></i> Steam</div>
+      <div class="plat-pill"><i class="ti ti-device-gamepad" style="font-size:12px;" aria-hidden="true"></i> Epic</div>
+      <div class="plat-pill"><i class="ti ti-building-store" style="font-size:12px;" aria-hidden="true"></i> GOG</div>
+      <div class="plat-pill"><i class="ti ti-device-tv" style="font-size:12px;" aria-hidden="true"></i> Prime</div>
+      <div class="plat-pill"><i class="ti ti-building" style="font-size:12px;" aria-hidden="true"></i> Ubisoft</div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-n" style="color:var(--green);">4</div>
+      <div class="stat-l">Сейчас</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n" style="color:var(--accent);">$71</div>
+      <div class="stat-l">Суммарно</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n" style="color:var(--amber);">1 день</div>
+      <div class="stat-l">Мин. осталось</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-n" style="color:var(--blue);">847</div>
+      <div class="stat-l">Забрали</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <span class="section-title">Доступно сейчас</span>
+    <span class="section-link">Архив →</span>
+  </div>
+
+  <div class="games-list">
+
+    <div class="game-card featured">
+      <div class="gc-top">
+        <div class="gc-thumb" style="background:rgba(77,166,255,0.08);">
+          <i class="ti ti-rocket" style="font-size:34px;color:var(--blue);" aria-hidden="true"></i>
+        </div>
+        <div class="gc-info">
+          <div class="featured-label"><i class="ti ti-bolt" style="font-size:9px;" aria-hidden="true"></i> Топ недели</div>
+          <div class="gc-name">Lonestar</div>
+          <div class="gc-platform">
+            <i class="ti ti-device-gamepad" style="font-size:10px;" aria-hidden="true"></i> Epic Games
+            <span class="score-green" style="margin-left:2px;">90%</span>
+          </div>
+          <div class="gc-price-row">
+            <span class="gc-was">$12.99</span>
+            <span class="free-badge"><i class="ti ti-gift" style="font-size:10px;" aria-hidden="true"></i> FREE</span>
+          </div>
+        </div>
+        <div class="wishlist-btn active" style="margin:10px 10px 0 0;" aria-label="В список желаний">
+          <i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;"></div></div>
+      <div class="gc-footer">
+        <div class="gc-expire urgent">
+          <i class="ti ti-alarm" style="font-size:12px;" aria-hidden="true"></i>
+          Осталось 1 день!
+        </div>
+        <div class="gc-actions">
+          <div class="btn-small"><i class="ti ti-info-circle" style="font-size:11px;" aria-hidden="true"></i></div>
+          <div class="btn-get">Забрать →</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="gc-top">
+        <div class="gc-thumb" style="background:rgba(124,90,247,0.08);">
+          <i class="ti ti-sword" style="font-size:34px;color:var(--accent);" aria-hidden="true"></i>
+        </div>
+        <div class="gc-info">
+          <div class="gc-name">Remnant: From the Ashes</div>
+          <div class="gc-platform">
+            <i class="ti ti-device-gamepad" style="font-size:10px;" aria-hidden="true"></i> Epic Games
+            <span class="score-green" style="margin-left:2px;">78%</span>
+          </div>
+          <div class="gc-price-row">
+            <span class="gc-was">$39.99</span>
+            <span class="free-badge"><i class="ti ti-gift" style="font-size:10px;" aria-hidden="true"></i> FREE</span>
+          </div>
+        </div>
+        <div class="wishlist-btn" style="margin:10px 10px 0 0;" aria-label="В список желаний">
+          <i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;"></div></div>
+      <div class="gc-footer">
+        <div class="gc-expire soon">
+          <i class="ti ti-clock" style="font-size:12px;" aria-hidden="true"></i>
+          Осталось 3 дня
+        </div>
+        <div class="gc-actions">
+          <div class="btn-small"><i class="ti ti-info-circle" style="font-size:11px;" aria-hidden="true"></i></div>
+          <div class="btn-get">Забрать →</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="gc-top">
+        <div class="gc-thumb" style="background:rgba(29,233,164,0.07);">
+          <i class="ti ti-trees" style="font-size:34px;color:var(--green);" aria-hidden="true"></i>
+        </div>
+        <div class="gc-info">
+          <div class="gc-name">Planet of Lana</div>
+          <div class="gc-platform">
+            <i class="ti ti-brand-steam" style="font-size:10px;" aria-hidden="true"></i> Steam
+            <span class="score-amber" style="margin-left:2px;">72%</span>
+          </div>
+          <div class="gc-price-row">
+            <span class="gc-was">$19.99</span>
+            <span class="free-badge"><i class="ti ti-gift" style="font-size:10px;" aria-hidden="true"></i> FREE</span>
+          </div>
+        </div>
+        <div class="wishlist-btn" style="margin:10px 10px 0 0;" aria-label="В список желаний">
+          <i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;"></div></div>
+      <div class="gc-footer">
+        <div class="gc-expire">
+          <i class="ti ti-clock" style="font-size:12px;" aria-hidden="true"></i>
+          Осталось 6 дней
+        </div>
+        <div class="gc-actions">
+          <div class="btn-small"><i class="ti ti-info-circle" style="font-size:11px;" aria-hidden="true"></i></div>
+          <div class="btn-get">Забрать →</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="gc-top">
+        <div class="gc-thumb" style="background:rgba(245,166,35,0.07);">
+          <i class="ti ti-crown" style="font-size:34px;color:var(--amber);" aria-hidden="true"></i>
+        </div>
+        <div class="gc-info">
+          <div class="gc-name">Watch Dogs: Legion</div>
+          <div class="gc-platform">
+            <i class="ti ti-building" style="font-size:10px;" aria-hidden="true"></i> Ubisoft Connect
+            <span class="score-amber" style="margin-left:2px;">68%</span>
+          </div>
+          <div class="gc-price-row">
+            <span class="gc-was">$29.99</span>
+            <span class="free-badge"><i class="ti ti-gift" style="font-size:10px;" aria-hidden="true"></i> FREE</span>
+          </div>
+        </div>
+        <div class="wishlist-btn" style="margin:10px 10px 0 0;" aria-label="В список желаний">
+          <i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;"></div></div>
+      <div class="gc-footer">
+        <div class="gc-expire">
+          <i class="ti ti-clock" style="font-size:12px;" aria-hidden="true"></i>
+          Осталось 7 дней
+        </div>
+        <div class="gc-actions">
+          <div class="btn-small"><i class="ti ti-info-circle" style="font-size:11px;" aria-hidden="true"></i></div>
+          <div class="btn-get">Забрать →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head" style="margin-top:10px;">
+    <span class="section-title">Уже забрали</span>
+    <span style="font-size:11px;color:var(--muted);">На этой неделе</span>
+  </div>
+
+  <div class="came-section">
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div class="came-card">
+        <div class="came-thumb"><i class="ti ti-car" style="font-size:18px;color:var(--muted);" aria-hidden="true"></i></div>
+        <div class="came-info">
+          <div class="came-name">Need for Speed: Heat</div>
+          <div class="came-meta">Prime Gaming · Истекло 2 дня назад</div>
+        </div>
+        <span class="came-was">$29.99</span>
+      </div>
+      <div class="came-card">
+        <div class="came-thumb"><i class="ti ti-ghost" style="font-size:18px;color:var(--muted);" aria-hidden="true"></i></div>
+        <div class="came-info">
+          <div class="came-name">Ghostrunner 2</div>
+          <div class="came-meta">GOG · Истекло 5 дней назад</div>
+        </div>
+        <span class="came-was">$34.99</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item"><i class="ti ti-search" aria-hidden="true"></i><span>Поиск</span></div>
+    <div class="nav-item"><i class="ti ti-flame" aria-hidden="true"></i><span>Скидки</span></div>
+    <div class="nav-item active"><i class="ti ti-gift" aria-hidden="true"></i><span>Халява</span></div>
+    <div class="nav-item"><i class="ti ti-bookmark" aria-hidden="true"></i><span>Список</span></div>
+    <div class="nav-item"><i class="ti ti-user-circle" aria-hidden="true"></i><span>Я</span></div>
+  </div>
+
+  <div class="wm">@GameBroker_bot</div>
+</div>
+</div>
+
+<script>
+let secs = 2*3600+34*60+17;
+function tickCd(){
+  if(secs<=0)secs=7*24*3600;
+  secs--;
+  const h=String(Math.floor(secs/3600)).padStart(2,'0');
+  const m=String(Math.floor((secs%3600)/60)).padStart(2,'0');
+  const s=String(secs%60).padStart(2,'0');
+  const eh=document.getElementById('cd-h');
+  const em=document.getElementById('cd-m');
+  const es=document.getElementById('cd-s');
+  if(eh)eh.textContent=h;
+  if(em)em.textContent=m;
+  if(es)es.textContent=s;
+}
+setInterval(tickCd,1000);
+
+const toggle=document.getElementById('quality-toggle');
+if(toggle){
+  toggle.addEventListener('click',function(){this.classList.toggle('off');});
+}
+
+document.querySelectorAll('.plat-pill').forEach(p=>{
+  p.addEventListener('click',function(){
+    document.querySelectorAll('.plat-pill').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.wishlist-btn').forEach(btn=>{
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    this.classList.toggle('active');
+  });
+});
+</script>

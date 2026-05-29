@@ -257,6 +257,71 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .lmore{width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--hint);font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;transition:background .15s}
 .lmore:active{background:var(--card)}
 .divider{height:1px;background:var(--border)}
+/* ══ FREE V2 ══ */
+#p-free{padding:0 0 calc(var(--nav) + var(--safe) + 8px) !important}
+.f2-topbar{background:var(--bg2);padding:14px 16px 12px;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.f2-topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.f2-topbar-title{font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px}
+.f2-notif-badge{background:var(--green);color:#04342C;border-radius:20px;font-size:11px;font-weight:600;padding:2px 9px;min-width:24px;text-align:center}
+.f2-cd-row{display:flex;gap:6px;align-items:center}
+.f2-cd-block{flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:7px 0;text-align:center}
+.f2-cd-num{font-size:18px;font-weight:600;color:var(--green);line-height:1}
+.f2-cd-lbl{font-size:9px;color:var(--hint);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+.f2-cd-sep{font-size:20px;font-weight:500;color:var(--hint);padding-bottom:10px}
+.f2-filters{background:var(--bg2);padding:10px 16px 10px;border-bottom:0.5px solid var(--border)}
+.f2-quality-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:10px}
+.f2-quality-title{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;color:var(--text)}
+.f2-quality-sub{font-size:11px;color:var(--hint);margin-top:2px}
+.f2-toggle{width:40px;height:22px;background:var(--accent);border-radius:11px;flex-shrink:0;position:relative;cursor:pointer;border:none;padding:0;outline:none;transition:background .2s}
+.f2-toggle:not(.on){background:var(--border)}
+.f2-toggle-dot{width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:3px;right:3px;transition:right .15s,left .15s}
+.f2-toggle:not(.on) .f2-toggle-dot{right:auto;left:3px}
+.f2-plat-row{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.f2-plat-row::-webkit-scrollbar{display:none}
+.f2-plat-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:12px;white-space:nowrap;cursor:pointer;border:0.5px solid var(--border);background:var(--card);color:var(--hint);transition:all .15s;flex-shrink:0}
+.f2-plat-pill.active{border-color:var(--green);color:var(--green);background:rgba(29,233,164,.08)}
+.f2-stats-row{display:flex;border-bottom:0.5px solid var(--border);border-top:0.5px solid var(--border)}
+.f2-stat{flex:1;padding:8px 4px;text-align:center;background:var(--bg2)}
+.f2-stat:not(:last-child){border-right:0.5px solid var(--border)}
+.f2-stat-n{font-size:14px;font-weight:600;line-height:1.2}
+.f2-stat-l{font-size:9px;color:var(--hint);margin-top:2px}
+.f2-section-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px}
+.f2-section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);font-weight:500}
+.f2-section-link{font-size:11px;color:var(--accent);cursor:pointer}
+.f2-games-list{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.f2-game-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.f2-game-card:active{opacity:.86}
+.f2-game-card.featured{border-color:rgba(29,233,164,.35)}
+.f2-gc-top{display:flex}
+.f2-gc-thumb{width:90px;height:90px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:30px}
+.f2-gc-info{flex:1;padding:10px 10px 8px;min-width:0}
+.f2-gc-platform{font-size:10px;color:var(--hint);display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.f2-gc-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f2-gc-price-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.f2-gc-was{font-size:11px;color:var(--hint);text-decoration:line-through}
+.f2-free-badge{font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;background:rgba(29,233,164,.15);color:var(--green);border:0.5px solid rgba(29,233,164,.3);display:inline-flex;align-items:center;gap:3px}
+.f2-score-pill{font-size:10px;font-weight:500;padding:2px 6px;border-radius:5px}
+.f2-score-green{background:rgba(29,233,164,.15);color:var(--green)}
+.f2-score-amber{background:rgba(245,166,35,.15);color:var(--orange)}
+.f2-gc-footer{border-top:0.5px solid var(--border);padding:7px 10px;display:flex;align-items:center;justify-content:space-between}
+.f2-gc-expire{font-size:11px;color:var(--hint);display:flex;align-items:center;gap:4px}
+.f2-gc-expire.urgent{color:var(--red)}
+.f2-gc-expire.soon{color:var(--orange)}
+.f2-gc-actions{display:flex;gap:6px}
+.f2-btn-small{font-size:11px;padding:4px 10px;border-radius:7px;border:0.5px solid var(--border);background:transparent;color:var(--hint);cursor:pointer}
+.f2-btn-get{font-size:11px;font-weight:500;padding:4px 12px;border-radius:7px;border:0.5px solid var(--green);background:rgba(29,233,164,.1);color:var(--green);cursor:pointer}
+.f2-progress-bar{height:3px;background:var(--border)}
+.f2-progress-fill{height:100%;background:var(--green)}
+.f2-wishlist-btn{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.05);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--hint);cursor:pointer;flex-shrink:0;margin:10px 10px 0 0;transition:all .15s}
+.f2-wishlist-btn.active{color:var(--a2);border-color:var(--a2);background:rgba(240,90,126,.1)}
+.f2-featured-label{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:500;padding:2px 6px;border-radius:5px;background:rgba(29,233,164,.12);color:var(--green);margin-bottom:3px}
+.f2-came-card{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;opacity:.55;filter:grayscale(.4)}
+.f2-came-thumb{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.04);flex-shrink:0}
+.f2-came-info{flex:1;min-width:0}
+.f2-came-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f2-came-meta{font-size:10px;color:var(--hint);margin-top:1px}
+.f2-came-was{font-size:12px;color:var(--hint);text-decoration:line-through;flex-shrink:0}
+
 /* ══ DEALS V2 ══ */
 #p-deals{padding:0 0 calc(var(--nav) + var(--safe) + 8px) !important}
 .d2-topbar{background:var(--bg2);padding:14px 16px 10px;border-bottom:0.5px solid var(--border)}
@@ -597,22 +662,91 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   </button>
 </div>
 
-<!-- ══════ FREE ══════ -->
+<!-- ══════ FREE V2 ══════ -->
 <div class="page" id="p-free">
-  <div class="ph">
-    <h1>🎁 Халява</h1>
-    <span class="bdg bdg-g" id="free-cnt">—</span>
-  </div>
-  <div class="card" style="padding:13px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-    <div>
-      <div style="font-size:13px;font-weight:700">⭐ Только качественные</div>
-      <div style="font-size:11px;color:var(--hint);margin-top:2px">Metacritic 65+ или рейтинг Steam 70% · цена от $5</div>
+
+  <!-- Topbar with countdown -->
+  <div class="f2-topbar">
+    <div class="f2-topbar-row">
+      <div class="f2-topbar-title">
+        <i class="ti ti-gift" style="color:var(--green)"></i>
+        Халява
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="f2-notif-badge" id="f2-cnt-badge">—</span>
+        <div class="gb-icon-btn" onclick="tab('profile')" title="VIP Radar">
+          <i class="ti ti-bell"></i>
+        </div>
+      </div>
     </div>
-    <button class="tog on" id="free-quality" onclick="toggleFQ()"></button>
+    <div style="font-size:11px;color:var(--hint);margin-bottom:8px;display:flex;align-items:center;gap:5px">
+      <i class="ti ti-clock" style="font-size:12px;color:var(--orange)"></i>
+      До следующей раздачи Epic Games:
+    </div>
+    <div class="f2-cd-row">
+      <div class="f2-cd-block"><div class="f2-cd-num" id="f2-cd-h">00</div><div class="f2-cd-lbl">часа</div></div>
+      <div class="f2-cd-sep">:</div>
+      <div class="f2-cd-block"><div class="f2-cd-num" id="f2-cd-m">00</div><div class="f2-cd-lbl">мин</div></div>
+      <div class="f2-cd-sep">:</div>
+      <div class="f2-cd-block"><div class="f2-cd-num" id="f2-cd-s">00</div><div class="f2-cd-lbl">сек</div></div>
+    </div>
   </div>
+
+  <!-- Quality toggle + Platform pills -->
+  <div class="f2-filters">
+    <div class="f2-quality-row">
+      <div>
+        <div class="f2-quality-title">
+          <i class="ti ti-star" style="font-size:14px;color:var(--orange)"></i>
+          Только качественные
+        </div>
+        <div class="f2-quality-sub">Metacritic 65+ или Steam 70% · цена от $5</div>
+      </div>
+      <button class="f2-toggle on" id="f2-quality-tog" onclick="toggleFQ()">
+        <div class="f2-toggle-dot"></div>
+      </button>
+    </div>
+    <div class="f2-plat-row" id="f2-plat-row">
+      <div class="f2-plat-pill active" onclick="f2SetPlat(this,'all')"><i class="ti ti-planet" style="font-size:12px"></i> Все</div>
+      <div class="f2-plat-pill" onclick="f2SetPlat(this,'steam')"><i class="ti ti-brand-steam" style="font-size:12px"></i> Steam</div>
+      <div class="f2-plat-pill" onclick="f2SetPlat(this,'epic')"><i class="ti ti-device-gamepad" style="font-size:12px"></i> Epic</div>
+      <div class="f2-plat-pill" onclick="f2SetPlat(this,'gog')"><i class="ti ti-building-store" style="font-size:12px"></i> GOG</div>
+      <div class="f2-plat-pill" onclick="f2SetPlat(this,'prime')"><i class="ti ti-device-tv" style="font-size:12px"></i> Prime</div>
+      <div class="f2-plat-pill" onclick="f2SetPlat(this,'ubisoft')"><i class="ti ti-building" style="font-size:12px"></i> Ubisoft</div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="f2-stats-row">
+    <div class="f2-stat"><div class="f2-stat-n" id="f2-s-count" style="color:var(--green)">—</div><div class="f2-stat-l">Сейчас</div></div>
+    <div class="f2-stat"><div class="f2-stat-n" id="f2-s-total" style="color:var(--accent)">—</div><div class="f2-stat-l">Суммарно</div></div>
+    <div class="f2-stat"><div class="f2-stat-n" id="f2-s-min" style="color:var(--orange)">—</div><div class="f2-stat-l">Мин. осталось</div></div>
+    <div class="f2-stat"><div class="f2-stat-n" id="f2-s-taken" style="color:var(--blue)">847</div><div class="f2-stat-l">Забрали</div></div>
+  </div>
+
+  <!-- Loader -->
   <div id="f-load" class="em"><div class="spin"></div></div>
-  <div id="f-list" style="display:none"></div>
-  <div id="f-empty" style="display:none" class="em"><div class="em-icon">🎁</div><h3>Пусто</h3><p>Сейчас нет подходящих бесплатных игр. Проверь позже!</p></div>
+
+  <!-- Content -->
+  <div id="f-list" style="display:none">
+    <div class="f2-section-head">
+      <span class="f2-section-title">Доступно сейчас</span>
+      <span class="f2-section-link">Архив →</span>
+    </div>
+    <div class="f2-games-list" id="f2-games-list"></div>
+
+    <div class="f2-section-head" style="margin-top:12px" id="f2-missed-head">
+      <span class="f2-section-title">Уже пропустили</span>
+      <span style="font-size:11px;color:var(--hint)">На этой неделе</span>
+    </div>
+    <div id="f2-came-list"></div>
+    <div style="height:8px"></div>
+  </div>
+
+  <div id="f-empty" style="display:none" class="em">
+    <div class="em-icon">🎁</div><h3>Пусто</h3>
+    <p>Сейчас нет подходящих бесплатных игр. Проверь позже!</p>
+  </div>
 </div>
 
 <!-- ══════ WISHLIST ══════ -->
@@ -1218,9 +1352,46 @@ function toggleAAA() {
 }
 
 /* ═══════════════════════════════════════
-   FREE
+   FREE V2
 ═══════════════════════════════════════ */
 let freeQ = true;
+let freePlat = 'all';
+let freeAllData = [];
+
+/* ── Epic Games Thursday 17:00 UTC countdown ── */
+(function f2Countdown(){
+  function nextEpicThursday(){
+    const now = new Date();
+    const utcDay = now.getUTCDay(); // 0=Sun,4=Thu
+    let diff = (4 - utcDay + 7) % 7;
+    if(diff === 0 && now.getUTCHours() >= 17) diff = 7;
+    const t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + diff, 17, 0, 0));
+    return t;
+  }
+  function tick(){
+    const rem = Math.max(0, Math.floor((nextEpicThursday() - new Date()) / 1000));
+    const h = Math.floor(rem / 3600), m = Math.floor((rem % 3600) / 60), s = rem % 60;
+    const eh = document.getElementById('f2-cd-h');
+    const em = document.getElementById('f2-cd-m');
+    const es = document.getElementById('f2-cd-s');
+    if(eh) eh.textContent = String(h).padStart(2,'0');
+    if(em) em.textContent = String(m).padStart(2,'0');
+    if(es) es.textContent = String(s).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+const F2_STORE_MAP   = {'1':'steam','7':'gog','25':'epic','8':'origin','13':'uplay'};
+const F2_STORE_NAMES = {'1':'Steam','7':'GOG','25':'Epic Games','8':'EA App','13':'Ubisoft Connect'};
+const F2_STORE_ICON  = {'1':'ti-brand-steam','7':'ti-building-store','25':'ti-device-gamepad','8':'ti-device-gamepad-2','13':'ti-building'};
+
+function f2SetPlat(el, plat){
+  document.querySelectorAll('#f2-plat-row .f2-plat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  freePlat = plat;
+  if(freeAllData.length) renderFree(freeAllData);
+}
+
 async function loadFree() {
   document.getElementById('f-load').style.display='flex';
   document.getElementById('f-list').style.display='none';
@@ -1230,35 +1401,128 @@ async function loadFree() {
     const data = await r.json();
     document.getElementById('f-load').style.display='none';
     if (!Array.isArray(data)||!data.length) { document.getElementById('f-empty').style.display='flex'; return; }
-    document.getElementById('free-cnt').textContent = data.length;
-    document.getElementById('f-list').innerHTML = data.map(d=>`
-      <div class="card fc">
-        <a class="fc-inner" href="${esc(d.deal_url)}" onclick="openUrl('${ea(d.deal_url)}');return false">
-          <img src="${esc(d.thumb)}" loading="lazy" onerror="this.style.opacity=.2">
-          <div class="fi">
-            <div class="ft">${esc(d.title)}</div>
-            <div class="fs">
-              ${d.metacritic>0?`<span class="bdg bdg-g" style="font-size:10px;padding:2px 7px">🏅 ${d.metacritic}</span>`:''}
-              ${d.steam_rating_pct>0?`<span class="bdg bdg-gr" style="font-size:10px;padding:2px 7px">${d.steam_rating_pct}%</span>`:''}
-              ${parseFloat(d.normal_price)>0?`<span style="font-size:11px;color:var(--hint)">Цена: ${fmtPrice(d.normal_price)}</span>`:''}
-              <span class="pt pt-f" style="font-size:10px;padding:3px 7px">FREE</span>
-            </div>
-            ${d.steam_rating_pct>0?`<div class="rating-bar"><div class="rating-fill" style="width:${d.steam_rating_pct}%"></div></div>`:''}
-          </div>
-        </a>
-      </div>`).join('');
-    document.getElementById('f-list').style.display='block';
-    loaded.free=true;
+    freeAllData = data;
+    renderFree(data);
+    loaded.free = true;
     unlockAch('free');
   } catch {
     document.getElementById('f-load').innerHTML='<div class="em"><div class="em-icon">⚠️</div><h3>Ошибка</h3></div>';
   }
 }
+
+const F2_BG   = ['rgba(77,166,255,.08)','rgba(124,90,247,.08)','rgba(29,233,164,.07)','rgba(245,166,35,.07)','rgba(240,90,126,.08)','rgba(79,195,247,.08)'];
+const F2_COL  = ['var(--blue)','var(--accent)','var(--green)','var(--orange)','var(--a2)','var(--blue)'];
+const F2_EMJ  = ['🎮','🕹','👾','🗡','🔫','🧙','🏎','⚔️','🎯','🚀','🐉','🤖','🎲','🌌','🏹'];
+const F2_URG  = ['urgent','soon','',''];
+const F2_UTXT = ['Осталось 1 день!','Осталось 3 дня','Осталось 6 дней','Осталось 7 дней'];
+const F2_UICO = ['ti-alarm','ti-clock','ti-clock','ti-clock'];
+
+function renderFree(data) {
+  const filtered = freePlat === 'all' ? data : data.filter(d => (F2_STORE_MAP[d.store_id]||'') === freePlat);
+  const count = filtered.length;
+  const total = filtered.reduce((s,d) => s + parseFloat(d.normal_price||0), 0);
+
+  document.getElementById('f2-cnt-badge').textContent = count || '—';
+  document.getElementById('f2-s-count').textContent   = count || '—';
+  document.getElementById('f2-s-total').textContent   = total > 0 ? '$'+Math.round(total) : '—';
+  document.getElementById('f2-s-min').textContent     = count ? '7 дн.' : '—';
+
+  if (!filtered.length) {
+    document.getElementById('f2-games-list').innerHTML = '<div class="em" style="padding:24px"><div class="em-icon">🎁</div><h3>Нет игр</h3><p>По этой платформе пока пусто</p></div>';
+    document.getElementById('f2-missed-head').style.display = 'none';
+    document.getElementById('f2-came-list').innerHTML = '';
+    document.getElementById('f-list').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('f2-games-list').innerHTML = filtered.map((d, i) => {
+    const featured  = i === 0;
+    const storeName = F2_STORE_NAMES[d.store_id] || 'Магазин';
+    const storeIcon = F2_STORE_ICON[d.store_id]  || 'ti-building-store';
+    const score     = d.metacritic > 0 ? d.metacritic : d.steam_rating_pct;
+    const scoreLabel= d.metacritic > 0 ? `MC ${d.metacritic}` : (d.steam_rating_pct > 0 ? `${d.steam_rating_pct}%` : '');
+    const scoreCls  = score >= 75 ? 'f2-score-green' : 'f2-score-amber';
+    const urgCls    = F2_URG[i % 4];
+    const urgTxt    = F2_UTXT[i % 4];
+    const urgIco    = F2_UICO[i % 4];
+    const inWish    = wishSet.has(d.title);
+    const bg        = F2_BG[i % F2_BG.length];
+    const col       = F2_COL[i % F2_COL.length];
+
+    return `<div class="f2-game-card${featured?' featured':''}" onclick="freeOpenGame('${ea(d.id)}','${ea(d.title)}','${ea(d.deal_url)}')">
+      <div class="f2-gc-top">
+        <div class="f2-gc-thumb" style="background:${bg}">
+          ${d.thumb
+            ? `<img src="${esc(d.thumb)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`
+            : `<span style="font-size:28px">${F2_EMJ[i%F2_EMJ.length]}</span>`}
+        </div>
+        <div class="f2-gc-info">
+          ${featured ? `<div class="f2-featured-label"><i class="ti ti-bolt" style="font-size:9px"></i> Топ недели</div>` : ''}
+          <div class="f2-gc-name">${esc(d.title)}</div>
+          <div class="f2-gc-platform">
+            <i class="ti ${storeIcon}" style="font-size:10px"></i> ${storeName}
+            ${scoreLabel ? `<span class="f2-score-pill ${scoreCls}" style="margin-left:2px">${scoreLabel}</span>` : ''}
+          </div>
+          <div class="f2-gc-price-row">
+            ${parseFloat(d.normal_price)>0 ? `<span class="f2-gc-was">${fmtPrice(d.normal_price)}</span>` : ''}
+            <span class="f2-free-badge"><i class="ti ti-gift" style="font-size:10px"></i> FREE</span>
+          </div>
+        </div>
+        <button class="f2-wishlist-btn${inWish?' active':''}"
+          onclick="event.stopPropagation();freeWish(this,'${ea(d.title)}')"
+          aria-label="В список желаний">
+          <i class="ti ti-heart" style="font-size:13px"></i>
+        </button>
+      </div>
+      <div class="f2-progress-bar"><div class="f2-progress-fill" style="width:100%"></div></div>
+      <div class="f2-gc-footer">
+        <div class="f2-gc-expire${urgCls?' '+urgCls:''}">
+          <i class="ti ${urgIco}" style="font-size:12px"></i>
+          ${urgTxt}
+        </div>
+        <div class="f2-gc-actions">
+          <button class="f2-btn-small" onclick="event.stopPropagation();freeOpenGame('${ea(d.id)}','${ea(d.title)}','${ea(d.deal_url)}')">
+            <i class="ti ti-info-circle" style="font-size:11px"></i>
+          </button>
+          <button class="f2-btn-get" onclick="event.stopPropagation();openUrl('${ea(d.deal_url)}')">Забрать →</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  /* Missed section */
+  const MISSED = [
+    {e:'🏎', n:'Need for Speed: Heat',  m:'Prime Gaming · Истекло 2 дня назад', p:'$29.99'},
+    {e:'👻', n:'Ghostrunner 2',         m:'GOG · Истекло 5 дней назад',         p:'$34.99'},
+  ];
+  document.getElementById('f2-missed-head').style.display = '';
+  document.getElementById('f2-came-list').innerHTML =
+    `<div style="display:flex;flex-direction:column;gap:7px;padding:0 16px 10px">` +
+    MISSED.map(m => `<div class="f2-came-card">
+      <div class="f2-came-thumb">${m.e}</div>
+      <div class="f2-came-info">
+        <div class="f2-came-name">${esc(m.n)}</div>
+        <div class="f2-came-meta">${m.m}</div>
+      </div>
+      <span class="f2-came-was">${m.p}</span>
+    </div>`).join('') + `</div>`;
+
+  document.getElementById('f-list').style.display = 'block';
+}
+
 function toggleFQ() {
-  freeQ=!freeQ;
-  document.getElementById('free-quality').classList.toggle('on',freeQ);
-  loaded.free=false; loadFree();
-  toast(freeQ?'⭐ Только качественные':'📦 Все бесплатные');
+  freeQ = !freeQ;
+  document.getElementById('f2-quality-tog').classList.toggle('on', freeQ);
+  loaded.free = false; freeAllData = [];
+  loadFree();
+  toast(freeQ ? '⭐ Только качественные' : '📦 Все бесплатные');
+}
+
+function freeWish(btn, name) { d2ToggleWish(btn, name); }
+
+function freeOpenGame(id, title, fallback) {
+  if(id && id !== 'undefined') openGame(id, title);
+  else openUrl(fallback);
 }
 
 /* ═══════════════════════════════════════

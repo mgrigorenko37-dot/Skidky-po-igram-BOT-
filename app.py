@@ -105,6 +105,7 @@ def api_free():
                 'id': d.get('dealID'), 'title': d.get('title', ''),
                 'thumb': d.get('thumb', ''), 'normal_price': d.get('normalPrice', '0'),
                 'metacritic': mc, 'steam_rating_pct': rt,
+                'store_id': str(d.get('storeID', '')),
                 'deal_url': f"https://www.cheapshark.com/redirect?dealID={d.get('dealID','')}"
             })
         return jsonify(results[:30])
