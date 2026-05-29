@@ -1,5 +1,6 @@
 import time
 import logging
+import os
 import requests
 import telebot
 from bs4 import BeautifulSoup
@@ -129,11 +130,26 @@ def convert_price(usd_price, user_currency):
 # 🎹 МЕНЮ И КЛАВИАТУРЫ
 # ==========================================
 
+def get_webapp_url():
+    """Возвращает URL для Telegram Mini App"""
+    domain = os.environ.get('REPLIT_DEV_DOMAIN', '')
+    if domain:
+        return f"https://{domain}"
+    return None
+
 def main_kbrd(uid=None):
     """
-    Главное меню бота (Облегченная версия: Только Поиск)
+    Главное меню бота
     """
     m = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2, selective=False)
+
+    # 0. MINI APP (если доступен URL)
+    webapp_url = get_webapp_url()
+    if webapp_url:
+        m.add(types.KeyboardButton(
+            "🌐 Открыть приложение",
+            web_app=types.WebAppInfo(url=webapp_url)
+        ))
 
     # 1. ГЛАВНЫЕ ФУНКЦИИ (Поиск и Скидки)
     m.row(types.KeyboardButton("🔎 Поиск игры"), types.KeyboardButton("🔥 Топ скидок"))
@@ -154,7 +170,6 @@ def main_kbrd(uid=None):
     # 6. Админка
     if str(uid) == str(config.ADMIN_ID):
         m.add(types.KeyboardButton("📢 Реклама"), types.KeyboardButton("📊 Статистика"))
-        # 🔥 НОВОЕ: Кнопка для ручного поста в канал
         m.add(types.KeyboardButton("📝 Пост в канал"))
     return m
 

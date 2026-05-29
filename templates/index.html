@@ -1,57 +1,758 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Уровни Сборщика ПК</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            padding-top: 20px;
-        }
-        .card {
-            transition: transform 0.2s;
-            margin-bottom: 20px;
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .level-emoji {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Game Broker</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: var(--tg-theme-bg-color, #0f0f1a);
+      --bg2: var(--tg-theme-secondary-bg-color, #1a1a2e);
+      --text: var(--tg-theme-text-color, #ffffff);
+      --hint: var(--tg-theme-hint-color, #8b8b9e);
+      --accent: var(--tg-theme-button-color, #6c63ff);
+      --accent-text: var(--tg-theme-button-text-color, #ffffff);
+      --link: var(--tg-theme-link-color, #6c63ff);
+      --card: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.08);
+      --green: #00e676;
+      --red: #ff5252;
+      --gold: #ffd740;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overscroll-behavior: none; }
+
+    /* ── LAYOUT ── */
+    #app { display: flex; flex-direction: column; height: 100dvh; }
+    #content { flex: 1; overflow-y: auto; padding: 12px 16px 80px; scroll-behavior: smooth; }
+    #content::-webkit-scrollbar { display: none; }
+
+    /* ── NAV BAR ── */
+    #navbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 100;
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 10px 4px 8px; gap: 3px; cursor: pointer; transition: all .2s;
+      border: none; background: none; color: var(--hint); font-size: 10px; font-weight: 500;
+    }
+    .nav-btn .icon { font-size: 22px; line-height: 1; transition: transform .2s; }
+    .nav-btn.active { color: var(--accent); }
+    .nav-btn.active .icon { transform: scale(1.15); }
+
+    /* ── PAGE ── */
+    .page { display: none; animation: fadeIn .25s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ── HEADER ── */
+    .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-top: 4px; }
+    .page-header h1 { font-size: 22px; font-weight: 700; }
+    .page-header .badge { background: var(--accent); color: var(--accent-text); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap { position: relative; margin-bottom: 16px; }
+    .search-wrap input {
+      width: 100%; padding: 13px 46px 13px 16px;
+      background: var(--bg2); border: 1.5px solid var(--border);
+      border-radius: var(--radius); color: var(--text); font-size: 15px; outline: none;
+      transition: border-color .2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--hint); }
+    .search-wrap .search-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: .6; pointer-events: none; }
+    .search-wrap .clear-btn { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; cursor: pointer; opacity: .6; display: none; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .card:active { transform: scale(.98); }
+
+    /* ── GAME LIST ── */
+    .game-list { display: flex; flex-direction: column; gap: 10px; }
+    .game-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; text-decoration: none; color: var(--text);
+    }
+    .game-item img { width: 60px; height: 34px; object-fit: cover; border-radius: 6px; background: var(--bg2); flex-shrink: 0; }
+    .game-item .info { flex: 1; min-width: 0; }
+    .game-item .title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .game-item .sub { font-size: 12px; color: var(--hint); margin-top: 2px; }
+    .game-item .price-tag { background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 8px; white-space: nowrap; flex-shrink: 0; }
+    .game-item .price-tag.free { background: var(--gold); }
+    .game-item .add-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .15s; }
+    .game-item .add-btn:active { transform: scale(.9); }
+    .game-item .add-btn.added { background: var(--green); }
+
+    /* ── DEAL CARD ── */
+    .deal-card { margin-bottom: 10px; }
+    .deal-card a { display: flex; gap: 12px; padding: 12px; text-decoration: none; color: var(--text); align-items: center; }
+    .deal-card img { width: 90px; height: 42px; object-fit: cover; border-radius: 8px; background: var(--bg2); flex-shrink: 0; }
+    .deal-card .info { flex: 1; min-width: 0; }
+    .deal-card .title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
+    .deal-card .prices { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .deal-card .sale { font-size: 16px; font-weight: 700; color: var(--green); }
+    .deal-card .original { font-size: 12px; color: var(--hint); text-decoration: line-through; }
+    .deal-card .discount { background: var(--red); color: white; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
+    .deal-card .meta { font-size: 11px; color: var(--hint); margin-top: 4px; }
+
+    /* ── WISHLIST ── */
+    .wish-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+    .wish-item .w-name { flex: 1; font-size: 14px; font-weight: 500; }
+    .wish-item .w-price { font-size: 12px; color: var(--hint); }
+    .wish-item .del-btn { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,82,82,.15); border: none; color: var(--red); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* ── PROFILE ── */
+    .profile-hero { text-align: center; padding: 24px 0 20px; }
+    .profile-hero .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #ff6b9d); display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 12px; }
+    .profile-hero .name { font-size: 20px; font-weight: 700; }
+    .profile-hero .vip-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(90deg, #ffd740, #ff9800); color: #000; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-top: 6px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+    .stat-card .num { font-size: 24px; font-weight: 700; color: var(--accent); }
+    .stat-card .lbl { font-size: 11px; color: var(--hint); margin-top: 2px; }
+    .info-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .info-row:last-child { border-bottom: none; }
+    .info-row .lbl { font-size: 14px; color: var(--hint); }
+    .info-row .val { font-size: 14px; font-weight: 600; }
+
+    /* ── EMPTY / LOADING / ERROR ── */
+    .center-msg { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 12px; text-align: center; }
+    .center-msg .big-icon { font-size: 56px; }
+    .center-msg h3 { font-size: 18px; font-weight: 600; }
+    .center-msg p { font-size: 14px; color: var(--hint); max-width: 260px; }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── BUTTON ── */
+    .btn-primary { width: 100%; padding: 14px; background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+    .btn-primary:active { opacity: .8; }
+    .btn-secondary { width: 100%; padding: 12px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; }
+
+    /* ── TOAST ── */
+    #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--accent); color: var(--accent-text); padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; z-index: 9999; transition: transform .3s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── ADD TO WISHLIST FORM ── */
+    .add-wish-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .add-wish-row input { flex: 1; padding: 12px 14px; background: var(--bg2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; outline: none; }
+    .add-wish-row input:focus { border-color: var(--accent); }
+    .add-wish-row button { padding: 12px 16px; background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-size: 13px; font-weight: 600; color: var(--hint); text-transform: uppercase; letter-spacing: .6px; margin: 16px 0 10px; }
+
+    /* ── CHIP ── */
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .chip { padding: 6px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; font-size: 13px; cursor: pointer; transition: all .15s; white-space: nowrap; }
+    .chip.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+    /* ── LOAD MORE ── */
+    .load-more-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius); color: var(--hint); font-size: 14px; cursor: pointer; margin-top: 12px; }
+    .load-more-btn:active { background: var(--card); }
+  </style>
 </head>
 <body>
+<div id="app">
+  <div id="content">
 
-<div class="container">
-    <h1 class="text-center mb-4">🏆 Уровни Мастерства</h1>
+    <!-- ═══════════ SEARCH PAGE ═══════════ -->
+    <div class="page active" id="page-search">
+      <div class="page-header">
+        <h1>🔎 Поиск</h1>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="search-input" placeholder="Название игры..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <span class="search-icon">🎮</span>
+        <span class="clear-btn" id="clear-btn" onclick="clearSearch()">✕</span>
+      </div>
 
-    <div class="row justify-content-center">
-        {% for name, data in levels.items() %}
-        <div class="col-md-4 col-sm-6">
-            <div class="card h-100 border-{{ data.color }}">
-                <div class="card-header bg-{{ data.color }} text-white text-center fw-bold">
-                    {{ name }}
-                </div>
-                <div class="card-body text-center">
-                    <div class="level-emoji">{{ data.emoji }}</div>
-                    <p class="card-text text-muted">{{ data.description }}</p>
-                    <hr>
-                    <div class="d-flex justify-content-between">
-                        <span class="badge bg-secondary">📦 {{ data.boxes }} коробок</span>
-                        <span class="badge bg-success">💰 ${{ data.price }}</span>
-                    </div>
-                </div>
-            </div>
+      <div id="search-hint">
+        <div class="chips">
+          <div class="chip" onclick="quickSearch('GTA V')">GTA V</div>
+          <div class="chip" onclick="quickSearch('Cyberpunk 2077')">Cyberpunk 2077</div>
+          <div class="chip" onclick="quickSearch('Elden Ring')">Elden Ring</div>
+          <div class="chip" onclick="quickSearch('Red Dead Redemption 2')">RDR2</div>
+          <div class="chip" onclick="quickSearch('The Witcher 3')">Witcher 3</div>
+          <div class="chip" onclick="quickSearch('Spider-Man')">Spider-Man</div>
         </div>
-        {% endfor %}
+        <div class="center-msg">
+          <div class="big-icon">🕹</div>
+          <h3>Найди свою игру</h3>
+          <p>Сравниваем цены в 35+ магазинах. Введи название или выбери из популярных выше.</p>
+        </div>
+      </div>
+
+      <div id="search-loading" style="display:none" class="center-msg">
+        <div class="spinner"></div>
+        <p>Ищем лучшие цены…</p>
+      </div>
+
+      <div id="search-results" class="game-list" style="display:none"></div>
+      <div id="search-empty" style="display:none" class="center-msg">
+        <div class="big-icon">😢</div>
+        <h3>Ничего не найдено</h3>
+        <p>Попробуй другое название или проверь написание</p>
+      </div>
     </div>
+
+    <!-- ═══════════ DEALS PAGE ═══════════ -->
+    <div class="page" id="page-deals">
+      <div class="page-header">
+        <h1>🔥 Скидки</h1>
+        <span class="badge" id="deals-count">—</span>
+      </div>
+
+      <div id="deals-loading" class="center-msg">
+        <div class="spinner"></div>
+        <p>Загружаем горячие скидки…</p>
+      </div>
+
+      <div id="deals-list" style="display:none"></div>
+      <button class="load-more-btn" id="load-more-btn" style="display:none" onclick="loadMoreDeals()">Загрузить ещё ↓</button>
+    </div>
+
+    <!-- ═══════════ WISHLIST PAGE ═══════════ -->
+    <div class="page" id="page-wishlist">
+      <div class="page-header">
+        <h1>📋 Шорт-лист</h1>
+        <span class="badge" id="wish-count">0</span>
+      </div>
+
+      <div class="add-wish-row">
+        <input type="text" id="wish-input" placeholder="Добавить игру…" autocomplete="off">
+        <button onclick="addToWishlist()">+</button>
+      </div>
+
+      <div id="wishlist-loading" class="center-msg" style="display:none">
+        <div class="spinner"></div>
+      </div>
+      <div id="wishlist-content"></div>
+      <div id="wishlist-empty" style="display:none" class="center-msg">
+        <div class="big-icon">📭</div>
+        <h3>Список пуст</h3>
+        <p>Добавь игры, чтобы отслеживать снижение цен</p>
+      </div>
+      <div id="wishlist-limit-msg" style="display:none;margin-top:16px">
+        <div class="card" style="padding:14px;text-align:center">
+          <p style="font-size:13px;color:var(--hint)">🔒 Бесплатный лимит — 5 игр.<br>VIP даёт до 100 игр в шорт-листе.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ PROFILE PAGE ═══════════ -->
+    <div class="page" id="page-profile">
+      <div id="profile-loading" class="center-msg">
+        <div class="spinner"></div>
+      </div>
+      <div id="profile-content" style="display:none">
+        <div class="profile-hero">
+          <div class="avatar" id="profile-avatar">🎮</div>
+          <div class="name" id="profile-name">—</div>
+          <div id="vip-badge-wrap"></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="num" id="stat-wishlist">—</div>
+            <div class="lbl">В шорт-листе</div>
+          </div>
+          <div class="stat-card">
+            <div class="num" id="stat-referrals">—</div>
+            <div class="lbl">Рефералов</div>
+          </div>
+        </div>
+
+        <div class="section-title">Подписка</div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="info-row">
+            <span class="lbl">Статус</span>
+            <span class="val" id="p-vip-status">—</span>
+          </div>
+          <div class="info-row" id="p-vip-until-row">
+            <span class="lbl">Активна до</span>
+            <span class="val" id="p-vip-until">—</span>
+          </div>
+        </div>
+
+        <div class="section-title">Настройки</div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="info-row">
+            <span class="lbl">Валюта</span>
+            <span class="val" id="p-currency">USD</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Игровые новости</span>
+            <span class="val" id="p-news">—</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Уведомления о халяве</span>
+            <span class="val" id="p-freebies">—</span>
+          </div>
+        </div>
+
+        <div class="section-title">Дата регистрации</div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="info-row">
+            <span class="lbl">Зарегистрирован</span>
+            <span class="val" id="p-regdate">—</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">ID</span>
+            <span class="val" id="p-uid" style="font-family:monospace;font-size:12px">—</span>
+          </div>
+        </div>
+
+        <div id="no-tg-msg" style="display:none;margin-bottom:16px">
+          <div class="card" style="padding:14px;text-align:center">
+            <p style="font-size:13px;color:var(--hint)">Открой через Telegram, чтобы увидеть свой профиль</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <nav id="navbar">
+    <button class="nav-btn active" onclick="switchTab('search')" id="nav-search">
+      <span class="icon">🔎</span>Поиск
+    </button>
+    <button class="nav-btn" onclick="switchTab('deals')" id="nav-deals">
+      <span class="icon">🔥</span>Скидки
+    </button>
+    <button class="nav-btn" onclick="switchTab('wishlist')" id="nav-wishlist">
+      <span class="icon">📋</span>Список
+    </button>
+    <button class="nav-btn" onclick="switchTab('profile')" id="nav-profile">
+      <span class="icon">👤</span>Профиль
+    </button>
+  </nav>
 </div>
 
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  TELEGRAM WEB APP INIT
+// ══════════════════════════════════════════
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.disableVerticalSwipes?.();
+}
+
+const userId = tg?.initDataUnsafe?.user?.id || null;
+const userName = tg?.initDataUnsafe?.user?.first_name || 'Геймер';
+
+// ══════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════
+let currentTab = 'search';
+let dealsPage = 0;
+let dealsLoaded = false;
+let wishlistLoaded = false;
+let profileLoaded = false;
+
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+  currentTab = tab;
+
+  if (tab === 'deals' && !dealsLoaded) loadDeals();
+  if (tab === 'wishlist' && !wishlistLoaded) loadWishlist();
+  if (tab === 'profile' && !profileLoaded) loadProfile();
+}
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+let toastTimer;
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color || 'var(--accent)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════
+let searchTimer;
+const searchInput = document.getElementById('search-input');
+const clearBtn = document.getElementById('clear-btn');
+
+searchInput.addEventListener('input', () => {
+  const val = searchInput.value.trim();
+  clearBtn.style.display = val ? 'block' : 'none';
+  document.querySelector('.search-icon').style.display = val ? 'none' : 'block';
+  clearTimeout(searchTimer);
+  if (val.length < 2) {
+    showSearchState('hint');
+    return;
+  }
+  showSearchState('loading');
+  searchTimer = setTimeout(() => doSearch(val), 500);
+});
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { clearTimeout(searchTimer); doSearch(searchInput.value.trim()); }
+});
+
+function clearSearch() {
+  searchInput.value = '';
+  clearBtn.style.display = 'none';
+  document.querySelector('.search-icon').style.display = 'block';
+  showSearchState('hint');
+  searchInput.focus();
+}
+
+function quickSearch(name) {
+  searchInput.value = name;
+  clearBtn.style.display = 'block';
+  document.querySelector('.search-icon').style.display = 'none';
+  showSearchState('loading');
+  doSearch(name);
+}
+
+function showSearchState(state) {
+  document.getElementById('search-hint').style.display = state === 'hint' ? 'block' : 'none';
+  document.getElementById('search-loading').style.display = state === 'loading' ? 'flex' : 'none';
+  document.getElementById('search-results').style.display = state === 'results' ? 'flex' : 'none';
+  document.getElementById('search-empty').style.display = state === 'empty' ? 'flex' : 'none';
+}
+
+let wishlistGames = new Set();
+
+async function doSearch(q) {
+  if (!q) return;
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      showSearchState('empty');
+      return;
+    }
+
+    const container = document.getElementById('search-results');
+    container.innerHTML = data.map(g => {
+      const price = parseFloat(g.cheapest);
+      const priceLabel = price === 0 ? 'БЕСПЛАТНО' : `$${price.toFixed(2)}`;
+      const priceClass = price === 0 ? 'price-tag free' : 'price-tag';
+      const added = wishlistGames.has(g.title);
+      return `
+        <div class="card game-item" style="flex-direction:row">
+          <img src="${g.thumb || ''}" alt="" loading="lazy" onerror="this.style.display='none'">
+          <div class="info">
+            <div class="title">${escHtml(g.title)}</div>
+            <div class="sub">CheapShark • 35+ магазинов</div>
+          </div>
+          <span class="${priceClass}">${priceLabel}</span>
+          <button class="add-btn ${added ? 'added' : ''}" title="В шорт-лист"
+            onclick="addGameToWishlist('${escAttr(g.title)}', this)">
+            ${added ? '✓' : '+'}
+          </button>
+        </div>
+        <a href="${g.deal_url}" target="_blank" onclick="tg?.openLink?.('${g.deal_url}');return false;"
+          style="display:none" id="link-${g.id}"></a>
+      `;
+    }).join('');
+
+    // make cards clickable for deal link
+    container.querySelectorAll('.game-item').forEach((el, i) => {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-btn')) return;
+        const url = data[i]?.deal_url;
+        if (url) { tg ? tg.openLink(url) : window.open(url, '_blank'); }
+      });
+    });
+
+    showSearchState('results');
+  } catch(e) {
+    showSearchState('empty');
+  }
+}
+
+async function addGameToWishlist(name, btn) {
+  if (!userId) { showToast('Открой в Telegram', '#ff5252'); return; }
+  if (btn.classList.contains('added')) { showToast('Уже в шорт-листе'); return; }
+
+  btn.textContent = '…';
+  try {
+    const r = await fetch(`/api/wishlist/${userId}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      btn.classList.add('added');
+      btn.textContent = '✓';
+      wishlistGames.add(name);
+      wishlistLoaded = false;
+      showToast('✅ Добавлено в шорт-лист', '#00e676');
+    } else if (d.error === 'limit') {
+      showToast(`🔒 Лимит ${d.limit} игр`, '#ff5252');
+      btn.textContent = '+';
+    } else {
+      showToast('Ошибка добавления', '#ff5252');
+      btn.textContent = '+';
+    }
+  } catch {
+    showToast('Ошибка соединения', '#ff5252');
+    btn.textContent = '+';
+  }
+}
+
+// ══════════════════════════════════════════
+//  DEALS
+// ══════════════════════════════════════════
+async function loadDeals(append = false) {
+  if (!append) {
+    document.getElementById('deals-loading').style.display = 'flex';
+    document.getElementById('deals-list').style.display = 'none';
+    document.getElementById('load-more-btn').style.display = 'none';
+  }
+
+  try {
+    const res = await fetch(`/api/deals?page=${dealsPage}`);
+    const data = await res.json();
+
+    const list = document.getElementById('deals-list');
+    if (!append) list.innerHTML = '';
+
+    if (Array.isArray(data) && data.length > 0) {
+      list.innerHTML += data.map(d => `
+        <div class="card deal-card">
+          <a href="${d.deal_url}" onclick="tg?.openLink?.('${d.deal_url}');return false;">
+            <img src="${d.thumb}" alt="" loading="lazy" onerror="this.style.display='none'">
+            <div class="info">
+              <div class="title">${escHtml(d.title)}</div>
+              <div class="prices">
+                <span class="sale">$${parseFloat(d.sale_price).toFixed(2)}</span>
+                <span class="original">$${parseFloat(d.normal_price).toFixed(2)}</span>
+                <span class="discount">-${d.savings}%</span>
+              </div>
+              ${d.metacritic > 0 ? `<div class="meta">⭐ Metacritic: ${d.metacritic}</div>` : ''}
+            </div>
+          </a>
+        </div>
+      `).join('');
+      document.getElementById('deals-count').textContent = append
+        ? parseInt(document.getElementById('deals-count').textContent || 0) + data.length
+        : data.length;
+      document.getElementById('load-more-btn').style.display = 'block';
+      dealsLoaded = true;
+    }
+
+    document.getElementById('deals-loading').style.display = 'none';
+    document.getElementById('deals-list').style.display = 'block';
+  } catch(e) {
+    document.getElementById('deals-loading').innerHTML = `
+      <div class="center-msg">
+        <div class="big-icon">⚠️</div>
+        <h3>Не удалось загрузить</h3>
+        <p>Проверь соединение</p>
+      </div>`;
+  }
+}
+
+function loadMoreDeals() {
+  dealsPage++;
+  document.getElementById('load-more-btn').textContent = 'Загружаем…';
+  loadDeals(true).then(() => {
+    document.getElementById('load-more-btn').textContent = 'Загрузить ещё ↓';
+  });
+}
+
+// ══════════════════════════════════════════
+//  WISHLIST
+// ══════════════════════════════════════════
+async function loadWishlist() {
+  if (!userId) {
+    document.getElementById('wishlist-loading').style.display = 'none';
+    document.getElementById('wishlist-empty').style.display = 'flex';
+    document.getElementById('wishlist-content').innerHTML = `
+      <div class="center-msg">
+        <div class="big-icon">🔒</div>
+        <h3>Открой в Telegram</h3>
+        <p>Шорт-лист доступен только через бота</p>
+      </div>`;
+    return;
+  }
+  document.getElementById('wishlist-loading').style.display = 'flex';
+  document.getElementById('wishlist-empty').style.display = 'none';
+  document.getElementById('wishlist-content').innerHTML = '';
+  try {
+    const res = await fetch(`/api/wishlist/${userId}`);
+    const items = await res.json();
+    document.getElementById('wishlist-loading').style.display = 'none';
+    wishlistLoaded = true;
+    wishlistGames = new Set(items.map(i => i.name));
+    renderWishlist(items);
+  } catch {
+    document.getElementById('wishlist-loading').style.display = 'none';
+    showToast('Ошибка загрузки', '#ff5252');
+  }
+}
+
+function renderWishlist(items) {
+  document.getElementById('wish-count').textContent = items.length;
+  const limit = 5;
+  if (items.length >= limit) {
+    document.getElementById('wishlist-limit-msg').style.display = 'block';
+  } else {
+    document.getElementById('wishlist-limit-msg').style.display = 'none';
+  }
+
+  if (items.length === 0) {
+    document.getElementById('wishlist-empty').style.display = 'flex';
+    document.getElementById('wishlist-content').innerHTML = '';
+    return;
+  }
+  document.getElementById('wishlist-empty').style.display = 'none';
+  document.getElementById('wishlist-content').innerHTML = `
+    <div class="card">
+      ${items.map(item => `
+        <div class="wish-item">
+          <div class="w-name">${escHtml(item.name)}</div>
+          ${item.last_price ? `<div class="w-price">$${item.last_price}</div>` : ''}
+          <button class="del-btn" onclick="removeFromWishlist('${escAttr(item.name)}', this)">✕</button>
+        </div>
+        <div class="divider"></div>
+      `).join('')}
+    </div>`;
+}
+
+async function addToWishlist() {
+  const input = document.getElementById('wish-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (!userId) { showToast('Открой в Telegram', '#ff5252'); return; }
+
+  try {
+    const r = await fetch(`/api/wishlist/${userId}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      input.value = '';
+      showToast('✅ Добавлено!', '#00e676');
+      wishlistLoaded = false;
+      loadWishlist();
+    } else if (d.error === 'limit') {
+      showToast(`🔒 Лимит ${d.limit} игр`, '#ff5252');
+    } else {
+      showToast('Ошибка добавления', '#ff5252');
+    }
+  } catch { showToast('Ошибка', '#ff5252'); }
+}
+
+async function removeFromWishlist(name, btn) {
+  if (!userId) return;
+  btn.textContent = '…';
+  try {
+    await fetch(`/api/wishlist/${userId}/${encodeURIComponent(name)}`, { method: 'DELETE' });
+    wishlistGames.delete(name);
+    showToast('Удалено', '#ff9800');
+    wishlistLoaded = false;
+    loadWishlist();
+  } catch { showToast('Ошибка', '#ff5252'); btn.textContent = '✕'; }
+}
+
+// ══════════════════════════════════════════
+//  PROFILE
+// ══════════════════════════════════════════
+async function loadProfile() {
+  document.getElementById('profile-loading').style.display = 'flex';
+  document.getElementById('profile-content').style.display = 'none';
+
+  const user = tg?.initDataUnsafe?.user;
+  const firstName = user?.first_name || 'Геймер';
+  const lastName = user?.last_name ? ' ' + user.last_name : '';
+  document.getElementById('profile-name').textContent = firstName + lastName;
+
+  const emojiList = ['🎮','🕹','👾','🏆','⚔️','🎯','🔫','🧙'];
+  document.getElementById('profile-avatar').textContent = emojiList[Math.floor(Math.random() * emojiList.length)];
+
+  if (!userId) {
+    document.getElementById('profile-loading').style.display = 'none';
+    document.getElementById('profile-content').style.display = 'block';
+    document.getElementById('no-tg-msg').style.display = 'block';
+    document.getElementById('p-uid').textContent = 'N/A';
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/profile/${userId}`);
+    const d = await res.json();
+
+    document.getElementById('profile-loading').style.display = 'none';
+    document.getElementById('profile-content').style.display = 'block';
+    profileLoaded = true;
+
+    document.getElementById('p-uid').textContent = userId;
+    document.getElementById('stat-wishlist').textContent = d.wishlist_count ?? '0';
+    document.getElementById('stat-referrals').textContent = d.referrals ?? '0';
+    document.getElementById('p-currency').textContent = d.currency || 'USD';
+    document.getElementById('p-news').textContent = d.want_news ? '✅ Вкл' : '❌ Выкл';
+    document.getElementById('p-freebies').textContent = d.want_freebies ? '✅ Вкл' : '❌ Выкл';
+
+    if (d.reg_date) {
+      const dt = new Date(d.reg_date.replace(' ', 'T') + 'Z');
+      document.getElementById('p-regdate').textContent = dt.toLocaleDateString('ru-RU');
+    }
+
+    if (d.is_vip) {
+      document.getElementById('p-vip-status').textContent = '💎 Активна';
+      document.getElementById('p-vip-status').style.color = '#ffd740';
+      document.getElementById('vip-badge-wrap').innerHTML = `<div class="vip-badge">⭐ VIP</div>`;
+      if (d.premium_until) {
+        const dt = new Date(d.premium_until.replace(' ', 'T') + 'Z');
+        document.getElementById('p-vip-until').textContent = dt.toLocaleDateString('ru-RU');
+      }
+    } else {
+      document.getElementById('p-vip-status').textContent = '🔒 Не активна';
+      document.getElementById('p-vip-until-row').style.display = 'none';
+    }
+  } catch {
+    document.getElementById('profile-loading').style.display = 'none';
+    document.getElementById('profile-content').style.display = 'block';
+    showToast('Ошибка загрузки профиля', '#ff5252');
+  }
+}
+
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+</script>
 </body>
 </html>
