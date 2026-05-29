@@ -1195,6 +1195,20 @@ const userName  = tg?.initDataUnsafe?.user?.username   || '';
 const BOT       = 'GameBrokerPriceBot';
 const CHANNEL   = 'GameBroker_Official';
 
+/* ═══════════ CACHE VERSION BUSTER ═══════════ */
+(function(){
+  const CV = 'gb_cache_v';
+  const CURRENT = '4'; // bump this to wipe all feed/deal caches
+  try {
+    if (localStorage.getItem(CV) !== CURRENT) {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('gbfeat') || k.startsWith('gb_deals'))
+        .forEach(k => localStorage.removeItem(k));
+      localStorage.setItem(CV, CURRENT);
+    }
+  } catch(e) {}
+})();
+
 /* ═══════════ LOCAL STORAGE ═══════════ */
 const LS = {
   get: k => { try { return JSON.parse(localStorage.getItem('gb_'+k)); } catch { return null; } },
@@ -1397,7 +1411,7 @@ async function loadHomeStats() {
 /* ── Ключ кэша баннера — меняется каждый день ── */
 function todayKey() {
   const d = new Date();
-  return `gbfeat_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+  return `gbfeat2_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
 }
 
 async function loadHomeFeed() {
@@ -1420,13 +1434,14 @@ async function loadHomeFeed() {
     } catch(e) {}
 
     if (!data) {
-      const r = await fetch('/api/deals?page=0&sort=Savings&min_savings=50&max_price=60&aaa=1');
+      const r = await fetch('/api/deals?page=0&sort=Savings&min_savings=30&max_price=80');
       data = await r.json();
       if (Array.isArray(data) && data.length) {
         try { localStorage.setItem(cacheKey, JSON.stringify(data.slice(0,6))); } catch(e) {}
-        // Чистим старые кэши
+        // Чистим старые кэши (включая старый префикс gbfeat_)
         try {
-          Object.keys(localStorage).filter(k=>k.startsWith('gbfeat_') && k!==cacheKey)
+          Object.keys(localStorage)
+            .filter(k=>(k.startsWith('gbfeat_') || k.startsWith('gbfeat2_')) && k!==cacheKey)
             .forEach(k=>localStorage.removeItem(k));
         } catch(e) {}
       }
@@ -1500,7 +1515,7 @@ async function loadHomeFeed() {
    DEALS V2
 ═══════════════════════════════════════ */
 let dPage=0, dSort='Savings', dMinSv=0, dGenre='', dAllDeals=[];
-let dMinPrice=0, dMaxPrice=60, dAAA=false, dFireMode=true;
+let dMinPrice=0, dMaxPrice=80, dAAA=false, dFireMode=true;
 
 /* ── Timer countdown to midnight ── */
 (function d2Timer(){
@@ -1672,7 +1687,7 @@ function applyPriceFilter() {
 function toggleAAA() {
   dAAA = !dAAA;
   dPage=0; loaded.deals=false; loadDeals();
-  toast(dAAA ? '🏆 Только ААА игры' : '🌍 Все игры');
+  toast(dAAA ? '🏆 Блокбастеры: MC 80+' : '🎮 Популярные игры');
 }
 
 /* ═══════════════════════════════════════

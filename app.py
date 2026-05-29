@@ -76,20 +76,59 @@ def api_search():
         return jsonify({'error': str(e)}), 500
 
 # ── DEALS ────────────────────────────────
+# ── Quality filter: only real AAA/popular games ──────────
+_SKIP_KEYWORDS = [
+    'soundtrack', ' ost', ' osts', 'artbook', 'season pass', 'expansion pack',
+    'bonus content', 'upgrade pack', 'digital art', 'pass bundle',
+    'pre-order', 'pre order', 'digital deluxe upgrade', 'supporter pack',
+    'cosmetic', 'skin pack', 'weapon pack', 'character pack',
+    # Publisher shovelware bundles
+    'bundle', 'mega pack', 'jumbo', 'gigantic', 'publisher pack',
+    'franchise pack', 'anniversary pack',
+]
+
+def _is_quality_game(d):
+    """Return True only for real, popular full games (AAA/AA tier)."""
+    title = (d.get('title') or '').lower()
+    mc    = int(d.get('metacriticScore', 0) or 0)
+    rt    = int(d.get('steamRatingPercent', 0) or 0)
+    np    = float(d.get('normalPrice', 0) or 0)
+
+    # Skip DLC, OST, shovelware bundles
+    if any(kw in title for kw in _SKIP_KEYWORDS):
+        return False
+
+    # Must have a real retail price — AAA/AA games cost at least $19.99
+    if np < 19.99:
+        return False
+
+    # Quality gate: strong Metacritic OR strong Steam community rating
+    if mc > 0:
+        if mc < 70:
+            return False          # Has MC score but it's low
+    else:
+        # No Metacritic score — need very strong Steam rating to compensate
+        if rt < 80:
+            return False
+
+    return True
+
+
 @app.route('/api/deals')
 def api_deals():
     page   = int(request.args.get('page', 0))
     min_sv = int(request.args.get('min_savings', 0))
-    max_px = request.args.get('max_price', 60)
+    max_px = request.args.get('max_price', 80)
     min_px = request.args.get('min_price', '0')
     sort   = request.args.get('sort', 'Savings')
     store  = request.args.get('store', '')
     min_mc = int(request.args.get('min_meta', 0))
+    # aaa=1 means extra-strict: MC >= 80 (blockbuster tier)
     aaa    = request.args.get('aaa', '0') == '1'
     try:
         params = {
             'upperPrice': max_px, 'sortBy': sort,
-            'pageSize': 30, 'pageNumber': page,
+            'pageSize': 100, 'pageNumber': page,
             'lowerPrice': max(float(min_px or 0), 0.01)
         }
         if store: params['storeID'] = store
@@ -97,14 +136,23 @@ def api_deals():
         smap = get_stores_map()
         results = []
         for d in r.json():
-            sv = float(d.get('savings', 0))
-            mc = int(d.get('metacriticScore', 0))
-            np = float(d.get('normalPrice', 0))
+            sv = float(d.get('savings', 0) or 0)
+            mc = int(d.get('metacriticScore', 0) or 0)
+            np = float(d.get('normalPrice', 0) or 0)
+            rt = int(d.get('steamRatingPercent', 0) or 0)
+
             if sv < min_sv: continue
             if mc < min_mc: continue
+
+            # Always apply base quality filter
+            if not _is_quality_game(d): continue
+
+            # Extra-strict AAA mode: blockbuster titles only
             if aaa:
-                if mc < 75 and int(d.get('steamRatingPercent', 0)) < 85: continue
-                if np < 15: continue
+                if mc > 0 and mc < 80: continue
+                if mc == 0 and rt < 85: continue
+                if np < 29.99: continue
+
             steam_id = d.get('steamAppID', '') or ''
             results.append({
                 'id': d.get('dealID'), 'title': d.get('title', ''),
@@ -117,7 +165,7 @@ def api_deals():
                 'normal_price': d.get('normalPrice', '0'),
                 'savings': round(sv), 'metacritic': mc,
                 'steam_rating': d.get('steamRatingText', ''),
-                'steam_rating_pct': int(d.get('steamRatingPercent', 0)),
+                'steam_rating_pct': rt,
                 'deal_url': f"https://www.cheapshark.com/redirect?dealID={d.get('dealID','')}"
             })
         return jsonify(results)
@@ -127,19 +175,23 @@ def api_deals():
 # ── FREE GAMES ───────────────────────────
 @app.route('/api/free')
 def api_free():
-    quality = request.args.get('quality', '0') == '1'
     try:
         r = requests.get('https://www.cheapshark.com/api/1.0/deals',
                          params={'upperPrice': 0, 'sortBy': 'Metacritic', 'pageSize': 60}, timeout=8)
         results = []
         for d in r.json():
-            if float(d.get('salePrice', 1)) != 0: continue
-            mc = int(d.get('metacriticScore', 0))
-            rt = int(d.get('steamRatingPercent', 0))
-            np = float(d.get('normalPrice', 0))
-            if quality:
-                if mc < 65 and rt < 70: continue
-                if np < 4.99: continue
+            if float(d.get('salePrice', 1) or 1) != 0: continue
+            mc = int(d.get('metacriticScore', 0) or 0)
+            rt = int(d.get('steamRatingPercent', 0) or 0)
+            np = float(d.get('normalPrice', 0) or 0)
+
+            # Quality gate for free section
+            title = (d.get('title') or '').lower()
+            if any(kw in title for kw in _SKIP_KEYWORDS): continue
+            if np < 4.99: continue                     # skip browser/F2P clutter
+            if mc > 0 and mc < 60: continue            # bad MC score
+            if mc == 0 and rt < 70: continue           # no MC + weak community
+
             results.append({
                 'id': d.get('dealID'), 'title': d.get('title', ''),
                 'thumb': d.get('thumb', ''), 'normal_price': d.get('normalPrice', '0'),
