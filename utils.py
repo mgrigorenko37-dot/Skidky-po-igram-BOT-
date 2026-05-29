@@ -139,22 +139,18 @@ def get_webapp_url():
 
 def main_kbrd(uid=None):
     """
-    Главное меню бота — только кнопка Mini App + админ-команды
+    Главное меню бота — только кнопка Web App
     """
-    m = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2, selective=False)
+    m = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=False)
 
     webapp_url = get_webapp_url()
     if webapp_url:
         m.add(types.KeyboardButton(
-            "🎮 Game Broker — открыть",
+            "🎮 Играть",
             web_app=types.WebAppInfo(url=webapp_url)
         ))
     else:
-        m.add(types.KeyboardButton("🎮 Game Broker"))
-
-    if str(uid) == str(config.ADMIN_ID):
-        m.row(types.KeyboardButton("📢 Реклама"), types.KeyboardButton("📊 Статистика"))
-        m.add(types.KeyboardButton("📝 Пост в канал"))
+        m.add(types.KeyboardButton("🎮 Играть"))
 
     return m
 

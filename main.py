@@ -469,8 +469,16 @@ if __name__ == "__main__":
         pass # Игнорируем ошибку, если колонка уже существует
 
     menu_system.register_handlers(bot)
-    games_system.register_handlers(bot) 
+    games_system.register_handlers(bot)
     start_all_background_services()
+
+    # Устанавливаем минимальный список команд — только /start
+    try:
+        bot.set_my_commands([
+            types.BotCommand("start", "Открыть Game Broker")
+        ])
+    except Exception as e:
+        logger.warning(f"Не удалось установить команды бота: {e}")
 
     print("🚀 Бот запущен!")
     while True:
