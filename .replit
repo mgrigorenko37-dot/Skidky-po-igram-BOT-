@@ -32,7 +32,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = ".pythonlibs/bin/gunicorn --bind 0.0.0.0:5000 --workers 2 app:app"
+args = "gunicorn --bind 0.0.0.0:5000 --workers 2 app:app"
 waitForPort = 5000
 
 [[workflows.workflow]]
@@ -44,7 +44,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = ".pythonlibs/bin/python3 main.py"
+args = "python3 main.py"
 
 [[ports]]
 localPort = 5000
