@@ -551,20 +551,25 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .gb-stat-num.pink{color:var(--a2)}
 .gb-stat-label{font-size:10px;color:var(--hint);margin-top:2px}
 
-/* ── FEATURED BANNER — точно по дизайну ── */
-.gb-featured{margin:16px 20px 0;background:var(--card);border:0.5px solid var(--border);border-radius:16px;overflow:hidden}
-.gb-featured-banner{height:100px;background:#1a1030;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.gb-banner-glow{position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(124,90,247,.18);filter:blur(40px);top:-60px;left:50%;transform:translateX(-50%)}
-.gb-banner-glow2{position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(240,90,126,.14);filter:blur(35px);bottom:-50px;right:20px}
-.gb-banner-content{position:relative;z-index:1;text-align:center}
-.gb-banner-title{font-size:20px;font-weight:500;color:#fff;letter-spacing:-.02em}
-.gb-banner-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
-.gb-featured-body{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
-.gb-featured-stores{display:flex;gap:6px}
-.gb-store-pill{padding:4px 10px;border-radius:20px;font-size:11px;border:0.5px solid var(--border);color:var(--hint);background:var(--bg2)}
+/* ── FEATURED BANNER — с реальным фото ── */
+.gb-featured{margin:16px 20px 0;border-radius:16px;overflow:hidden;cursor:pointer;position:relative}
+.gb-featured:active{opacity:.9}
+.gb-featured-banner{height:190px;background:var(--bg3);position:relative;overflow:hidden}
+.gb-featured-banner img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
+.gb-featured:active .gb-featured-banner img{transform:scale(1.02)}
+.gb-featured-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.08) 0%,rgba(0,0,0,.55) 55%,rgba(0,0,0,.88) 100%)}
+.gb-featured-info{position:absolute;bottom:0;left:0;right:0;padding:12px 14px}
+.gb-banner-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(124,90,247,.75);backdrop-filter:blur(6px);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;color:#fff;margin-bottom:5px;letter-spacing:.02em}
+.gb-banner-title{font-size:19px;font-weight:700;color:#fff;letter-spacing:-.02em;text-shadow:0 1px 6px rgba(0,0,0,.6);line-height:1.2}
+.gb-banner-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:3px}
+.gb-featured-bottom{background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 16px 16px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.gb-featured-stores{display:flex;gap:6px;flex-wrap:wrap}
+.gb-store-pill{padding:3px 9px;border-radius:20px;font-size:11px;border:0.5px solid var(--border);color:var(--hint);background:var(--bg2)}
 .gb-store-pill.best{border-color:var(--accent);color:var(--accent);background:rgba(124,90,247,.08)}
-.gb-featured-price{font-size:16px;font-weight:500;color:var(--accent)}
+.gb-featured-price{font-size:16px;font-weight:600;color:var(--green)}
 .gb-featured-disc{font-size:10px;color:var(--hint);text-align:right;margin-top:1px}
+/* ── STATS loading skeleton ── */
+.gb-stat-num.loading{color:var(--border);background:var(--border);border-radius:4px;-webkit-text-fill-color:transparent}
 
 /* ── SECTION LABEL — точно по дизайну ── */
 .gb-section-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);padding:16px 20px 10px;font-weight:500}
@@ -646,15 +651,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <!-- Stats -->
     <div class="gb-stats-row">
       <div class="gb-stat-card">
-        <div class="gb-stat-num accent">35+</div>
+        <div class="gb-stat-num accent loading" id="stat-stores">—</div>
         <div class="gb-stat-label">Магазинов</div>
       </div>
       <div class="gb-stat-card">
-        <div class="gb-stat-num green">-89%</div>
+        <div class="gb-stat-num green loading" id="stat-savings">—</div>
         <div class="gb-stat-label">Макс. скидка</div>
       </div>
       <div class="gb-stat-card">
-        <div class="gb-stat-num pink">12K</div>
+        <div class="gb-stat-num pink loading" id="stat-games">—</div>
         <div class="gb-stat-label">Игр</div>
       </div>
     </div>
@@ -1339,11 +1344,44 @@ function renderRecentSearch() {
 /* ═══════════════════════════════════════
    HOME FEED (Featured + Hot Deals)
 ═══════════════════════════════════════ */
-const THUMB_COLORS = [
-  'rgba(124,90,247,.18)','rgba(240,90,126,.15)','rgba(29,233,164,.13)',
-  'rgba(255,167,0,.14)','rgba(79,195,247,.14)','rgba(255,71,87,.13)'
-];
-const THUMB_EMOJIS = ['🎮','⚔️','🧙','🔫','🚀','🏎','🎯','👾','🐉','🤖','🕹','🎲'];
+/* Вернуть лучший URL изображения для игры */
+function gameImgUrl(d) {
+  if (d.steam_app_id)
+    return `https://cdn.akamai.steamstatic.com/steam/apps/${d.steam_app_id}/capsule_616x353.jpg`;
+  if (d.thumb) return d.thumb;
+  return '';
+}
+
+/* Форматирование числа игр */
+function fmtGames(n) {
+  if (n >= 1000) return Math.round(n/1000*10)/10 + 'K';
+  return String(n);
+}
+
+/* ── Загрузка реальной статистики ── */
+async function loadHomeStats() {
+  try {
+    const r = await fetch('/api/stats');
+    const s = await r.json();
+    const elS = document.getElementById('stat-stores');
+    const elV = document.getElementById('stat-savings');
+    const elG = document.getElementById('stat-games');
+    if (elS) { elS.textContent = (s.stores||35)+'+'; elS.classList.remove('loading'); }
+    if (elV) { elV.textContent = '−'+(s.max_savings||89)+'%'; elV.classList.remove('loading'); }
+    if (elG) { elG.textContent = fmtGames(s.games||15427); elG.classList.remove('loading'); }
+  } catch(e) {
+    ['stat-stores','stat-savings','stat-games'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.classList.remove('loading');
+    });
+  }
+}
+
+/* ── Ключ кэша баннера — меняется каждый день ── */
+function todayKey() {
+  const d = new Date();
+  return `gbfeat_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+}
 
 async function loadHomeFeed() {
   const feedLoad = document.getElementById('home-feed-load');
@@ -1351,56 +1389,88 @@ async function loadHomeFeed() {
   const dealsWrap= document.getElementById('home-deals-wrap');
   const dealsList= document.getElementById('home-deals-list');
   if (feedLoad) feedLoad.style.display='flex';
+
+  // Запускаем загрузку статистики параллельно
+  loadHomeStats();
+
   try {
-    const r = await fetch('/api/deals?page=0&sort=Savings&min_savings=50&max_price=60&aaa=1');
-    const data = await r.json();
+    // Пробуем кэш баннера (обновляется 1 раз в сутки)
+    const cacheKey = todayKey();
+    let data = null;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) data = JSON.parse(cached);
+    } catch(e) {}
+
+    if (!data) {
+      const r = await fetch('/api/deals?page=0&sort=Savings&min_savings=50&max_price=60&aaa=1');
+      data = await r.json();
+      if (Array.isArray(data) && data.length) {
+        try { localStorage.setItem(cacheKey, JSON.stringify(data.slice(0,6))); } catch(e) {}
+        // Чистим старые кэши
+        try {
+          Object.keys(localStorage).filter(k=>k.startsWith('gbfeat_') && k!==cacheKey)
+            .forEach(k=>localStorage.removeItem(k));
+        } catch(e) {}
+      }
+    }
+
     if (!Array.isArray(data) || !data.length) { if(feedLoad)feedLoad.style.display='none'; return; }
     if (feedLoad) feedLoad.style.display='none';
 
-    // Featured banner — top deal
+    // ── FEATURED BANNER — реальное фото игры ──
     const top = data[0];
     if (featEl) {
+      const imgUrl = gameImgUrl(top);
+      const imgHtml = imgUrl
+        ? `<img src="${ea(imgUrl)}" alt="${esc(top.title)}" loading="lazy" onerror="this.style.display='none'">`
+        : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1030 0%,#2d1854 100%)"></div>`;
       featEl.innerHTML = `
-        <div class="gb-featured" onclick="openUrl('${ea(top.deal_url)}')" style="cursor:pointer">
+        <div class="gb-featured" onclick="openUrl('${ea(top.deal_url)}')">
           <div class="gb-featured-banner">
-            <div class="gb-banner-glow"></div>
-            <div class="gb-banner-glow2"></div>
-            <div class="gb-banner-content">
+            ${imgHtml}
+            <div class="gb-featured-overlay"></div>
+            <div class="gb-featured-info">
+              <div class="gb-banner-tag"><i class="ti ti-flame" style="font-size:10px"></i>Лучшая цена дня</div>
               <div class="gb-banner-title">${esc(top.title)}</div>
-              <div class="gb-banner-sub">Лучшая цена дня · ${esc(top.store||'')}</div>
+              <div class="gb-banner-sub">${esc(top.store||'Best Store')} · −${top.savings}%</div>
             </div>
           </div>
-          <div class="gb-featured-body">
+          <div class="gb-featured-bottom">
             <div class="gb-featured-stores">
               <div class="gb-store-pill best">${esc(top.store||'Best')}</div>
-              <div class="gb-store-pill">Steam</div>
-              <div class="gb-store-pill">GOG</div>
             </div>
             <div>
               <div class="gb-featured-price">${fmtPrice(top.sale_price)}</div>
-              <div class="gb-featured-disc">−${top.savings}%</div>
+              <div class="gb-featured-disc" style="color:var(--hint);text-decoration:line-through;font-size:11px">${fmtPrice(top.normal_price)}</div>
             </div>
           </div>
         </div>`;
       featEl.style.display='block';
     }
 
-    // Hot deals — next 5 cards
+    // ── HOT DEALS — реальные превью игр ──
     const hot = data.slice(1, 6);
     if (hot.length && dealsWrap && dealsList) {
-      dealsList.innerHTML = hot.map((d,i)=>`
+      dealsList.innerHTML = hot.map((d)=>{
+        const img = gameImgUrl(d);
+        const thumbHtml = img
+          ? `<img src="${ea(img)}" alt="${esc(d.title)}" style="width:54px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--bg3)" loading="lazy" onerror="this.style.background='var(--bg3)'">`
+          : `<div style="width:54px;height:40px;border-radius:8px;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px">🎮</div>`;
+        return `
         <div class="gb-deal-card" onclick="openUrl('${ea(d.deal_url)}')">
-          <div class="gb-game-thumb" style="background:${THUMB_COLORS[i%THUMB_COLORS.length]}">${THUMB_EMOJIS[i%THUMB_EMOJIS.length]}</div>
+          ${thumbHtml}
           <div class="gb-game-info">
             <div class="gb-game-name">${esc(d.title)}</div>
-            <div class="gb-game-meta">${esc(d.store||'')} · ${d.metacritic>0?'🏅 '+d.metacritic:'Game'}</div>
+            <div class="gb-game-meta">${esc(d.store||'')}${d.metacritic>0?' · 🏅 '+d.metacritic:''}</div>
           </div>
           <div class="gb-game-price">
             <div class="gb-price-now">${fmtPrice(d.sale_price)}</div>
             <div class="gb-price-old">${fmtPrice(d.normal_price)}</div>
             <div class="gb-discount-badge">−${d.savings}%</div>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
       dealsWrap.style.display='block';
     }
   } catch(e) {
