@@ -110,6 +110,7 @@ def api_deals():
                 'id': d.get('dealID'), 'title': d.get('title', ''),
                 'thumb': d.get('thumb', ''),
                 'steam_app_id': steam_id,
+                'game_id': d.get('gameID', ''),
                 'store': smap.get(str(d.get('storeID', '')), ''),
                 'store_id': str(d.get('storeID', '')),
                 'sale_price': d.get('salePrice', '0'),
@@ -166,12 +167,17 @@ def api_game_detail(game_id):
             'deal_url': f"https://www.cheapshark.com/redirect?dealID={d.get('dealID','')}"
         } for d in data.get('deals', [])], key=lambda x: float(x['sale_price']))
         info = data.get('info', {})
+        steam_app_id = info.get('steamAppID', '') or ''
+        cheapest_ever = data.get('cheapestPriceEver', {})
         return jsonify({
             'title': info.get('title', ''), 'thumb': info.get('thumb', ''),
+            'steam_app_id': steam_app_id,
             'metacritic': info.get('metacriticScore', '0'),
             'steam_rating': info.get('steamRatingText', ''),
             'steam_rating_pct': info.get('steamRatingPercent', ''),
             'cheapest_price': info.get('cheapestPriceEver', {}).get('price', ''),
+            'cheapest_ever_price': cheapest_ever.get('price', ''),
+            'cheapest_ever_date': cheapest_ever.get('date', ''),
             'deals': deals
         })
     except Exception as e:

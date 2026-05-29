@@ -286,24 +286,41 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 #modal{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;pointer-events:none;opacity:0;transition:opacity .2s}
 #modal.open{pointer-events:all;opacity:1}
 #mbg{position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
-#msheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-radius:22px 22px 0 0;max-height:88dvh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.1,.64,1)}
+#msheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-radius:22px 22px 0 0;max-height:92dvh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.1,.64,1)}
 #modal.open #msheet{transform:none}
 #mhandle{width:38px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:10px auto 0;flex-shrink:0}
-#mbody{overflow-y:auto;padding:14px 16px 36px;flex:1}
+#mbody{overflow-y:auto;flex:1;padding-bottom:env(safe-area-inset-bottom,20px)}
 #mbody::-webkit-scrollbar{display:none}
-.m-cover{width:100%;height:170px;object-fit:cover;border-radius:var(--r);margin-bottom:14px;background:var(--bg3)}
-.m-title{font-size:19px;font-weight:900;margin-bottom:8px;letter-spacing:-.3px}
+/* hero */
+.m-hero{width:100%;height:200px;position:relative;overflow:hidden;background:var(--bg3)}
+.m-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.m-hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.05) 0%,rgba(0,0,0,.7) 100%)}
+.m-hero-title{position:absolute;bottom:0;left:0;right:0;padding:14px 16px}
+.m-hero-name{font-size:20px;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6);letter-spacing:-.02em;line-height:1.2}
+/* body inner */
+.m-inner{padding:14px 16px 20px}
 .m-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
-.m-add{width:100%;padding:12px;background:linear-gradient(135deg,rgba(124,111,255,.2),rgba(255,107,157,.15));border:1.5px solid var(--accent);border-radius:var(--rs);color:var(--accent);font-size:13px;font-weight:800;cursor:pointer;transition:all .15s;margin-bottom:16px}
-.m-add.on{background:rgba(0,230,118,.12);border-color:var(--green);color:var(--green)}
-.deal-row{display:flex;align-items:center;gap:10px;padding:11px 0}
-.deal-row+.deal-row{border-top:1px solid var(--border)}
-.dr-store{font-size:13px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dr-prices{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.m-add{width:100%;padding:13px;background:linear-gradient(135deg,rgba(124,111,255,.2),rgba(255,107,157,.15));border:1.5px solid var(--accent);border-radius:var(--rs);color:var(--accent);font-size:14px;font-weight:800;cursor:pointer;transition:all .15s;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:7px}
+.m-add.on{background:rgba(29,233,164,.1);border-color:var(--green);color:var(--green)}
+/* cheapest ever */
+.m-cheapest{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.m-cheapest-label{font-size:11px;color:var(--hint)}
+.m-cheapest-val{font-size:16px;font-weight:800;color:var(--gold)}
+.m-cheapest-date{font-size:10px;color:var(--hint);margin-top:1px;text-align:right}
+/* section header */
+.m-sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);margin-bottom:10px}
+/* deal rows */
+.deal-row{display:flex;align-items:center;gap:10px;padding:11px 0;position:relative}
+.deal-row+.deal-row{border-top:0.5px solid var(--border)}
+.dr-store{font-size:13px;font-weight:700;flex:1;min-width:0}
+.dr-store-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dr-bar-wrap{height:3px;background:var(--bg3);border-radius:2px;margin-top:4px;overflow:hidden}
+.dr-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--a2));transition:width .6s ease}
+.dr-prices{display:flex;align-items:center;gap:5px;flex-shrink:0}
 .dr-sale{font-size:15px;font-weight:900;color:var(--green)}
-.dr-orig{font-size:11px;color:var(--hint);text-decoration:line-through}
-.dr-disc{font-size:10px;font-weight:800;color:var(--red)}
-.dr-btn{padding:7px 13px;background:linear-gradient(135deg,var(--accent),var(--a2));color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0}
+.dr-orig{font-size:10px;color:var(--hint);text-decoration:line-through}
+.dr-disc{font-size:10px;font-weight:800;background:rgba(255,71,87,.15);color:var(--red);padding:1px 5px;border-radius:5px}
+.dr-btn{padding:7px 12px;background:linear-gradient(135deg,var(--accent),var(--a2));color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap}
 
 /* UTILS */
 .em{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:10px;text-align:center}
@@ -1426,7 +1443,7 @@ async function loadHomeFeed() {
         ? `<img src="${ea(imgUrl)}" alt="${esc(top.title)}" loading="lazy" onerror="this.style.display='none'">`
         : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1030 0%,#2d1854 100%)"></div>`;
       featEl.innerHTML = `
-        <div class="gb-featured" onclick="openUrl('${ea(top.deal_url)}')">
+        <div class="gb-featured" onclick="${top.game_id ? `openGame('${ea(top.game_id)}','${ea(top.title)}')` : `openUrl('${ea(top.deal_url)}')`}">
           <div class="gb-featured-banner">
             ${imgHtml}
             <div class="gb-featured-overlay"></div>
@@ -1457,8 +1474,9 @@ async function loadHomeFeed() {
         const thumbHtml = img
           ? `<img src="${ea(img)}" alt="${esc(d.title)}" style="width:54px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--bg3)" loading="lazy" onerror="this.style.background='var(--bg3)'">`
           : `<div style="width:54px;height:40px;border-radius:8px;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px">🎮</div>`;
+        const clickFn = d.game_id ? `openGame('${ea(d.game_id)}','${ea(d.title)}')` : `openUrl('${ea(d.deal_url)}')`;
         return `
-        <div class="gb-deal-card" onclick="openUrl('${ea(d.deal_url)}')">
+        <div class="gb-deal-card" onclick="${clickFn}">
           ${thumbHtml}
           <div class="gb-game-info">
             <div class="gb-game-name">${esc(d.title)}</div>
@@ -1568,7 +1586,8 @@ function renderDeals() {
     const badgeClass = sv>=90 ? 'd2-badge-red' : 'd2-badge-fire';
     const thumbBg = sv>=90 ? 'rgba(240,90,126,.12)' : sv>=70 ? 'rgba(124,90,247,.1)' : 'rgba(29,233,164,.08)';
     const inWish = wishSet.has(d.title);
-    return `<div class="d2-deal${isHot?' hot':''}" onclick="openGame('${ea(d.id)}','${ea(d.title)}')">
+    const gid = d.game_id || d.id || '';
+    return `<div class="d2-deal${isHot?' hot':''}" onclick="openGame('${ea(gid)}','${ea(d.title)}')">
       <div class="d2-deal-thumb" style="background:${thumbBg}">
         <img src="${esc(d.thumb)}" loading="lazy" onerror="this.style.display='none'">
       </div>
@@ -1836,36 +1855,88 @@ function freeOpenGame(id, title, fallback) {
 async function openGame(id, title) {
   if (!id||id==='undefined') return;
   const body=document.getElementById('mbody');
-  body.innerHTML='<div class="em"><div class="spin"></div></div>';
+  body.innerHTML='<div class="em" style="height:300px"><div class="spin"></div></div>';
   document.getElementById('modal').classList.add('open');
   try {
     const r = await fetch(`/api/game/${id}`);
     const d = await r.json();
     if (d.error) throw new Error();
-    const added=wishSet.has(title);
-    body.innerHTML=`
-      ${d.thumb?`<img class="m-cover" src="${esc(d.thumb)}" onerror="this.style.display='none'">`:''}
-      <div class="m-title">${esc(d.title||title)}</div>
-      <div class="m-tags">
-        ${d.metacritic>0?`<span class="bdg bdg-g">🏅 Metacritic ${d.metacritic}</span>`:''}
-        ${d.steam_rating_pct>0?`<span class="bdg bdg-gr">${rateStars(d.steam_rating_pct)} ${d.steam_rating_pct}%</span>`:''}
-        ${d.cheapest_price?`<span class="bdg bdg-p">🏷 Мин: ${fmtPrice(d.cheapest_price)}</span>`:''}
+    const gameTitle = d.title || title;
+    const added = wishSet.has(gameTitle);
+
+    // Лучший URL изображения — Steam header (460×215) или steam capsule
+    const steamId = d.steam_app_id || '';
+    const heroUrl = steamId
+      ? `https://cdn.akamai.steamstatic.com/steam/apps/${steamId}/header.jpg`
+      : (d.thumb || '');
+
+    // Ценовые бары — max цена для нормализации
+    const maxPrice = d.deals && d.deals.length
+      ? Math.max(...d.deals.map(dd=>parseFloat(dd.normal_price)||0))
+      : 0;
+
+    // Форматируем дату «cheapest ever»
+    let cheapDate = '';
+    if (d.cheapest_ever_date) {
+      try {
+        const ts = parseInt(d.cheapest_ever_date);
+        cheapDate = new Date(ts*1000).toLocaleDateString('ru-RU',{year:'numeric',month:'short'});
+      } catch(e) {}
+    }
+
+    body.innerHTML = `
+      <div class="m-hero">
+        ${heroUrl ? `<img src="${ea(heroUrl)}" alt="${esc(gameTitle)}" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#1a1030,#2a1a50)'" loading="eager">` : ''}
+        <div class="m-hero-overlay"></div>
+        <div class="m-hero-title">
+          <div class="m-hero-name">${esc(gameTitle)}</div>
+        </div>
       </div>
-      <button class="m-add ${added?'on':''}" id="m-add-btn" onclick="addW('${ea(title)}',this)">
-        ${added?'✓ В шорт-листе':'+ Добавить в шорт-лист'}
-      </button>
-      <div style="font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Цены по магазинам</div>
-      ${d.deals&&d.deals.length?d.deals.map(dd=>`
-        <div class="deal-row">
-          <div class="dr-store">${esc(dd.store)}</div>
-          <div class="dr-prices">
-            <span class="dr-sale">${fmtPrice(dd.sale_price)}</span>
-            ${dd.savings>0?`<span class="dr-orig">${fmtPrice(dd.normal_price)}</span><span class="dr-disc">−${dd.savings}%</span>`:''}
+      <div class="m-inner">
+        <div class="m-tags">
+          ${d.metacritic>0?`<span class="bdg bdg-g">🏅 Metacritic ${d.metacritic}</span>`:''}
+          ${d.steam_rating_pct>0?`<span class="bdg bdg-gr">${rateStars(d.steam_rating_pct)} ${d.steam_rating||d.steam_rating_pct+'%'}</span>`:''}
+        </div>
+        <button class="m-add ${added?'on':''}" id="m-add-btn" onclick="addW('${ea(gameTitle)}',this)">
+          ${added
+            ? '<i class="ti ti-check" style="font-size:16px"></i> В шорт-листе'
+            : '<i class="ti ti-bookmark-plus" style="font-size:16px"></i> Добавить в вишлист'}
+        </button>
+        ${(d.cheapest_ever_price && parseFloat(d.cheapest_ever_price) > 0) ? `
+        <div class="m-cheapest">
+          <div>
+            <div class="m-cheapest-label">🏆 Рекорд минимальной цены</div>
+            <div class="m-cheapest-val">${fmtPrice(d.cheapest_ever_price)}</div>
           </div>
-          <button class="dr-btn" onclick="openUrl('${ea(dd.deal_url)}')">Купить</button>
-        </div>`).join(''):'<div class="em" style="padding:20px"><div class="em-icon">🔍</div><h3>Цены не найдены</h3></div>'}`;
+          ${cheapDate ? `<div class="m-cheapest-date">${cheapDate}</div>` : ''}
+        </div>` : ''}
+        <div class="m-sec">Цены по магазинам</div>
+        ${d.deals && d.deals.length ? d.deals.map(dd=>{
+          const pct = maxPrice>0 ? Math.round((parseFloat(dd.sale_price)||0)/maxPrice*100) : 50;
+          return `
+          <div class="deal-row">
+            <div class="dr-store">
+              <div class="dr-store-name">${esc(dd.store)}</div>
+              <div class="dr-bar-wrap"><div class="dr-bar" style="width:${Math.max(pct,4)}%"></div></div>
+            </div>
+            <div class="dr-prices">
+              <span class="dr-sale">${fmtPrice(dd.sale_price)}</span>
+              ${dd.savings>0?`<span class="dr-orig">${fmtPrice(dd.normal_price)}</span><span class="dr-disc">−${dd.savings}%</span>`:''}
+            </div>
+            <button class="dr-btn" onclick="openUrl('${ea(dd.deal_url)}')">Купить</button>
+          </div>`;
+        }).join('') : '<div class="em" style="padding:20px 0"><div class="em-icon">🔍</div><h3 style="font-size:15px">Цены не найдены</h3></div>'}
+      </div>`;
+
+    // Анимируем бары после рендера
+    requestAnimationFrame(()=>{
+      document.querySelectorAll('#mbody .dr-bar').forEach(b=>{
+        const w = b.style.width; b.style.width='0'; 
+        requestAnimationFrame(()=>{ b.style.width=w; });
+      });
+    });
   } catch {
-    body.innerHTML='<div class="em"><div class="em-icon">⚠️</div><h3>Не удалось загрузить</h3></div>';
+    body.innerHTML='<div class="em" style="height:250px"><div class="em-icon">⚠️</div><h3>Не удалось загрузить</h3></div>';
   }
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
